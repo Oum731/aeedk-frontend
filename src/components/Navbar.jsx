@@ -64,18 +64,16 @@ export default function Navbar({ user, onNavigate }) {
     : "";
   const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : null;
 
-  // Mini-sidebar and full-sidebar widths
   const miniWidth = "w-16 md:w-20";
-  const fullWidth = "w-[92vw] max-w-xs md:w-72 md:max-w-md";
+  const fullWidth = "w-[80vw] max-w-[320px] md:w-72 md:max-w-md";
 
   return (
     <>
-      {/* Mini sidebar (always visible) */}
+      {/* Mini sidebar (toujours visible) */}
       {!isOpen && (
         <aside
-          className={`fixed top-0 left-0 z-[89] h-[100vh] ${miniWidth} bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4`}
+          className={`fixed top-0 left-0 z-[89] h-screen ${miniWidth} bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4`}
         >
-          {/* Hamburger icon inside mini sidebar */}
           <button
             onClick={() => setIsOpen(true)}
             className="mb-3 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition"
@@ -106,7 +104,7 @@ export default function Navbar({ user, onNavigate }) {
               <button
                 onClick={() => handleLinkClick("/register")}
                 className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
-                title="Inscrire"
+                title="Inscription"
               >
                 <UserPlus size={22} />
               </button>
@@ -140,28 +138,21 @@ export default function Navbar({ user, onNavigate }) {
 
       {/* Overlay */}
       <div
-        className={`
-          fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300
-          ${
-            isOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }
-        `}
+        className={`fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300 ${
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
         onClick={() => setIsOpen(false)}
       ></div>
 
-      {/* Sidebar full */}
+      {/* Sidebar plein écran */}
       <aside
         ref={menuRef}
-        className={`
-          fixed top-0 left-0 z-[91] h-[100vh] ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6
-          transition-transform duration-300
-          overflow-y-auto max-h-[100vh]
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+        className={`fixed top-0 left-0 z-[91] h-screen ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6 transition-transform duration-300 overflow-y-auto max-h-screen ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
-        {/* Close icon inside full sidebar, at top */}
         <button
           onClick={() => setIsOpen(false)}
           className="mb-6 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition absolute top-6 left-4"
@@ -169,16 +160,15 @@ export default function Navbar({ user, onNavigate }) {
         >
           <CloseIcon size={26} />
         </button>
-        {/* Logo & Title */}
         <a href="/" className="mb-8 flex flex-col items-center gap-3 mt-4">
           <span className="rounded-full bg-base-200 p-2 shadow-md">
             <img
               src={logo}
               alt="logo"
-              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#1D4ED8]"
+              className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#1D4ED8]"
             />
           </span>
-          <span className="text-2xl font-bold text-[#1D4ED8] hidden sm:block">
+          <span className="text-xl sm:text-2xl font-bold text-[#1D4ED8] hidden sm:block">
             AEEDK
           </span>
         </a>
@@ -204,7 +194,7 @@ export default function Navbar({ user, onNavigate }) {
                     className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
                   >
                     <UserPlus size={22} />
-                    Inscrire
+                    Inscription
                   </button>
                 </li>
                 <li>
