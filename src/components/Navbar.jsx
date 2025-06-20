@@ -64,64 +64,132 @@ export default function Navbar({ user, onNavigate }) {
     : "";
   const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : null;
 
+  // Mini-sidebar and full-sidebar widths
+  const miniWidth = "w-16 md:w-20";
+  const fullWidth = "w-[92vw] max-w-xs md:w-72 md:max-w-md";
+
   return (
     <>
-      {/* Hamburger button fixed top-left */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="fixed top-4 left-4 z-[95] p-2 rounded-full bg-white shadow-md hover:bg-blue-600 hover:text-white transition"
-        aria-label="Ouvrir le menu"
-      >
-        <MenuIcon size={24} />
-      </button>
+      {/* Mini sidebar (always visible) */}
+      {!isOpen && (
+        <aside
+          className={`fixed top-0 left-0 z-[89] h-[100vh] ${miniWidth} bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4`}
+        >
+          {/* Hamburger icon inside mini sidebar */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="mb-3 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition"
+            aria-label="Ouvrir le menu"
+          >
+            <MenuIcon size={26} />
+          </button>
+          <a href="/" className="mb-5">
+            <img
+              src={logo}
+              alt="logo"
+              className="w-9 h-9 rounded-full object-cover border-2 border-[#1D4ED8]"
+            />
+          </a>
+          {menuItems.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              onClick={() => handleLinkClick(item.href)}
+              className="flex items-center justify-center w-10 h-10 mx-auto hover:bg-[#1D4ED8] hover:text-white rounded transition"
+              title={item.label}
+            >
+              {item.icon}
+            </a>
+          ))}
+          {!user ? (
+            <>
+              <button
+                onClick={() => handleLinkClick("/register")}
+                className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+                title="Inscrire"
+              >
+                <UserPlus size={22} />
+              </button>
+              <button
+                onClick={() => handleLinkClick("/login")}
+                className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+                title="Connexion"
+              >
+                <LogIn size={22} />
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => handleLinkClick("/profile")}
+              className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+              title={displayName}
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-8 h-8 rounded-full object-cover border"
+                />
+              ) : (
+                <UserIcon size={22} />
+              )}
+            </button>
+          )}
+        </aside>
+      )}
 
       {/* Overlay */}
       <div
-        className={`fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300 ${
-          isOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
+        className={`
+          fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300
+          ${
+            isOpen
+              ? "opacity-100 pointer-events-auto"
+              : "opacity-0 pointer-events-none"
+          }
+        `}
         onClick={() => setIsOpen(false)}
       ></div>
 
       {/* Sidebar full */}
       <aside
         ref={menuRef}
-        className={`fixed top-0 left-0 z-[91] h-screen w-[75vw] sm:w-[25vw] max-w-sm bg-base-100 shadow-xl flex flex-col items-center py-6 transition-transform duration-300 overflow-y-auto ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
+        className={`
+          fixed top-0 left-0 z-[91] h-[100vh] ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6
+          transition-transform duration-300
+          overflow-y-auto max-h-[100vh]
+          ${isOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
       >
-        {/* Close button */}
+        {/* Close icon inside full sidebar, at top */}
         <button
           onClick={() => setIsOpen(false)}
-          className="mb-6 p-2 rounded-full hover:bg-blue-600 hover:text-white transition absolute top-6 left-4"
+          className="mb-6 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition absolute top-6 left-4"
           aria-label="Fermer le menu"
         >
           <CloseIcon size={26} />
         </button>
-
-        {/* Logo */}
-        <a href="/" className="mb-8 mt-4 flex flex-col items-center gap-3">
+        {/* Logo & Title */}
+        <a href="/" className="mb-8 flex flex-col items-center gap-3 mt-4">
           <span className="rounded-full bg-base-200 p-2 shadow-md">
             <img
               src={logo}
               alt="logo"
-              className="w-16 h-16 rounded-full object-cover border-2 border-blue-600"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#1D4ED8]"
             />
           </span>
-          <span className="text-xl font-bold text-blue-600">AEEDK</span>
+          <span className="text-2xl font-bold text-[#1D4ED8] hidden sm:block">
+            AEEDK
+          </span>
         </a>
-
-        {/* Menu */}
         <nav className="w-full flex-1">
-          <ul className="flex flex-col gap-1 w-full px-4">
+          <ul className="flex flex-col gap-1 w-full">
             {menuItems.map((item) => (
               <li key={item.label}>
                 <a
                   href={item.href}
                   onClick={() => handleLinkClick(item.href)}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-blue-600 hover:text-white rounded-md w-full text-left transition"
+                  className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
                 >
                   {item.icon}
                   <span>{item.label}</span>
@@ -133,16 +201,16 @@ export default function Navbar({ user, onNavigate }) {
                 <li>
                   <button
                     onClick={() => handleLinkClick("/register")}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-blue-600 hover:text-white rounded-md w-full text-left transition"
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
                   >
                     <UserPlus size={22} />
-                    Inscription
+                    Inscrire
                   </button>
                 </li>
                 <li>
                   <button
                     onClick={() => handleLinkClick("/login")}
-                    className="flex items-center gap-3 px-4 py-3 hover:bg-blue-600 hover:text-white rounded-md w-full text-left transition"
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
                   >
                     <LogIn size={22} />
                     Connexion
@@ -153,7 +221,7 @@ export default function Navbar({ user, onNavigate }) {
               <li>
                 <button
                   onClick={() => handleLinkClick("/profile")}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-blue-600 hover:text-white rounded-md w-full text-left transition"
+                  className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
                 >
                   {avatarUrl ? (
                     <img
