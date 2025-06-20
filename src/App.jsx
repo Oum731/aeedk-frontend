@@ -70,14 +70,16 @@ export default function App() {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col"
-      style={{ backgroundColor: "#ffff" }}
-    >
+    <div className="min-h-screen flex flex-col bg-white">
+      {/* Barre latérale / Mini-sidebar */}
       <Navbar user={user} onNavigate={handleNavigate} />
-      <div className="pt-16 px-4 max-w-7xl mx-auto scroll-smooth flex-1 w-full">
+
+      {/* Contenu principal décalé à droite pour libérer l'espace de la barre */}
+      <main className="pl-16 md:pl-20 pt-16 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto">
         {mainContent}
-      </div>
+      </main>
+
+      {/* Pied de page décalé de la même façon */}
       <div className="pl-16 md:pl-20 w-full">
         <Footer />
       </div>
