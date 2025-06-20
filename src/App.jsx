@@ -78,7 +78,9 @@ export default function App() {
       <div className="pt-16 px-4 max-w-7xl mx-auto scroll-smooth flex-1 w-full">
         {mainContent}
       </div>
-      <Footer />
+      <div className="pl-16 md:pl-20 w-full">
+        <Footer />
+      </div>
     </div>
   );
 }
