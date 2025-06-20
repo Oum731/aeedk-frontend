@@ -6,6 +6,7 @@ import LoginForm from "./auth/LoginForm";
 import Profile from "./pages/Profile";
 import AdminHome from "./pages/AdminHome";
 import Footer from "./components/Footer";
+import MobileNavBar from "./components/MobileNavBar";
 import { useAuth } from "./contexts/AuthContext";
 
 export default function App() {
@@ -73,13 +74,15 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar user={user} onNavigate={handleNavigate} />
 
-      <main className="pl-0 md:pl-20 pt-16 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto">
+      <main className="pt-16 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20 pb-16 md:pb-0">
         {mainContent}
       </main>
 
-      <div className="pl-16 md:pl-20 w-full">
+      <div className="pl-0 md:pl-20 w-full hidden md:block">
         <Footer />
       </div>
+
+      <MobileNavBar user={user} onNavigate={handleNavigate} />
     </div>
   );
 }
