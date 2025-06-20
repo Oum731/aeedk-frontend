@@ -20,14 +20,16 @@ export default function MobileNavBar({ user, onNavigate }) {
   };
 
   const handleNavigate = (path) => {
-    if (path.startsWith("#")) {
-      // Rediriger vers home si on n'y est pas déjà
+    if (path === "/" || path === "/home") {
+      onNavigate("home");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else if (path.startsWith("#")) {
       if (
         window.location.pathname !== "/" &&
         window.location.pathname !== "/home"
       ) {
         onNavigate("home");
-        setTimeout(() => scrollToSection(path), 50); // attendre le rendu
+        setTimeout(() => scrollToSection(path), 50);
       } else {
         scrollToSection(path);
       }
@@ -39,9 +41,7 @@ export default function MobileNavBar({ user, onNavigate }) {
 
   return (
     <>
-      {/* HEADER MOBILE */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm h-14 flex items-center justify-between px-4 md:hidden pt-[env(safe-area-inset-top)]">
-        {/* Logo cliquable */}
         <div
           onClick={() => handleNavigate("/")}
           className="flex items-center gap-2 cursor-pointer"
@@ -54,7 +54,6 @@ export default function MobileNavBar({ user, onNavigate }) {
           <span className="font-bold text-blue-700 text-base">AEEDK</span>
         </div>
 
-        {/* Profil / Login */}
         <div className="flex items-center gap-3">
           {!user ? (
             <>
@@ -83,7 +82,6 @@ export default function MobileNavBar({ user, onNavigate }) {
         </div>
       </header>
 
-      {/* FOOTER MOBILE */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow md:hidden flex justify-between items-center h-14 px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
         <button
           onClick={() => handleNavigate("/")}
