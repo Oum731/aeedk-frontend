@@ -14,10 +14,26 @@ import logo from "../assets/logo.jpeg";
 import { getAvatarUrl } from "../utils/avatarUrl";
 
 const menuItems = [
-  { label: "Accueil", icon: <Home size={20} />, href: "/" },
-  { label: "À Propos", icon: <Info size={20} />, href: "#about" },
-  { label: "Actualités", icon: <Newspaper size={20} />, href: "#actu" },
-  { label: "Contact", icon: <Mail size={20} />, href: "#contact" },
+  {
+    label: "Accueil",
+    icon: <Home size={22} />,
+    href: "/",
+  },
+  {
+    label: "À Propos",
+    icon: <Info size={22} />,
+    href: "#about",
+  },
+  {
+    label: "Actualités",
+    icon: <Newspaper size={22} />,
+    href: "#actu",
+  },
+  {
+    label: "Contact",
+    icon: <Mail size={22} />,
+    href: "#contact",
+  },
 ];
 
 export default function Navbar({ user, onNavigate }) {
@@ -25,118 +41,88 @@ export default function Navbar({ user, onNavigate }) {
   const menuRef = useRef();
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
+    function handleClickOutside(event) {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsOpen(false);
       }
-    };
+    }
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
   const handleLinkClick = (href) => {
     setIsOpen(false);
-    if (href?.startsWith("/")) onNavigate(href);
+    if (href?.startsWith("/")) {
+      onNavigate(href);
+    }
   };
 
-  const displayName =
-    user?.first_name && user?.last_name
+  const displayName = user
+    ? user.first_name && user.last_name
       ? `${user.first_name} ${user.last_name}`
-      : user?.first_name || user?.username || user?.email || "";
-
+      : user.first_name || user.username || user.email
+    : "";
   const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : null;
+
+  // Mini-sidebar and full-sidebar widths
+  const miniWidth = "w-16 md:w-20";
+  const fullWidth = "w-[92vw] max-w-xs md:w-72 md:max-w-md";
 
   return (
     <>
-      {/* Top bar with hamburger */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-white shadow px-4 py-3 flex items-center justify-between md:hidden">
-        <button
-          onClick={() => setIsOpen(true)}
-          className="p-2 rounded-md hover:bg-blue-600 hover:text-white transition"
-          aria-label="Menu"
+      {/* Mini sidebar (always visible) */}
+      {!isOpen && (
+        <aside
+          className={`fixed top-0 left-0 z-[89] h-[100vh] ${miniWidth} bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4`}
         >
-          <MenuIcon size={24} />
-        </button>
-        <img
-          src={logo}
-          alt="Logo"
-          className="h-10 w-10 rounded-full object-cover"
-        />
-      </div>
-
-      {/* Overlay */}
-      <div
-        className={`fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 ${
-          isOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
-        onClick={() => setIsOpen(false)}
-      />
-
-      {/* Drawer sidebar */}
-      <aside
-        ref={menuRef}
-        className={`fixed top-0 left-0 h-screen w-[70vw] max-w-xs z-50 bg-white shadow-xl transform transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b">
-          <div className="flex items-center gap-2">
+          {/* Hamburger icon inside mini sidebar */}
+          <button
+            onClick={() => setIsOpen(true)}
+            className="mb-3 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition"
+            aria-label="Ouvrir le menu"
+          >
+            <MenuIcon size={26} />
+          </button>
+          <a href="/" className="mb-5">
             <img
               src={logo}
-              alt="Logo"
-              className="w-10 h-10 rounded-full object-cover border border-blue-600"
+              alt="logo"
+              className="w-9 h-9 rounded-full object-cover border-2 border-[#1D4ED8]"
             />
-            <span className="text-lg font-bold text-blue-600">AEEDK</span>
-          </div>
-          <button
-            onClick={() => setIsOpen(false)}
-            className="p-2 rounded-md hover:bg-blue-600 hover:text-white transition"
-            aria-label="Fermer"
-          >
-            <CloseIcon size={24} />
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex flex-col gap-1 px-4 py-4">
+          </a>
           {menuItems.map((item) => (
             <a
               key={item.label}
               href={item.href}
               onClick={() => handleLinkClick(item.href)}
-              className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-blue-600 hover:text-white transition"
+              className="flex items-center justify-center w-10 h-10 mx-auto hover:bg-[#1D4ED8] hover:text-white rounded transition"
+              title={item.label}
             >
               {item.icon}
-              <span>{item.label}</span>
             </a>
           ))}
-
-          <hr className="my-2" />
-
           {!user ? (
             <>
               <button
                 onClick={() => handleLinkClick("/register")}
-                className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-blue-600 hover:text-white transition w-full text-left"
+                className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+                title="Inscrire"
               >
-                <UserPlus size={20} />
-                Inscription
+                <UserPlus size={22} />
               </button>
               <button
                 onClick={() => handleLinkClick("/login")}
-                className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-blue-600 hover:text-white transition w-full text-left"
+                className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+                title="Connexion"
               >
-                <LogIn size={20} />
-                Connexion
+                <LogIn size={22} />
               </button>
             </>
           ) : (
             <button
               onClick={() => handleLinkClick("/profile")}
-              className="flex items-center gap-3 px-4 py-3 rounded-md hover:bg-blue-600 hover:text-white transition w-full text-left"
+              className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+              title={displayName}
             >
               {avatarUrl ? (
                 <img
@@ -145,13 +131,108 @@ export default function Navbar({ user, onNavigate }) {
                   className="w-8 h-8 rounded-full object-cover border"
                 />
               ) : (
-                <UserIcon size={20} />
+                <UserIcon size={22} />
               )}
-              <span className="truncate max-w-[150px] font-semibold">
-                {displayName}
-              </span>
             </button>
           )}
+        </aside>
+      )}
+
+      {/* Overlay */}
+      <div
+        className={`fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300 ${
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setIsOpen(false)}
+      ></div>
+
+      {/* Sidebar full */}
+      <aside
+        ref={menuRef}
+        className={`fixed top-0 left-0 z-[91] h-[100vh] ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6 transition-transform duration-300 overflow-y-auto max-h-[100vh] ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        {/* Close icon inside full sidebar, at top */}
+        <button
+          onClick={() => setIsOpen(false)}
+          className="mb-6 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition absolute top-6 left-4"
+          aria-label="Fermer le menu"
+        >
+          <CloseIcon size={26} />
+        </button>
+        {/* Logo & Title */}
+        <a href="/" className="mb-8 flex flex-col items-center gap-3 mt-4">
+          <span className="rounded-full bg-base-200 p-2 shadow-md">
+            <img
+              src={logo}
+              alt="logo"
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover border-2 border-[#1D4ED8]"
+            />
+          </span>
+          <span className="text-2xl font-bold text-[#1D4ED8] hidden sm:block">
+            AEEDK
+          </span>
+        </a>
+        <nav className="w-full flex-1">
+          <ul className="flex flex-col gap-1 w-full">
+            {menuItems.map((item) => (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  onClick={() => handleLinkClick(item.href)}
+                  className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
+                >
+                  {item.icon}
+                  <span>{item.label}</span>
+                </a>
+              </li>
+            ))}
+            {!user ? (
+              <>
+                <li>
+                  <button
+                    onClick={() => handleLinkClick("/register")}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
+                  >
+                    <UserPlus size={22} />
+                    Inscrire
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => handleLinkClick("/login")}
+                    className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
+                  >
+                    <LogIn size={22} />
+                    Connexion
+                  </button>
+                </li>
+              </>
+            ) : (
+              <li>
+                <button
+                  onClick={() => handleLinkClick("/profile")}
+                  className="flex items-center gap-3 px-6 py-3 hover:bg-[#1D4ED8] hover:text-white rounded-md w-full text-left transition"
+                >
+                  {avatarUrl ? (
+                    <img
+                      src={avatarUrl}
+                      alt={displayName}
+                      className="w-8 h-8 rounded-full object-cover border"
+                    />
+                  ) : (
+                    <UserIcon size={22} />
+                  )}
+                  <span className="font-semibold truncate max-w-[140px]">
+                    {displayName}
+                  </span>
+                </button>
+              </li>
+            )}
+          </ul>
         </nav>
       </aside>
     </>
