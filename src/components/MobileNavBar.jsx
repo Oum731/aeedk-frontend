@@ -14,10 +14,23 @@ export default function MobileNavBar({ user, onNavigate }) {
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
 
+  const scrollToSection = (selector) => {
+    const el = document.querySelector(selector);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleNavigate = (path) => {
     if (path.startsWith("#")) {
-      const el = document.querySelector(path);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      // Rediriger vers home si on n'y est pas déjà
+      if (
+        window.location.pathname !== "/" &&
+        window.location.pathname !== "/home"
+      ) {
+        onNavigate("home");
+        setTimeout(() => scrollToSection(path), 50); // attendre le rendu
+      } else {
+        scrollToSection(path);
+      }
     } else {
       onNavigate(path);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -28,8 +41,11 @@ export default function MobileNavBar({ user, onNavigate }) {
     <>
       {/* HEADER MOBILE */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm h-14 flex items-center justify-between px-4 md:hidden pt-[env(safe-area-inset-top)]">
-        {/* Logo */}
-        <div className="flex items-center gap-2">
+        {/* Logo cliquable */}
+        <div
+          onClick={() => handleNavigate("/")}
+          className="flex items-center gap-2 cursor-pointer"
+        >
           <img
             src={logo}
             alt="logo"
@@ -38,7 +54,7 @@ export default function MobileNavBar({ user, onNavigate }) {
           <span className="font-bold text-blue-700 text-base">AEEDK</span>
         </div>
 
-        {/* Profile or login/register */}
+        {/* Profil / Login */}
         <div className="flex items-center gap-3">
           {!user ? (
             <>
@@ -69,21 +85,33 @@ export default function MobileNavBar({ user, onNavigate }) {
 
       {/* FOOTER MOBILE */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow md:hidden flex justify-between items-center h-14 px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
-        {[
-          { icon: Home, label: "Accueil", href: "/" },
-          { icon: Info, label: "À propos", href: "#about" },
-          { icon: Newspaper, label: "Actus", href: "#actu" },
-          { icon: Mail, label: "Contact", href: "#contact" },
-        ].map((item) => (
-          <button
-            key={item.label}
-            onClick={() => handleNavigate(item.href)}
-            className="flex flex-col items-center justify-center text-[11px] sm:text-xs text-gray-600 hover:text-blue-600 transition w-full"
-          >
-            <item.icon size={20} />
-            <span className="mt-0.5">{item.label}</span>
-          </button>
-        ))}
+        <button
+          onClick={() => handleNavigate("/")}
+          className="flex flex-col items-center justify-center text-[11px] sm:text-xs text-gray-600 hover:text-blue-600 w-full"
+        >
+          <Home size={20} />
+          Accueil
+        </button>
+        <button
+          onClick={() => handleNavigate("#about")}
+          className="flex flex-col items-center justify-center text-[11px] sm:text-xs text-gray-600 hover:text-blue-600 w-full"
+        >
+          <Info size={20} />À Propos
+        </button>
+        <button
+          onClick={() => handleNavigate("#actu")}
+          className="flex flex-col items-center justify-center text-[11px] sm:text-xs text-gray-600 hover:text-blue-600 w-full"
+        >
+          <Newspaper size={20} />
+          Actus
+        </button>
+        <button
+          onClick={() => handleNavigate("#contact")}
+          className="flex flex-col items-center justify-center text-[11px] sm:text-xs text-gray-600 hover:text-blue-600 w-full"
+        >
+          <Mail size={20} />
+          Contact
+        </button>
       </nav>
     </>
   );
