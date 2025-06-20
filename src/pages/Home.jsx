@@ -43,7 +43,7 @@ export default function Home() {
 
   return (
     <div
-      className="flex flex-col items-center min-h-screen w-full"
+      className="flex flex-col items-center min-h-screen w-full pl-16 md:pl-20"
       style={{ backgroundColor: "#fff" }}
     >
       <section
@@ -64,7 +64,6 @@ export default function Home() {
             </span>
           </p>
 
-          {/* Swiper SANS bg-white */}
           <div className="w-full rounded-2xl overflow-hidden shadow-2xl">
             <Swiper
               modules={[Autoplay, Pagination, Navigation]}
@@ -135,6 +134,7 @@ export default function Home() {
           <Contact />
         </div>
       </section>
+
       <section
         id="about"
         className="w-[90vw] max-w-7xl min-h-[80vh] mx-auto pt-8 bg-white px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8"
@@ -143,6 +143,7 @@ export default function Home() {
           <Apropos />
         </div>
       </section>
+
       {showTopBtn && (
         <button
           className="fixed bottom-10 right-10 btn btn-circle z-50"
