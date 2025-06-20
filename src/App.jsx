@@ -74,7 +74,7 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar user={user} onNavigate={handleNavigate} />
 
-      <main className="pt-16 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20 pb-16 md:pb-0">
+      <main className="pt-14 pb-14 md:pt-16 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
         {mainContent}
       </main>
 
