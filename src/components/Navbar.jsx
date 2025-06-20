@@ -140,26 +140,20 @@ export default function Navbar({ user, onNavigate }) {
 
       {/* Overlay */}
       <div
-        className={`
-          fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300
-          ${
-            isOpen
-              ? "opacity-100 pointer-events-auto"
-              : "opacity-0 pointer-events-none"
-          }
-        `}
+        className={`fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300 ${
+          isOpen
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
+        }`}
         onClick={() => setIsOpen(false)}
       ></div>
 
       {/* Sidebar full */}
       <aside
         ref={menuRef}
-        className={`
-          fixed top-0 left-0 z-[91] h-[100vh] ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6
-          transition-transform duration-300
-          overflow-y-auto max-h-[100vh]
-          ${isOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
+        className={`fixed top-0 left-0 z-[91] h-[100vh] ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6 transition-transform duration-300 overflow-y-auto max-h-[100vh] ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
       >
         {/* Close icon inside full sidebar, at top */}
         <button
