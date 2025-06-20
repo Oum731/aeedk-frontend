@@ -14,26 +14,10 @@ import logo from "../assets/logo.jpeg";
 import { getAvatarUrl } from "../utils/avatarUrl";
 
 const menuItems = [
-  {
-    label: "Accueil",
-    icon: <Home size={22} />,
-    href: "/",
-  },
-  {
-    label: "À Propos",
-    icon: <Info size={22} />,
-    href: "#about",
-  },
-  {
-    label: "Actualités",
-    icon: <Newspaper size={22} />,
-    href: "#actu",
-  },
-  {
-    label: "Contact",
-    icon: <Mail size={22} />,
-    href: "#contact",
-  },
+  { label: "Accueil", icon: <Home size={22} />, href: "/" },
+  { label: "À Propos", icon: <Info size={22} />, href: "#about" },
+  { label: "Actualités", icon: <Newspaper size={22} />, href: "#actu" },
+  { label: "Contact", icon: <Mail size={22} />, href: "#contact" },
 ];
 
 export default function Navbar({ user, onNavigate }) {
@@ -52,9 +36,7 @@ export default function Navbar({ user, onNavigate }) {
 
   const handleLinkClick = (href) => {
     setIsOpen(false);
-    if (href?.startsWith("/")) {
-      onNavigate(href);
-    }
+    if (href?.startsWith("/")) onNavigate(href);
   };
 
   const displayName = user
@@ -64,18 +46,16 @@ export default function Navbar({ user, onNavigate }) {
     : "";
   const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : null;
 
-  // Mini-sidebar and full-sidebar widths
   const miniWidth = "w-16 md:w-20";
   const fullWidth = "w-[92vw] max-w-xs md:w-72 md:max-w-md";
 
   return (
     <>
-      {/* Mini sidebar (always visible) */}
+      {/* Mini sidebar (desktop seulement) */}
       {!isOpen && (
         <aside
-          className={`fixed top-0 left-0 z-[89] h-[100vh] ${miniWidth} bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4`}
+          className={`hidden md:flex fixed top-0 left-0 z-[89] h-[100vh] ${miniWidth} bg-base-100 shadow-xl flex-col items-center py-4 gap-4`}
         >
-          {/* Hamburger icon inside mini sidebar */}
           <button
             onClick={() => setIsOpen(true)}
             className="mb-3 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition"
@@ -138,6 +118,17 @@ export default function Navbar({ user, onNavigate }) {
         </aside>
       )}
 
+      {/* Hamburger (mobile seulement) */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed top-4 left-4 z-[95] p-2 rounded-full bg-white shadow-md text-[#1D4ED8] md:hidden"
+          aria-label="Ouvrir le menu mobile"
+        >
+          <MenuIcon size={28} />
+        </button>
+      )}
+
       {/* Overlay */}
       <div
         className={`fixed inset-0 bg-black/40 z-[89] transition-opacity duration-300 ${
@@ -148,14 +139,13 @@ export default function Navbar({ user, onNavigate }) {
         onClick={() => setIsOpen(false)}
       ></div>
 
-      {/* Sidebar full */}
+      {/* Sidebar complète (mobile + desktop) */}
       <aside
         ref={menuRef}
         className={`fixed top-0 left-0 z-[91] h-[100vh] ${fullWidth} bg-base-100 shadow-xl flex flex-col items-center py-6 transition-transform duration-300 overflow-y-auto max-h-[100vh] ${
           isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        {/* Close icon inside full sidebar, at top */}
         <button
           onClick={() => setIsOpen(false)}
           className="mb-6 p-2 rounded-full hover:bg-[#1D4ED8] hover:text-white transition absolute top-6 left-4"
@@ -163,7 +153,6 @@ export default function Navbar({ user, onNavigate }) {
         >
           <CloseIcon size={26} />
         </button>
-        {/* Logo & Title */}
         <a href="/" className="mb-8 flex flex-col items-center gap-3 mt-4">
           <span className="rounded-full bg-base-200 p-2 shadow-md">
             <img
