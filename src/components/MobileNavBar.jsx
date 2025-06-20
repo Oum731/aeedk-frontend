@@ -20,13 +20,13 @@ export default function MobileNavBar({ user, onNavigate }) {
   };
 
   const handleNavigate = (path) => {
-    if (path === "/" || path === "/home") {
+    if (path === "/" || path === "#home") {
       onNavigate("home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (path.startsWith("#")) {
       if (
         window.location.pathname !== "/" &&
-        window.location.pathname !== "/home"
+        window.location.pathname !== "#home"
       ) {
         onNavigate("home");
         setTimeout(() => scrollToSection(path), 50);
