@@ -11,8 +11,8 @@ import {
 
 export default function Footer() {
   return (
-    <footer className="footer ml-16 md:ml-20 px-4 py-8 bg-base-200 text-base-content border-t border-base-300 mt-12">
-      <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row md:justify-between gap-10 md:gap-0">
+    <footer className="footer px-4 py-8 bg-base-200 text-base-content border-t border-base-300 mt-12">
+      <div className="w-full max-w-6xl mx-auto flex flex-col md:flex-row md:justify-between gap-10 md:gap-0 pl-16 md:pl-20">
         <div>
           <a
             href="/"
