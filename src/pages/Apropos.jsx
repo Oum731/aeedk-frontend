@@ -9,6 +9,7 @@ const images = [
 
 export default function Apropos() {
   const [index, setIndex] = useState(0);
+
   useEffect(() => {
     const timer = setTimeout(
       () => setIndex((i) => (i + 1) % images.length),
@@ -17,7 +18,6 @@ export default function Apropos() {
     return () => clearTimeout(timer);
   }, [index]);
 
-  // Style de texte pour l'effet "contour" noir (shadow dans 4 directions)
   const textOutline = {
     textShadow: `
       -2px -2px 0 #000,  
@@ -28,14 +28,14 @@ export default function Apropos() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-2 px-1 sm:px-4">
-      <div className="mb-2 mt-2">
-        <h1 className="text-3xl md:text-4xl font-bold text-center mb-1 text-blue-700">
+    <div className="max-w-4xl mx-auto py-4 px-2 sm:px-4 text-gray-800">
+      <div className="mb-4">
+        <h1 className="text-3xl md:text-4xl font-bold text-center text-blue-700 mb-1">
           À Propos
         </h1>
-        <p className="text-center font-medium text-base text-black">
+        <p className="text-center font-medium">
           <span className="font-semibold">
-            Association des Élèves et Étudiants du Département de Kouto
+            Association des Élèves et Étudiants du Département de Kouto (AEEDK)
           </span>
         </p>
       </div>
@@ -51,17 +51,15 @@ export default function Apropos() {
         </div>
       </div>
 
-      <div className="bg-[#1D4ED8]/100 rounded-lg p-4 mb-4 shadow-sm">
-        <h2 className="text-lg font-bold mb-2 text-white text-center">
-          Notre mission
-        </h2>
-        <ul className="list-disc pl-6 space-y-1 text-base text-white">
+      <div className="bg-[#1D4ED8] rounded-lg p-4 mb-4 shadow-sm text-white">
+        <h2 className="text-lg font-bold mb-2 text-center">Notre mission</h2>
+        <ul className="list-disc pl-6 space-y-1 text-base">
           <li>
             Créer un réseau de solidarité entre élèves et étudiants du
             département de Kouto.
           </li>
           <li>
-            Promouvoir l’excellence académique, la citoyenneté, et l’entraide
+            Promouvoir l’excellence académique, la citoyenneté et l’entraide
             sociale.
           </li>
           <li>
@@ -79,38 +77,60 @@ export default function Apropos() {
         </ul>
       </div>
 
-      <div className="bg-[#1D4ED8]/100 rounded-lg p-4 mb-4 text-sm md:text-base flex flex-col md:flex-row gap-4 justify-between">
+      <div className="bg-[#1D4ED8] rounded-lg p-4 mb-6 grid grid-cols-2 md:grid-cols-4 gap-4 text-center text-white text-sm md:text-base">
         <div>
           <span
-            className="block font-bold text-white text-2xl px-4 py-1 rounded"
+            className="block font-bold text-2xl px-4 py-1 rounded"
             style={textOutline}
           >
             +500
           </span>
-          <span className="block text-white">membres, élèves & étudiants</span>
+          <span className="block">membres AEEDK</span>
         </div>
         <div>
           <span
-            className="block font-bold text-white text-2xl px-4 py-1 rounded"
+            className="block font-bold text-2xl px-4 py-1 rounded"
             style={textOutline}
           >
             10+
           </span>
-          <span className="block text-white">événements annuels</span>
+          <span className="block">événements annuels</span>
         </div>
         <div>
           <span
-            className="block font-bold text-white text-2xl px-4 py-1 rounded"
+            className="block font-bold text-2xl px-4 py-1 rounded"
             style={textOutline}
           >
-            30+
+            48
           </span>
-          <span className="block text-white">villages représentés</span>
+          <span className="block">villages représentés</span>
+        </div>
+        <div>
+          <span
+            className="block font-bold text-2xl px-4 py-1 rounded"
+            style={textOutline}
+          >
+            5
+          </span>
+          <span className="block">sous-préfectures</span>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-3 items-center">
-        <div className="flex flex-col gap-1 justify-center text-white">
+      <div className="my-10">
+        <h3 className="text-xl font-semibold text-[#1D4ED8] mb-3 text-center">
+          Les 5 sous-préfectures du département de Kouto
+        </h3>
+        <ul className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-center text-sm sm:text-base font-medium text-gray-700 mb-4">
+          <li className="bg-blue-50 rounded p-2 shadow">Kouto</li>
+          <li className="bg-blue-50 rounded p-2 shadow">Gbon</li>
+          <li className="bg-blue-50 rounded p-2 shadow">Sianhala</li>
+          <li className="bg-blue-50 rounded p-2 shadow">Blességué</li>
+          <li className="bg-blue-50 rounded p-2 shadow">Kolia</li>
+        </ul>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center mt-4">
+        <div className="flex flex-col gap-1">
           <h3 className="font-semibold text-lg mb-1 text-[#1D4ED8]">
             Coordonnées
           </h3>
@@ -120,8 +140,8 @@ export default function Apropos() {
           <span>
             <strong>Email :</strong>{" "}
             <a
-              className="text-[#1D4ED8] underline"
               href="mailto:contact.aeedk@gmail.com"
+              className="text-[#1D4ED8] underline"
             >
               contact.aeedk@gmail.com
             </a>
@@ -132,8 +152,8 @@ export default function Apropos() {
           <span>
             <strong>Réseaux sociaux :</strong>{" "}
             <a
-              className="text-blue-400 underline"
               href="https://facebook.com/aeedk"
+              className="text-blue-400 underline"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -142,12 +162,23 @@ export default function Apropos() {
           </span>
           <span>
             <strong>Président actuel :</strong>{" "}
-            <span className="font-medium text-[#1D4ED8]">
+            <span className="text-[#1D4ED8] font-medium">
               M. DEMBELE BAKARY
             </span>
           </span>
           <span>
             <strong>Année de création :</strong> 2003
+          </span>
+          <span>
+            <strong>Itinéraire :</strong>{" "}
+            <a
+              href="https://www.google.com/maps/dir/?api=1&destination=Centre+Culturel+de+Kouto,+Côte+d'Ivoire"
+              className="text-blue-500 underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Voir l’itinéraire vers le Centre Culturel de Kouto
+            </a>
           </span>
         </div>
         <div className="w-full h-56 md:h-72 rounded-lg overflow-hidden shadow flex items-center justify-center">
@@ -159,7 +190,7 @@ export default function Apropos() {
         </div>
       </div>
 
-      <div className="text-center text-base italic text-[#1D4ED8] mt-8 mb-1">
+      <div className="text-center text-base italic text-[#1D4ED8] mt-8 mb-4">
         « Unis pour la réussite, la solidarité et l’excellence à Kouto et
         ailleurs »
       </div>
