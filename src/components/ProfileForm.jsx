@@ -69,6 +69,7 @@ export default function ProfileForm({
       ];
       const formData = new FormData();
       for (const key of allowedFields) {
+        if (key === "avatar") continue;
         const value = form[key];
         if (value === undefined || value === null) continue;
         if (key === "birth_date" && value === "") continue;
@@ -82,7 +83,9 @@ export default function ProfileForm({
             : "false"
         );
       }
-      if (avatarFile) formData.append("avatar", avatarFile);
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
 
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
@@ -175,6 +178,13 @@ export default function ProfileForm({
                 onChange={handleAvatarChange}
               />
             </label>
+            {avatarPreview && (
+              <img
+                src={avatarPreview}
+                alt="Aperçu avatar"
+                className="rounded-full w-16 h-16 object-cover border ml-4"
+              />
+            )}
           </div>
           <div className="flex gap-4 mt-4">
             <button
