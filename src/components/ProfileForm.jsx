@@ -62,10 +62,10 @@ export default function ProfileForm({
 
       for (const [key, value] of Object.entries(form)) {
         if (key === "id") continue;
-        if (key === "avatar") continue;
-        if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
+        if (value === null || value === undefined) continue;
+        if (key === "birth_date" && value === "") continue;
+        if (key === "avatar" && avatarFile) continue;
+        formData.append(key, value);
       }
 
       if (avatarFile) {
