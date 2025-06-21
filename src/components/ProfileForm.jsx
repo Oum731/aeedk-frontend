@@ -58,10 +58,14 @@ export default function ProfileForm({
     }
 
     try {
+      const original = userData || user;
       const formData = new FormData();
+
       for (const [key, value] of Object.entries(form)) {
-        if (value !== null && value !== undefined && key !== "id") {
-          if (key === "birth_date" && value === "") continue;
+        if (key === "id") continue;
+        if (value === null || value === undefined) continue;
+        if (key === "birth_date" && value === "") continue;
+        if (value !== original[key]) {
           formData.append(key, value);
         }
       }
