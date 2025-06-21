@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import LikeButton from "./LikeButton";
 import { getAvatarUrl } from "../utils/avatarUrl";
+import { getMediaUrl } from "../utils/getMediaUrl";
 
 export default function PostCard({
   post,
@@ -93,11 +94,12 @@ export default function PostCard({
           className={`relative w-full ${carouselHeight} overflow-hidden bg-black`}
         >
           <img
-            src={images[current].url}
+            src={getMediaUrl(images[current].url)}
             alt={post.title}
             className="object-cover w-full h-full transition-all duration-300"
             style={{ minHeight: 100 }}
           />
+
           {images.length > 1 && (
             <>
               <button
