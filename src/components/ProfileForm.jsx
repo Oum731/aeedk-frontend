@@ -75,14 +75,14 @@ export default function ProfileForm({
         if (key === "birth_date" && value === "") continue;
         formData.append(key, value);
       }
-      if (typeof form.confirmed !== "undefined") {
-        formData.append(
-          "confirmed",
-          form.confirmed === true || form.confirmed === "true"
-            ? "true"
-            : "false"
-        );
-      }
+      // if (typeof form.confirmed !== "undefined") {
+      //   formData.append(
+      //     "confirmed",
+      //     form.confirmed === true || form.confirmed === "true"
+      //       ? "true"
+      //       : "false"
+      //   );
+      // }
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
