@@ -57,29 +57,23 @@ export default function ProfileForm({
       return;
     }
 
-    if (!form.birth_date) {
-      setError("La date de naissance est requise.");
-      setLoading(false);
-      return;
-    }
-
     try {
       const formData = new FormData();
-      formData.append("username", form.username || "");
-      formData.append("first_name", form.first_name || "");
-      formData.append("last_name", form.last_name || "");
-      formData.append("sub_prefecture", form.sub_prefecture || "");
-      formData.append("village", form.village || "");
-      formData.append("phone", form.phone || "");
-      formData.append("birth_date", form.birth_date || "");
-      formData.append("email", form.email || "");
-      formData.append("role", form.role || "");
+      for (const [key, value] of Object.entries(form)) {
+        if (value !== null && value !== undefined && key !== "id") {
+          formData.append(key, value);
+        }
+      }
+
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
 
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${user?.access_token || ""}`,
+        },
       });
 
       updateUserInContext(res.data.user);
