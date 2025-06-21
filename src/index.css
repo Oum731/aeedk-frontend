@@ -6,7 +6,6 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Swiper Custom Styles */
 .swiper-slide {
   opacity: 0.92;
   transform: scale(0.96);
@@ -26,19 +25,16 @@ html {
   z-index: 1;
 }
 
-/* Optional: Prevent image smoothing "blur" for hi-res images */
 .swiper-slide img {
   image-rendering: auto;
 }
 
-/* Optional: Remove outline on navigation buttons if you want a cleaner look */
 .swiper-button-next:focus,
 .swiper-button-prev:focus {
   outline: none;
   box-shadow: none;
 }
 
-/* SWIPER DOTS TO BLUE */
 .swiper-pagination-bullet {
   background: #1d4ed8 !important;
 }
