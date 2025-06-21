@@ -33,12 +33,17 @@ export function AuthProvider({ children }) {
         password,
       });
 
-      const userData = res.data.user;
-      const jwtToken = res.data.token;
+      const { user: userData, token: jwtToken } = res.data;
+
+      if (!userData.confirmed) {
+        setError(
+          "Veuillez confirmer votre adresse email avant de vous connecter."
+        );
+        return { success: false, error: "Email non confirmé." };
+      }
 
       setUser(userData);
       setToken(jwtToken);
-
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", jwtToken);
       axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
@@ -46,8 +51,9 @@ export function AuthProvider({ children }) {
       return { success: true };
     } catch (err) {
       console.error("Erreur login:", err);
-      setError(err.response?.data?.error || "Erreur de connexion");
-      return { success: false, error: err.response?.data?.error };
+      const msg = err.response?.data?.error || "Erreur de connexion";
+      setError(msg);
+      return { success: false, error: msg };
     } finally {
       setLoading(false);
     }
@@ -71,8 +77,9 @@ export function AuthProvider({ children }) {
       };
     } catch (err) {
       console.error("Erreur register:", err);
-      setError(err.response?.data?.error || "Erreur d'inscription");
-      return { success: false, error: err.response?.data?.error };
+      const msg = err.response?.data?.error || "Erreur d'inscription";
+      setError(msg);
+      return { success: false, error: msg };
     } finally {
       setLoading(false);
     }
