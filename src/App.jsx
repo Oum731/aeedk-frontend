@@ -8,6 +8,8 @@ import AdminHome from "./pages/AdminHome";
 import Footer from "./components/Footer";
 import MobileNavBar from "./components/MobileNavBar";
 import { useAuth } from "./contexts/AuthContext";
+import VerifyEmail from "./auth/VerifyEmail";
+import ResetPasswordForm from "./auth/ResetPassword";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -31,9 +33,19 @@ export default function App() {
       window.removeEventListener("navigateProfile", handleCustomNavigate);
   }, []);
 
+  const path = window.location.pathname;
+
   let mainContent = null;
 
-  if (page === "home" || page === "/home") {
+  if (path.startsWith("/verify/")) {
+    const token = path.split("/verify/")[1];
+    mainContent = <VerifyEmail token={token} onNavigate={handleNavigate} />;
+  } else if (path.startsWith("/reset/")) {
+    const token = path.split("/reset/")[1];
+    mainContent = (
+      <ResetPasswordForm token={token} onNavigate={handleNavigate} />
+    );
+  } else if (page === "home" || page === "/home") {
     mainContent = <Home onNavigate={handleNavigate} />;
   } else if (page === "/login") {
     mainContent = <LoginForm onNavigate={handleNavigate} />;

@@ -56,6 +56,15 @@ export default function LoginForm({ onNavigate }) {
         </button>
         {error && <div className="text-error">{error}</div>}
       </form>
+      <p className="text-sm text-right">
+        <button
+          type="button"
+          className="text-blue-600 hover:underline"
+          onClick={() => onNavigate("/forgot-password")}
+        >
+          Mot de passe oublié ?
+        </button>
+      </p>
     </div>
   );
 }

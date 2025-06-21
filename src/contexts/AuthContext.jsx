@@ -6,14 +6,20 @@ export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
+    const savedToken = localStorage.getItem("token");
+
+    if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
+      setToken(savedToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
     }
+
     setLoading(false);
   }, []);
 
@@ -26,8 +32,16 @@ export function AuthProvider({ children }) {
         username: identifier,
         password,
       });
-      setUser(res.data.user);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
+      const userData = res.data.user;
+      const jwtToken = res.data.token;
+
+      setUser(userData);
+      setToken(jwtToken);
+
+      localStorage.setItem("user", JSON.stringify(userData));
+      localStorage.setItem("token", jwtToken);
+      axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
+
       setLoading(false);
       return { success: true };
     } catch (err) {
@@ -43,7 +57,10 @@ export function AuthProvider({ children }) {
     try {
       await axios.post(`${API_URL}/user/register`, formData);
       setLoading(false);
-      return { success: true, message: "Inscription réussie." };
+      return {
+        success: true,
+        message: "Inscription réussie. Vérifiez votre email.",
+      };
     } catch (err) {
       setError(err.response?.data?.error || "Erreur d'inscription");
       setLoading(false);
@@ -53,21 +70,22 @@ export function AuthProvider({ children }) {
 
   function logout() {
     setUser(null);
+    setToken(null);
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
+    delete axios.defaults.headers.common["Authorization"];
   }
 
   async function fetchUser() {
     setLoading(true);
     setError(null);
     try {
-      if (!user?.id) throw new Error("Aucun utilisateur connecté");
-      const res = await axios.get(`${API_URL}/user/${user.id}`);
+      const res = await axios.get(`${API_URL}/user/${user?.id}`);
       setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
     } catch (err) {
-      setUser(null);
+      logout();
       setError("Session expirée ou connexion impossible");
-      localStorage.removeItem("user");
     }
     setLoading(false);
   }
@@ -79,9 +97,10 @@ export function AuthProvider({ children }) {
 
   const value = {
     user,
+    token,
     loading,
     error,
-    isAuthenticated: !!user,
+    isAuthenticated: !!user && !!token,
     register,
     login,
     logout,
