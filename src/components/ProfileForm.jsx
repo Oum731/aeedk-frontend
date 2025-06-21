@@ -21,15 +21,11 @@ export default function ProfileForm({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (userData) {
+    const source = userData || user;
+    if (source) {
       setForm({
-        ...userData,
-        birth_date: userData.birth_date?.substring(0, 10) || "",
-      });
-    } else if (user) {
-      setForm({
-        ...user,
-        birth_date: user.birth_date?.substring(0, 10) || "",
+        ...source,
+        birth_date: source.birth_date?.substring(0, 10) || "",
       });
     }
   }, [userData, user]);
@@ -53,42 +49,44 @@ export default function ProfileForm({
     setLoading(true);
     setError("");
     setMsg("");
+
     const idToUse = isMe ? user?.id : userData?.id;
     if (!idToUse) {
-      setError("Impossible de déterminer l'utilisateur à mettre à jour.");
+      setError("Utilisateur introuvable");
       setLoading(false);
       return;
     }
+
     try {
       const formData = new FormData();
+      // Champs obligatoires
+      formData.append("username", form.username || "");
       formData.append("first_name", form.first_name || "");
       formData.append("last_name", form.last_name || "");
       formData.append("sub_prefecture", form.sub_prefecture || "");
       formData.append("village", form.village || "");
       formData.append("phone", form.phone || "");
       formData.append("birth_date", form.birth_date || "");
+      formData.append("email", form.email || "");
+      formData.append("role", form.role || "");
+
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-      const response = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
+
+      const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
+      updateUserInContext(res.data.user);
       setMsg("Profil mis à jour avec succès !");
-      updateUserInContext(response.data.user);
-      setAvatarFile(null);
-      setAvatarPreview(null);
-      if (onAvatarChange) onAvatarChange(null);
-      setForm({
-        ...response.data.user,
-        birth_date: response.data.user.birth_date?.substring(0, 10) || "",
-      });
       if (setEditing) setEditing(false);
     } catch (err) {
+      console.error("Erreur lors de la mise à jour :", err);
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
-          err.message ||
-          "Une erreur est survenue lors de la mise à jour"
+          "Une erreur est survenue"
       );
     } finally {
       setLoading(false);
@@ -106,47 +104,54 @@ export default function ProfileForm({
     <div className="w-full">
       {!editing || readOnly ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg w-full">
-          <div>
-            <div className="text-gray-500 text-xs">Prénom</div>
-            <div className="font-medium">{form.first_name || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Nom</div>
-            <div className="font-medium">{form.last_name || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Sous-préfecture</div>
-            <div className="font-medium">{form.sub_prefecture || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Village</div>
-            <div className="font-medium">{form.village || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Téléphone</div>
-            <div className="font-medium">{form.phone || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Date de naissance</div>
-            <div className="font-medium">{form.birth_date || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Email</div>
-            <div className="font-medium">{form.email || "-"}</div>
-          </div>
-          <div>
-            <div className="text-gray-500 text-xs">Rôle</div>
-            <div className="font-medium">{form.role || "-"}</div>
-          </div>
+          {/* affichage en lecture seule */}
+          {[
+            { label: "Prénom", key: "first_name" },
+            { label: "Nom", key: "last_name" },
+            { label: "Sous-préfecture", key: "sub_prefecture" },
+            { label: "Village", key: "village" },
+            { label: "Téléphone", key: "phone" },
+            { label: "Date de naissance", key: "birth_date" },
+            { label: "Email", key: "email" },
+            { label: "Rôle", key: "role" },
+          ].map(({ label, key }) => (
+            <div key={key}>
+              <div className="text-gray-500 text-xs">{label}</div>
+              <div className="font-medium">{form[key] || "-"}</div>
+            </div>
+          ))}
         </div>
       ) : (
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 mt-2 flex flex-col flex-1 h-full w-full"
-        >
-          <div className="flex items-center gap-4">
-            <label className="btn btn-sm btn-accent cursor-pointer  text-white border-blue-400 bg-blue-700">
-              <UploadCloud size={16} className="mr-1 " />
+        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {[
+              { label: "Nom d'utilisateur", name: "username" },
+              { label: "Prénom", name: "first_name" },
+              { label: "Nom", name: "last_name" },
+              { label: "Sous-préfecture", name: "sub_prefecture" },
+              { label: "Village", name: "village" },
+              { label: "Téléphone", name: "phone" },
+              { label: "Date de naissance", name: "birth_date", type: "date" },
+              { label: "Email", name: "email", disabled: true },
+              { label: "Rôle", name: "role", disabled: true },
+            ].map(({ label, name, type = "text", disabled = false }) => (
+              <div key={name}>
+                <label className="label">{label}</label>
+                <input
+                  type={type}
+                  name={name}
+                  className="input input-bordered w-full"
+                  value={form[name] || ""}
+                  onChange={handleChange}
+                  disabled={disabled}
+                />
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-4 mt-4">
+            <label className="btn btn-sm btn-accent cursor-pointer text-white border-blue-400 bg-blue-700">
+              <UploadCloud size={16} className="mr-1" />
               Changer avatar
               <input
                 type="file"
@@ -157,89 +162,8 @@ export default function ProfileForm({
               />
             </label>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-            <div>
-              <label className="label">Prénom</label>
-              <input
-                type="text"
-                name="first_name"
-                className="input input-bordered w-full"
-                value={form.first_name || ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label">Nom</label>
-              <input
-                type="text"
-                name="last_name"
-                className="input input-bordered w-full"
-                value={form.last_name || ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label">Sous-préfecture</label>
-              <input
-                type="text"
-                name="sub_prefecture"
-                className="input input-bordered w-full"
-                value={form.sub_prefecture || ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label">Village</label>
-              <input
-                type="text"
-                name="village"
-                className="input input-bordered w-full"
-                value={form.village || ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label">Téléphone</label>
-              <input
-                type="tel"
-                name="phone"
-                className="input input-bordered w-full"
-                value={form.phone || ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label">Date de naissance</label>
-              <input
-                type="date"
-                name="birth_date"
-                className="input input-bordered w-full"
-                value={form.birth_date || ""}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label className="label">Email</label>
-              <input
-                type="email"
-                name="email"
-                className="input input-bordered w-full bg-gray-100 cursor-not-allowed"
-                value={form.email || ""}
-                disabled
-              />
-            </div>
-            <div>
-              <label className="label">Rôle</label>
-              <input
-                type="text"
-                name="role"
-                className="input input-bordered w-full bg-gray-100 cursor-not-allowed"
-                value={form.role || ""}
-                disabled
-              />
-            </div>
-          </div>
-          <div className="flex gap-4 mt-2">
+
+          <div className="flex gap-4 mt-4">
             <button
               type="submit"
               className="btn btn-primary flex-1"
@@ -256,20 +180,17 @@ export default function ProfileForm({
             </button>
             <button
               type="button"
-              className="btn btn-ghost flex-1  text-white border-blue-400 bg-blue-700"
+              className="btn btn-ghost flex-1 text-white border-blue-400 bg-blue-700"
+              onClick={() => setEditing(false)}
               disabled={loading}
-              onClick={() => setEditing && setEditing(false)}
             >
               Annuler
             </button>
           </div>
+
           {msg && <div className="alert alert-success mt-4">{msg}</div>}
           {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
-      )}
-      {!editing && msg && <div className="alert alert-success mt-4">{msg}</div>}
-      {!editing && error && (
-        <div className="alert alert-error mt-4">{error}</div>
       )}
     </div>
   );
