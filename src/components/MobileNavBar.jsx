@@ -14,9 +14,32 @@ export default function MobileNavBar({ user, onNavigate }) {
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
 
+  function scrollToSmoothly(targetY, duration = 600) {
+    const startY = window.scrollY;
+    const diff = targetY - startY;
+    let start;
+
+    window.requestAnimationFrame(function step(timestamp) {
+      if (!start) start = timestamp;
+      const time = timestamp - start;
+      const percent = Math.min(time / duration, 1);
+      window.scrollTo(0, startY + diff * easeInOutQuad(percent));
+      if (time < duration) {
+        window.requestAnimationFrame(step);
+      }
+    });
+
+    function easeInOutQuad(t) {
+      return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    }
+  }
+
   const scrollToSection = (selector) => {
     const el = document.querySelector(selector);
-    if (el) el.scrollIntoView({ behavior: "smooth" });
+    if (el) {
+      const y = el.getBoundingClientRect().top + window.scrollY - 60;
+      scrollToSmoothly(y, 600);
+    }
   };
 
   const handleNavigate = (path) => {
@@ -29,7 +52,7 @@ export default function MobileNavBar({ user, onNavigate }) {
         window.location.pathname !== "/home"
       ) {
         onNavigate("home");
-        setTimeout(() => scrollToSection(path), 50);
+        setTimeout(() => scrollToSection(path), 100);
       } else {
         scrollToSection(path);
       }
@@ -43,7 +66,7 @@ export default function MobileNavBar({ user, onNavigate }) {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm h-14 flex items-center justify-between px-4 md:hidden pt-[env(safe-area-inset-top)]">
         <div
-          onClick={() => handleNavigate("#acueil")}
+          onClick={() => handleNavigate("/")}
           className="flex items-center gap-2 cursor-pointer"
         >
           <img
