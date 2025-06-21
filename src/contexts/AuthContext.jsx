@@ -26,12 +26,13 @@ export function AuthProvider({ children }) {
   async function login(identifier, password) {
     setLoading(true);
     setError(null);
+
     try {
       const res = await axios.post(`${API_URL}/user/login`, {
-        email: identifier,
-        username: identifier,
+        identifier,
         password,
       });
+
       const userData = res.data.user;
       const jwtToken = res.data.token;
 
@@ -42,29 +43,38 @@ export function AuthProvider({ children }) {
       localStorage.setItem("token", jwtToken);
       axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
 
-      setLoading(false);
       return { success: true };
     } catch (err) {
+      console.error("Erreur login:", err);
       setError(err.response?.data?.error || "Erreur de connexion");
-      setLoading(false);
       return { success: false, error: err.response?.data?.error };
+    } finally {
+      setLoading(false);
     }
   }
 
   async function register(formData) {
     setLoading(true);
     setError(null);
+
     try {
-      await axios.post(`${API_URL}/user/register`, formData);
-      setLoading(false);
+      const headers =
+        formData instanceof FormData
+          ? { "Content-Type": "multipart/form-data" }
+          : { "Content-Type": "application/json" };
+
+      await axios.post(`${API_URL}/user/register`, formData, { headers });
+
       return {
         success: true,
         message: "Inscription réussie. Vérifiez votre email.",
       };
     } catch (err) {
+      console.error("Erreur register:", err);
       setError(err.response?.data?.error || "Erreur d'inscription");
-      setLoading(false);
       return { success: false, error: err.response?.data?.error };
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -79,15 +89,18 @@ export function AuthProvider({ children }) {
   async function fetchUser() {
     setLoading(true);
     setError(null);
+
     try {
       const res = await axios.get(`${API_URL}/user/${user?.id}`);
       setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
     } catch (err) {
+      console.error("Erreur fetchUser:", err);
       logout();
       setError("Session expirée ou connexion impossible");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   function updateUserInContext(userData) {

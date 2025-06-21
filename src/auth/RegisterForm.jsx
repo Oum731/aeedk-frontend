@@ -22,29 +22,33 @@ export default function RegisterForm({ onNavigate }) {
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
-    if (name === "avatar" && files[0]) {
-      setForm((form) => ({ ...form, avatar: files[0] }));
+    if (name === "avatar" && files?.length) {
+      setForm((prev) => ({ ...prev, avatar: files[0] }));
       setAvatarPreview(URL.createObjectURL(files[0]));
     } else {
-      setForm((form) => ({ ...form, [name]: value }));
+      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
+    setLoading(true);
+
     const cleanedForm = {
       ...form,
       email: form.email.trim().toLowerCase(),
       username: form.username.trim(),
     };
-    const data = new FormData();
-    Object.keys(cleanedForm).forEach((key) => {
-      if (cleanedForm[key]) data.append(key, cleanedForm[key]);
+
+    const formData = new FormData();
+    Object.entries(cleanedForm).forEach(([key, value]) => {
+      if (value) formData.append(key, value);
     });
-    const result = await register(data);
+
+    const result = await register(formData);
     setLoading(false);
+
     if (result.success) {
       if (onNavigate) onNavigate("/login");
     } else {
@@ -63,27 +67,27 @@ export default function RegisterForm({ onNavigate }) {
         <input
           type="text"
           name="username"
-          required
           className="input input-bordered w-full"
           placeholder="Nom d'utilisateur"
+          required
           value={form.username}
           onChange={handleChange}
         />
         <input
           type="email"
           name="email"
-          required
           className="input input-bordered w-full"
           placeholder="Email"
+          required
           value={form.email}
           onChange={handleChange}
         />
         <input
           type="password"
           name="password"
-          required
           className="input input-bordered w-full"
           placeholder="Mot de passe"
+          required
           value={form.password}
           onChange={handleChange}
         />
@@ -91,18 +95,18 @@ export default function RegisterForm({ onNavigate }) {
           <input
             type="text"
             name="first_name"
-            required
             className="input input-bordered w-full"
             placeholder="Prénom"
+            required
             value={form.first_name}
             onChange={handleChange}
           />
           <input
             type="text"
             name="last_name"
-            required
             className="input input-bordered w-full"
             placeholder="Nom"
+            required
             value={form.last_name}
             onChange={handleChange}
           />
@@ -110,17 +114,17 @@ export default function RegisterForm({ onNavigate }) {
         <input
           type="date"
           name="birth_date"
-          required
           className="input input-bordered w-full"
+          required
           value={form.birth_date}
           onChange={handleChange}
         />
         <input
           type="tel"
           name="phone"
-          required
           className="input input-bordered w-full"
           placeholder="Téléphone"
+          required
           value={form.phone}
           onChange={handleChange}
         />
@@ -128,22 +132,23 @@ export default function RegisterForm({ onNavigate }) {
           <input
             type="text"
             name="sub_prefecture"
-            required
             className="input input-bordered w-full"
             placeholder="Sous-préfecture"
+            required
             value={form.sub_prefecture}
             onChange={handleChange}
           />
           <input
             type="text"
             name="village"
-            required
             className="input input-bordered w-full"
             placeholder="Village"
+            required
             value={form.village}
             onChange={handleChange}
           />
         </div>
+
         <label className="flex flex-col gap-2">
           <span className="font-medium">Photo de profil (optionnel)</span>
           <input
@@ -157,19 +162,20 @@ export default function RegisterForm({ onNavigate }) {
             <img
               src={avatarPreview}
               alt="Aperçu avatar"
-              className="w-16 h-16 rounded-full mt-2"
+              className="w-16 h-16 rounded-full mt-2 object-cover"
             />
           )}
         </label>
+
         <button
+          type="submit"
           className="btn btn-primary w-full"
           disabled={loading}
-          type="submit"
         >
           {loading && <LoaderCircle className="animate-spin mr-2" size={18} />}
           S'inscrire
         </button>
-        {error && <div className="text-error">{error}</div>}
+        {error && <div className="text-error text-sm mt-2">{error}</div>}
       </form>
     </div>
   );

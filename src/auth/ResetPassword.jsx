@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { useParams } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
 import API_URL from "../config";
 
-export default function ResetPasswordForm({ onNavigate }) {
-  const { token } = useParams();
+export default function ResetPasswordForm({ token, onNavigate }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);

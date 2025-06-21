@@ -19,6 +19,7 @@ export default function App() {
   const handleNavigate = (p, userId = null) => {
     setPage(p);
     setViewedUserId(userId);
+    window.history.pushState({}, "", p); // Mettre à jour l'URL
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -33,7 +34,19 @@ export default function App() {
       window.removeEventListener("navigateProfile", handleCustomNavigate);
   }, []);
 
-  const path = window.location.pathname;
+  // Détection manuelle des URLs spéciales
+  useEffect(() => {
+    const pathname = window.location.pathname;
+    if (pathname.startsWith("/verify/")) {
+      const token = pathname.split("/verify/")[1];
+      setPage(`/verify/${token}`);
+    } else if (pathname.startsWith("/reset/")) {
+      const token = pathname.split("/reset/")[1];
+      setPage(`/reset/${token}`);
+    }
+  }, []);
+
+  const path = page;
 
   let mainContent = null;
 
@@ -45,13 +58,13 @@ export default function App() {
     mainContent = (
       <ResetPasswordForm token={token} onNavigate={handleNavigate} />
     );
-  } else if (page === "home" || page === "/home") {
+  } else if (path === "home" || path === "/home") {
     mainContent = <Home onNavigate={handleNavigate} />;
-  } else if (page === "/login") {
+  } else if (path === "/login") {
     mainContent = <LoginForm onNavigate={handleNavigate} />;
-  } else if (page === "/register") {
+  } else if (path === "/register") {
     mainContent = <RegisterForm onNavigate={handleNavigate} />;
-  } else if (page === "/profile") {
+  } else if (path === "/profile") {
     if (!user && !viewedUserId) {
       mainContent = (
         <div className="text-center mt-16 text-error">
@@ -68,7 +81,7 @@ export default function App() {
         />
       );
     }
-  } else if (page === "/admin") {
+  } else if (path === "/admin") {
     if (user?.role === "admin") {
       mainContent = <AdminHome onNavigate={handleNavigate} />;
     } else {
@@ -79,7 +92,7 @@ export default function App() {
       );
     }
   } else {
-    mainContent = <div>Page non trouvée</div>;
+    mainContent = <div className="text-center mt-16">Page non trouvée</div>;
   }
 
   return (
