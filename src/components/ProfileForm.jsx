@@ -91,9 +91,9 @@ export default function ProfileForm({
             : "false"
         );
       }
-      // if (avatarFile) {
-      //   formData.append("avatar", avatarFile);
-      // }
+      if (avatarFile) {
+        formData.append("avatar", avatarFile);
+      }
 
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
