@@ -58,23 +58,25 @@ export default function ProfileForm({
     }
 
     try {
+      const cleanedForm = { ...form };
+      if ("confirmed" in cleanedForm) {
+        cleanedForm.confirmed =
+          typeof cleanedForm.confirmed === "boolean"
+            ? cleanedForm.confirmed
+              ? "true"
+              : "false"
+            : cleanedForm.confirmed;
+      }
       const formData = new FormData();
-
-      for (const [key, value] of Object.entries(form)) {
+      for (const [key, value] of Object.entries(cleanedForm)) {
         if (key === "id") continue;
         if (value === null || value === undefined) continue;
         if (key === "birth_date" && value === "") continue;
         if (key === "avatar" && avatarFile) continue;
         formData.append(key, value);
       }
-
       if (avatarFile) {
         formData.append("avatar", avatarFile);
-      }
-
-      console.log("📦 FormData envoyé :");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value);
       }
 
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
@@ -88,7 +90,6 @@ export default function ProfileForm({
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
     } catch (err) {
-      console.error("❌ Erreur API :", err.response);
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
@@ -153,7 +154,6 @@ export default function ProfileForm({
               </div>
             ))}
           </div>
-
           <div className="flex items-center gap-4 mt-4">
             <label className="btn btn-sm btn-accent cursor-pointer text-white border-blue-400 bg-blue-700">
               <UploadCloud size={16} className="mr-1" />
@@ -167,7 +167,6 @@ export default function ProfileForm({
               />
             </label>
           </div>
-
           <div className="flex gap-4 mt-4">
             <button
               type="submit"
@@ -192,7 +191,6 @@ export default function ProfileForm({
               Annuler
             </button>
           </div>
-
           {msg && <div className="alert alert-success mt-4">{msg}</div>}
           {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
