@@ -28,7 +28,7 @@ export default function MobileNavBar({ user, onNavigate }) {
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
 
-  function scrollToSmoothly(targetY, duration = 900) {
+  function scrollToSmoothly(targetY, duration = 800) {
     const startY = window.scrollY;
     const diff = targetY - startY;
     let start;
