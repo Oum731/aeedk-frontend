@@ -131,7 +131,7 @@ export default function PostCard({
         </div>
       ) : videos.length > 0 ? (
         <video
-          src={videos[0].url}
+          src={getMediaUrl(videos[0].url)}
           controls
           className={`w-full ${carouselHeight} object-cover rounded-t-xl bg-black`}
         >
