@@ -96,7 +96,8 @@ export default function ProfileForm({
       if (setEditing) setEditing(false);
     } catch (err) {
       if (err.response) {
-        console.log("Réponse erreur API :", err.response.data); // <-- ici tu verras le détail du 422
+        console.log("Réponse erreur API :", err.response.data);
+        alert(JSON.stringify(err.response.data));
       }
       setError(
         err.response?.data?.error ||
