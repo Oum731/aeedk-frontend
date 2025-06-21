@@ -57,9 +57,14 @@ export default function ProfileForm({
       return;
     }
 
+    if (!form.birth_date) {
+      setError("La date de naissance est requise.");
+      setLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
-      // Champs obligatoires
       formData.append("username", form.username || "");
       formData.append("first_name", form.first_name || "");
       formData.append("last_name", form.last_name || "");
@@ -69,7 +74,6 @@ export default function ProfileForm({
       formData.append("birth_date", form.birth_date || "");
       formData.append("email", form.email || "");
       formData.append("role", form.role || "");
-
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
@@ -104,7 +108,6 @@ export default function ProfileForm({
     <div className="w-full">
       {!editing || readOnly ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg w-full">
-          {/* affichage en lecture seule */}
           {[
             { label: "Prénom", key: "first_name" },
             { label: "Nom", key: "last_name" },
