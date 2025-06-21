@@ -13,7 +13,7 @@ export default function Actu({ onNavigate }) {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/posts");
+        const res = await fetch("https://aeedk-backend.onrender.com/api/posts");
         const data = await res.json();
         setPosts(data);
         const counts = {};
