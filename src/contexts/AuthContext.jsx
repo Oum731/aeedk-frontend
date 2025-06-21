@@ -27,7 +27,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.post(`${API_URL}/api/user/login`, {
+      const res = await axios.post(`${API_URL}/user/login`, {
         email: identifier,
         username: identifier,
         password,
@@ -55,7 +55,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      await axios.post(`${API_URL}/api/user/register`, formData);
+      await axios.post(`${API_URL}/user/register`, formData);
       setLoading(false);
       return {
         success: true,
@@ -80,7 +80,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/api/user/${user?.id}`);
+      const res = await axios.get(`${API_URL}/user/${user?.id}`);
       setUser(res.data);
       localStorage.setItem("user", JSON.stringify(res.data));
     } catch (err) {
