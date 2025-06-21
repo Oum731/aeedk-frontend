@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import PostCard from "../components/PostCard";
 import CommentSection from "../components/CommentSection";
 import { useAuth } from "../contexts/AuthContext";
-import BACKEND_URL from "../config";
+import API_URL from "../config";
 
 export default function Actu({ onNavigate }) {
   const [posts, setPosts] = useState([]);
@@ -14,7 +14,7 @@ export default function Actu({ onNavigate }) {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch(`${BACKEND_URL}/api/posts`);
+        const res = await fetch(`${API_URL}/posts`);
         const data = await res.json();
         setPosts(data);
         const counts = {};

@@ -22,7 +22,7 @@ export default function Contact() {
             </h2>
             <div className="flex items-center gap-3">
               <MapPin className="text-primary" />
-              <span>KOUTO,Région de la BAGOUE, Côte d'Ivoire</span>
+              <span>KOUTO, Région de la BAGOUE, Côte d'Ivoire</span>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="text-primary" />
@@ -32,7 +32,10 @@ export default function Contact() {
             </div>
             <div className="flex items-center gap-3">
               <Mail className="text-primary" />
-              <a href="mailto:contact@gmail.com" className="link link-hover">
+              <a
+                href="mailto:contact.aeedk@gmail.com"
+                className="link link-hover"
+              >
                 contact.aeedk@gmail.com
               </a>
             </div>
@@ -50,14 +53,14 @@ export default function Contact() {
         <div className="flex-1 w-full">
           <div className="h-[350px] bg-base-200 rounded-xl shadow overflow-hidden mb-4">
             <iframe
-              title="Localisation Association"
+              title="Centre Culturel de Kouto"
               width="100%"
               height="100%"
               style={{ border: 0, minHeight: "350px" }}
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d12687.491195366669!2d-4.0082565!3d5.3453177!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfb84ddc5b27f4a5%3A0x5c508b72271e5df4!2sAbidjan!5e0!3m2!1sfr!2sci!4v1717356431372!5m2!1sfr!2sci"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3975.8874288744493!2d-5.333718!3d9.265997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfc0eac2cc0880de9%3A0xb8fd5f8885fdc768!2sCentre%20Culturel%20de%20Kouto!5e0!3m2!1sfr!2sci!4v1718999999999"
             ></iframe>
           </div>
           <div className="w-full rounded-xl overflow-hidden shadow">

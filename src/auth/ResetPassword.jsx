@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { LoaderCircle } from "lucide-react";
+import API_URL from "../config";
 
 export default function ResetPasswordForm({ onNavigate }) {
   const { token } = useParams();
@@ -13,19 +14,17 @@ export default function ResetPasswordForm({ onNavigate }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (password !== confirm)
+    if (password !== confirm) {
       return setError("Les mots de passe ne correspondent pas.");
+    }
 
     setLoading(true);
     try {
-      const res = await fetch(
-        `http://localhost:5000/api/user/reset-password/${token}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password }),
-        }
-      );
+      const res = await fetch(`${API_URL}/user/reset-password/${token}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
       const data = await res.json();
       if (res.ok) {
         setMessage(data.message || "Mot de passe réinitialisé");

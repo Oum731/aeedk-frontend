@@ -14,8 +14,19 @@ export default function ProfileMenu({ onNavigate }) {
         setOpen(false);
       }
     };
-    if (open) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, [open]);
 
   if (!user) return null;
@@ -28,9 +39,9 @@ export default function ProfileMenu({ onNavigate }) {
   return (
     <div className="relative" ref={menuRef}>
       <button
-        className="flex items-center gap-2 px-2"
-        onClick={() => setOpen(!open)}
-        aria-label="Menu profil"
+        className="flex items-center gap-2 px-2 focus:outline-none"
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label="Ouvrir le menu du profil"
       >
         {user.avatar ? (
           <img
@@ -42,22 +53,24 @@ export default function ProfileMenu({ onNavigate }) {
           <UserIcon className="w-9 h-9 text-gray-400" />
         )}
       </button>
+
       {open && (
-        <div className="absolute right-0 z-30 mt-2 bg-white border rounded-xl shadow-lg min-w-[180px] p-2 flex flex-col gap-1">
+        <div className="absolute right-0 z-30 mt-2 bg-white border rounded-xl shadow-lg min-w-[200px] p-2 flex flex-col gap-1">
           <div className="flex justify-center mb-2">
             {user.avatar ? (
               <img
                 src={getAvatarUrl(user.avatar)}
-                alt="Avatar menu"
+                alt="Avatar"
                 className="w-14 h-14 rounded-full object-cover border shadow"
               />
             ) : (
               <UserIcon className="w-12 h-12 text-gray-300 rounded-full border" />
             )}
           </div>
-          <div className="text-center font-semibold text-base mb-2">
+          <div className="text-center font-semibold text-base mb-2 truncate px-2">
             {user.username}
           </div>
+
           <button
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded"
             onClick={() => handleNavigation("/profile")}
@@ -65,6 +78,7 @@ export default function ProfileMenu({ onNavigate }) {
             <Edit2 size={18} />
             Modifier mon profil
           </button>
+
           {user.role === "admin" && (
             <button
               className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded"
@@ -74,8 +88,9 @@ export default function ProfileMenu({ onNavigate }) {
               Tableau de bord admin
             </button>
           )}
+
           <button
-            className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded text-red-600"
+            className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 rounded text-red-600"
             onClick={() => {
               handleNavigation("/home");
               logout();

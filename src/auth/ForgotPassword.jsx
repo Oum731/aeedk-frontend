@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import API_URL from "../config";
 
 export default function ForgotPasswordForm({ onNavigate }) {
   const [email, setEmail] = useState("");
@@ -12,18 +13,20 @@ export default function ForgotPasswordForm({ onNavigate }) {
     setLoading(true);
     setError("");
     setMessage("");
+
     try {
-      const res = await fetch(
-        "http://localhost:5000/api/user/forgot-password",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        }
-      );
+      const res = await fetch(`${API_URL}/user/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
       const data = await res.json();
-      if (res.ok) setMessage(data.message || "Email envoyé");
-      else setError(data.error || "Erreur inconnue");
+      if (res.ok) {
+        setMessage(data.message || "Email envoyé");
+      } else {
+        setError(data.error || "Erreur inconnue");
+      }
     } catch (err) {
       setError("Erreur de connexion au serveur");
     } finally {

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { LoaderCircle, UploadCloud } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
+import API_URL from "../config";
 
 export default function ProfileForm({
   editing,
@@ -69,11 +70,9 @@ export default function ProfileForm({
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-      const response = await axios.put(
-        `http://localhost:5000/api/user/${idToUse}`,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const response = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       setMsg("Profil mis à jour avec succès !");
       updateUserInContext(response.data.user);
       setAvatarFile(null);

@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import CommentCard from "./CommentCard";
 import countAllComments from "../utils/countAllComments";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function CommentSection({ postId, onCountChange, onUserClick }) {
   const { user } = useAuth();
@@ -26,12 +26,10 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       if (onCountChange) {
         onCountChange(countAllComments(data.comments || []));
       }
-    } catch (err) {
+    } catch {
       setError("Erreur lors du chargement des commentaires");
       setComments([]);
-      if (onCountChange) {
-        onCountChange(0);
-      }
+      if (onCountChange) onCountChange(0);
     } finally {
       setLoading(false);
     }
@@ -40,14 +38,10 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (!user) {
-      setError("Vous devez être connecté pour commenter.");
-      return;
-    }
-    if (!content.trim()) {
-      setError("Le commentaire ne peut pas être vide.");
-      return;
-    }
+    if (!user) return setError("Vous devez être connecté pour commenter.");
+    if (!content.trim())
+      return setError("Le commentaire ne peut pas être vide.");
+
     try {
       await axios.post(`${API_URL}/comments/`, {
         content,
@@ -60,7 +54,6 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       setError(
         err.response?.data?.message ||
           err.response?.data?.error ||
-          err.message ||
           "Erreur lors de l'envoi du commentaire"
       );
     }
@@ -83,6 +76,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
     if (!user) return setError("Connectez-vous pour modifier un commentaire.");
     if (!newContent.trim())
       return setError("Le commentaire ne peut pas être vide.");
+
     try {
       await axios.put(`${API_URL}/comments/${commentId}`, {
         content: newContent,
@@ -100,20 +94,18 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
 
   const handleUserClick = (userId) => {
     if (!userId) return;
-    if (user && String(userId) === String(user.id)) {
-      window.dispatchEvent(
-        new CustomEvent("navigateProfile", { detail: null })
-      );
-    } else {
-      window.dispatchEvent(
-        new CustomEvent("navigateProfile", { detail: userId })
-      );
-    }
+    const eventName = "navigateProfile";
+    window.dispatchEvent(
+      new CustomEvent(eventName, {
+        detail: user?.id === userId ? null : userId,
+      })
+    );
   };
 
   return (
     <div className="bg-base-100 rounded-xl p-4 shadow">
       <h4 className="text-lg font-semibold mb-4">Commentaires</h4>
+
       {user && (
         <form onSubmit={handleSubmit} className="mb-4">
           <div className="flex gap-2">
@@ -137,11 +129,13 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
           </div>
         </form>
       )}
+
       {error && (
         <div className="alert alert-error mb-4">
           <span>{error}</span>
         </div>
       )}
+
       <div className="space-y-4">
         {loading ? (
           <div className="flex justify-center py-4">

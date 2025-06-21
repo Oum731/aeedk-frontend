@@ -43,7 +43,7 @@ export default function CommentCard({
     setEditing(false);
   };
 
-  const replyCount = comment.children ? comment.children.length : 0;
+  const replyCount = comment.children?.length || 0;
 
   return (
     <article className="mb-2">
@@ -56,13 +56,14 @@ export default function CommentCard({
             }
             tabIndex={0}
             role="button"
+            title="Voir le profil"
           >
             {comment.user?.avatar ? (
               <img
                 src={
                   comment.user.avatar.startsWith("http")
                     ? comment.user.avatar
-                    : `http://localhost:5000/api/user/avatar/${comment.user.avatar.replace(
+                    : `https://aeedk-backend.onrender.com/api/user/avatar/${comment.user.avatar.replace(
                         "avatars/",
                         ""
                       )}`
@@ -80,10 +81,11 @@ export default function CommentCard({
           <time className="text-xs text-gray-400 ml-2">
             {new Date(comment.created_at).toLocaleString("fr-FR")}
           </time>
+
           {canEdit && !editing && (
             <button
               className="btn btn-xs btn-ghost text-info ml-2"
-              title="Modifier"
+              title="Modifier le commentaire"
               onClick={() => setEditing(true)}
             >
               <Edit2 size={16} />
@@ -92,7 +94,7 @@ export default function CommentCard({
           {canDelete && (
             <button
               className="btn btn-xs btn-ghost text-error ml-2"
-              title="Supprimer"
+              title="Supprimer le commentaire"
               onClick={() => onDelete(comment.id)}
             >
               <Trash2 size={16} />
@@ -121,11 +123,11 @@ export default function CommentCard({
             <button
               className="btn btn-xs btn-ghost"
               type="button"
+              title="Annuler"
               onClick={() => {
                 setEditing(false);
                 setEditValue(comment.content);
               }}
-              title="Annuler"
             >
               <X size={16} />
             </button>
@@ -151,6 +153,7 @@ export default function CommentCard({
             <button
               className="btn btn-xs btn-ghost flex items-center gap-1"
               onClick={() => setShowReplyForm((v) => !v)}
+              title="Répondre au commentaire"
             >
               <MessageCircle size={15} />
               Répondre

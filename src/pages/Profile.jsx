@@ -4,6 +4,7 @@ import ProfileForm from "../components/ProfileForm";
 import { Edit2, LayoutDashboard, LogOut, ArrowLeft, Home } from "lucide-react";
 import { getAvatarUrl } from "../utils/avatarUrl";
 import axios from "axios";
+import API_URL from "../config";
 
 export default function Profile({ onNavigate, viewedUserId, onBack }) {
   const { user: authUser, logout } = useAuth();
@@ -20,7 +21,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
       setLoading(true);
       try {
         if (!isOwnProfile && viewedUserId) {
-          const res = await axios.get(`/api/user/${viewedUserId}`);
+          const res = await axios.get(`${API_URL}/user/${viewedUserId}`);
           setViewedUser(res.data.user || res.data);
         }
       } catch (e) {
@@ -76,6 +77,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
           </h2>
         </div>
       </div>
+
       <div className="w-full max-w-3xl flex-1 flex px-2 sm:px-4">
         <div className="bg-base-100 shadow-xl rounded-2xl p-4 sm:p-8 flex-1 flex flex-col justify-center w-full">
           <ProfileForm
@@ -87,6 +89,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
           />
         </div>
       </div>
+
       <div className="flex flex-wrap justify-center gap-3 mt-7 w-full max-w-3xl px-2">
         <button
           className="btn btn-ghost flex items-center gap-1"
@@ -94,15 +97,17 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
         >
           <Home size={18} /> Retour à l'accueil
         </button>
+
         {isOwnProfile && (
           <>
             <button
-              className="btn btn-accent flex items-center gap-2  text-white bg-blue-700"
+              className="btn btn-accent flex items-center gap-2 text-white bg-blue-700"
               onClick={() => setEditing(true)}
               disabled={editing}
             >
               <Edit2 size={18} /> Modifier mon profil
             </button>
+
             {authUser?.role === "admin" && (
               <button
                 className="btn btn-neutral flex items-center gap-2"
@@ -111,6 +116,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
                 <LayoutDashboard size={18} /> Tableau de bord admin
               </button>
             )}
+
             <button
               className="btn btn-outline flex items-center gap-2 text-red-600 border-red-400 hover:bg-red-50"
               onClick={() => {
@@ -122,6 +128,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
             </button>
           </>
         )}
+
         {!isOwnProfile && (
           <button className="btn btn-neutral" onClick={onBack}>
             <ArrowLeft className="mr-1" size={18} /> Retour
