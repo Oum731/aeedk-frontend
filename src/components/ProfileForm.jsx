@@ -61,6 +61,7 @@ export default function ProfileForm({
       const formData = new FormData();
       for (const [key, value] of Object.entries(form)) {
         if (value !== null && value !== undefined && key !== "id") {
+          if (key === "birth_date" && value === "") continue;
           formData.append(key, value);
         }
       }
@@ -80,7 +81,6 @@ export default function ProfileForm({
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
     } catch (err) {
-      console.error("Erreur lors de la mise à jour :", err);
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
