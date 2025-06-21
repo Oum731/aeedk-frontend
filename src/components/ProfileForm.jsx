@@ -87,9 +87,16 @@ export default function ProfileForm({
         formData.append("avatar", avatarFile);
       }
 
+      // --- DEBUG : afficher le FormData et content-type réel
+      console.log("--- FormData envoyé ---");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value, value instanceof File ? "(file)" : "");
+      }
+
+      // Axios gère seul le Content-Type avec FormData ! NE PAS le définir à la main.
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          // PAS de Content-Type ici sinon mauvais boundary !
           Authorization: `Bearer ${user?.access_token || ""}`,
         },
       });
