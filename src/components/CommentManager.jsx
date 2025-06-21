@@ -29,8 +29,14 @@ export default function CommentManager() {
   const handleDelete = async (commentId) => {
     if (!window.confirm("Supprimer ce commentaire ?")) return;
     await axios.delete(`${API_URL}/comments/${commentId}?user_id=${user.id}`);
-
     fetchComments();
+  };
+
+  const getAvatarUrl = (avatar) => {
+    if (!avatar) return "/default-avatar.png";
+    if (avatar.startsWith("http")) return avatar;
+    const filename = avatar.replace("avatars/", "").replace("media/", "");
+    return `${API_URL}/user/avatar/${filename}`;
   };
 
   if (!user?.role || user.role !== "admin")
@@ -73,14 +79,7 @@ export default function CommentManager() {
                   <td className="px-5 py-4 flex items-center gap-2">
                     {c.user?.avatar ? (
                       <img
-                        src={
-                          c.user.avatar.startsWith("http")
-                            ? c.user.avatar
-                            : `http://localhost:5000/api/user/avatar/${c.user.avatar.replace(
-                                "avatars/",
-                                ""
-                              )}`
-                        }
+                        src={getAvatarUrl(c.user.avatar)}
                         alt="avatar"
                         className="w-8 h-8 rounded-full object-cover border"
                       />

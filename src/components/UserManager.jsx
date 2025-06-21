@@ -3,8 +3,7 @@ import axios from "axios";
 import { Trash2, Pencil, Shield, ShieldOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api/user";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 function getAge(birth_date) {
   if (!birth_date) return "-";
@@ -43,13 +42,12 @@ export default function UserManager({ onNavigate }) {
     try {
       const { data } = await axios.get(`${API_URL}/admin/users`);
       setUsers(data.users || []);
-    } catch (error) {
+    } catch {
       setUsers([]);
     }
   };
 
   const handleDelete = async (userId) => {
-    if (!window.confirm("Supprimer cet utilisateur ?")) return;
     try {
       await axios.delete(`${API_URL}/admin/users/${userId}`);
       fetchUsers();
@@ -75,7 +73,6 @@ export default function UserManager({ onNavigate }) {
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!editUser) return;
-
     try {
       const response = await axios.put(
         `${API_URL}/admin/users/${editUser.id}`,
@@ -109,14 +106,12 @@ export default function UserManager({ onNavigate }) {
         ...u,
         role: u.role === "admin" ? "membre" : "admin",
       });
-
       if (user.id === u.id && u.role === "admin") {
         updateUserInContext(response.data.user);
         logout();
         if (onNavigate) onNavigate("/");
         return;
       }
-
       fetchUsers();
     } catch {}
   };
@@ -192,7 +187,6 @@ export default function UserManager({ onNavigate }) {
             <input
               className="input input-bordered"
               type="date"
-              placeholder="Date de naissance"
               value={form.birth_date}
               onChange={(e) =>
                 setForm((f) => ({ ...f, birth_date: e.target.value }))
@@ -220,10 +214,7 @@ export default function UserManager({ onNavigate }) {
                 className="toggle"
                 checked={form.confirmed}
                 onChange={() =>
-                  setForm((f) => ({
-                    ...f,
-                    confirmed: !f.confirmed,
-                  }))
+                  setForm((f) => ({ ...f, confirmed: !f.confirmed }))
                 }
               />
               <span className="font-medium">Confirmé</span>
