@@ -49,35 +49,40 @@ export default function ProfileForm({
     setLoading(true);
     setError("");
     setMsg("");
-
     const idToUse = isMe ? user?.id : userData?.id;
     if (!idToUse) {
       setError("Utilisateur introuvable");
       setLoading(false);
       return;
     }
-
     try {
-      const cleanedForm = { ...form };
-      if ("confirmed" in cleanedForm) {
-        cleanedForm.confirmed =
-          typeof cleanedForm.confirmed === "boolean"
-            ? cleanedForm.confirmed
-              ? "true"
-              : "false"
-            : cleanedForm.confirmed;
-      }
+      const allowedFields = [
+        "username",
+        "first_name",
+        "last_name",
+        "sub_prefecture",
+        "village",
+        "phone",
+        "email",
+        "role",
+        "birth_date",
+      ];
       const formData = new FormData();
-      for (const [key, value] of Object.entries(cleanedForm)) {
-        if (key === "id") continue;
-        if (value === null || value === undefined) continue;
+      for (const key of allowedFields) {
+        const value = form[key];
+        if (value === undefined || value === null) continue;
         if (key === "birth_date" && value === "") continue;
-        if (key === "avatar" && avatarFile) continue;
         formData.append(key, value);
       }
-      if (avatarFile) {
-        formData.append("avatar", avatarFile);
+      if (typeof form.confirmed !== "undefined") {
+        formData.append(
+          "confirmed",
+          form.confirmed === true || form.confirmed === "true"
+            ? "true"
+            : "false"
+        );
       }
+      if (avatarFile) formData.append("avatar", avatarFile);
 
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
