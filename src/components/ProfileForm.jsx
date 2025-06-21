@@ -95,6 +95,9 @@ export default function ProfileForm({
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
     } catch (err) {
+      if (err.response) {
+        console.log("Réponse erreur API :", err.response.data); // <-- ici tu verras le détail du 422
+      }
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
