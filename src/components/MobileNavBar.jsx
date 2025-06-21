@@ -12,7 +12,6 @@ import logo from "../assets/logo.jpeg";
 
 const sections = [
   { id: "accueil", icon: <Home size={20} />, label: "Accueil", path: "/" },
-  { id: "about", icon: <Info size={20} />, label: "À Propos", path: "#about" },
   { id: "actu", icon: <Newspaper size={20} />, label: "Actus", path: "#actu" },
   {
     id: "contact",
@@ -20,6 +19,8 @@ const sections = [
     label: "Contact",
     path: "#contact",
   },
+
+  { id: "about", icon: <Info size={20} />, label: "À Propos", path: "#about" },
 ];
 
 export default function MobileNavBar({ user, onNavigate }) {
@@ -28,32 +29,12 @@ export default function MobileNavBar({ user, onNavigate }) {
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
 
-  function scrollToSmoothly(targetY, duration = 800) {
-    const startY = window.scrollY;
-    const diff = targetY - startY;
-    let start;
-
-    function easeInOutCubic(t) {
-      return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
-    }
-
-    window.requestAnimationFrame(function step(timestamp) {
-      if (!start) start = timestamp;
-      const time = timestamp - start;
-      const percent = Math.min(time / duration, 1);
-      window.scrollTo(0, startY + diff * easeInOutCubic(percent));
-      if (time < duration) {
-        window.requestAnimationFrame(step);
-      }
-    });
-  }
-
   const scrollToSection = (selector) => {
     const el = document.querySelector(selector);
     if (el) {
       const offset = 70;
       const y = el.getBoundingClientRect().top + window.scrollY - offset;
-      scrollToSmoothly(y, 900);
+      window.scrollTo({ top: y, behavior: "smooth" });
     }
   };
 
@@ -148,9 +129,9 @@ export default function MobileNavBar({ user, onNavigate }) {
           <button
             key={s.id}
             onClick={() => handleNavigate(s.path)}
-            className={`flex flex-col items-center justify-center text-[11px] sm:text-xs w-full ${
+            className={`flex flex-col items-center justify-center text-[11px] sm:text-xs w-full py-1 ${
               activeSection === s.id
-                ? "text-blue-600 font-semibold"
+                ? "text-blue-600 font-semibold border-t-2 border-blue-600 bg-blue-50"
                 : "text-gray-600 hover:text-blue-600"
             }`}
           >
