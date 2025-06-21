@@ -43,7 +43,7 @@ export default function MobileNavBar({ user, onNavigate }) {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm h-14 flex items-center justify-between px-4 md:hidden pt-[env(safe-area-inset-top)]">
         <div
-          onClick={() => handleNavigate("/")}
+          onClick={() => handleNavigate("#acueil")}
           className="flex items-center gap-2 cursor-pointer"
         >
           <img
