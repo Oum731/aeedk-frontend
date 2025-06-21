@@ -74,6 +74,12 @@ export default function ProfileForm({
         formData.append("avatar", avatarFile);
       }
 
+      // 🔍 LOG POUR DÉBOGAGE
+      console.log("📦 FormData envoyé :");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -85,6 +91,7 @@ export default function ProfileForm({
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
     } catch (err) {
+      console.error("❌ Erreur API :", err.response);
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
