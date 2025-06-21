@@ -11,7 +11,7 @@ export default function ProfileForm({
   readOnly,
   onAvatarChange,
 }) {
-  const { user, updateUserInContext } = useAuth();
+  const { user, token, updateUserInContext } = useAuth();
   const isMe = !userData || (user && userData && user.id === userData.id);
   const [form, setForm] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
@@ -87,17 +87,16 @@ export default function ProfileForm({
         formData.append("avatar", avatarFile);
       }
 
-      // --- DEBUG : afficher le FormData et content-type réel
+      // Debug : voir tout ce qui est envoyé
       console.log("--- FormData envoyé ---");
       for (let [key, value] of formData.entries()) {
         console.log(key, value, value instanceof File ? "(file)" : "");
       }
 
-      // Axios gère seul le Content-Type avec FormData ! NE PAS le définir à la main.
+      // Axios gère tout seul le Content-Type
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
-          // PAS de Content-Type ici sinon mauvais boundary !
-          Authorization: `Bearer ${user?.access_token || ""}`,
+          Authorization: `Bearer ${token || ""}`,
         },
       });
 
