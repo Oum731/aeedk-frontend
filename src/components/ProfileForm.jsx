@@ -44,6 +44,8 @@ export default function ProfileForm({
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
+  const isValidDate = (dateStr) => /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -69,31 +71,30 @@ export default function ProfileForm({
       ];
       const formData = new FormData();
       for (const key of allowedFields) {
-        if (key === "avatar") continue;
         const value = form[key];
         if (value === undefined || value === null) continue;
-        if (key === "birth_date" && value === "") continue;
+        if (key === "birth_date") {
+          if (value === "") continue;
+          if (!isValidDate(value)) {
+            setError("La date de naissance doit être au format YYYY-MM-DD.");
+            setLoading(false);
+            return;
+          }
+        }
         formData.append(key, value);
       }
-      // if (typeof form.confirmed !== "undefined") {
-      //   formData.append(
-      //     "confirmed",
-      //     form.confirmed === true || form.confirmed === "true"
-      //       ? "true"
-      //       : "false"
-      //   );
-      // }
+      if (typeof form.confirmed !== "undefined") {
+        formData.append(
+          "confirmed",
+          form.confirmed === true || form.confirmed === "true"
+            ? "true"
+            : "false"
+        );
+      }
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
 
-      // Debug : voir tout ce qui est envoyé
-      console.log("--- FormData envoyé ---");
-      for (let [key, value] of formData.entries()) {
-        console.log(key, value, value instanceof File ? "(file)" : "");
-      }
-
-      // Axios gère tout seul le Content-Type
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${token || ""}`,
@@ -105,7 +106,6 @@ export default function ProfileForm({
       if (setEditing) setEditing(false);
     } catch (err) {
       if (err.response) {
-        console.log("Réponse erreur API :", err.response.data);
         alert(JSON.stringify(err.response.data));
       }
       setError(
