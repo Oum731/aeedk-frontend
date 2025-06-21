@@ -58,21 +58,21 @@ export default function ProfileForm({
     }
 
     try {
-      const original = userData || user;
       const formData = new FormData();
 
+      // ✅ On envoie tous les champs (sauf id), même s’ils n’ont pas changé
       for (const [key, value] of Object.entries(form)) {
         if (key === "id") continue;
-        if (value === null || value === undefined) continue;
-        if (key === "birth_date" && value === "") continue;
-        formData.append(key, value);
+        if (value !== null && value !== undefined) {
+          formData.append(key, value);
+        }
       }
 
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
 
-      // 🔍 LOG POUR DÉBOGAGE
+      // 🔍 Affichage pour débogage
       console.log("📦 FormData envoyé :");
       for (let [key, value] of formData.entries()) {
         console.log(key, value);
