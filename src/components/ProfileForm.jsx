@@ -65,9 +65,7 @@ export default function ProfileForm({
         if (key === "id") continue;
         if (value === null || value === undefined) continue;
         if (key === "birth_date" && value === "") continue;
-        if (value !== original[key]) {
-          formData.append(key, value);
-        }
+        formData.append(key, value);
       }
 
       if (avatarFile) {
