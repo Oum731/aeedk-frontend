@@ -3,7 +3,8 @@ import axios from "axios";
 import { Trash2, Pencil, Shield, ShieldOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://aeedk-backend.onrender.com/api";
 
 function getAge(birth_date) {
   if (!birth_date) return "-";
@@ -36,22 +37,28 @@ export default function UserManager({ onNavigate }) {
   const [msg, setMsg] = useState("");
 
   useEffect(() => {
-    if (user?.role === "admin") fetchUsers();
+    if (user?.role === "admin" && token) fetchUsers();
     // eslint-disable-next-line
-  }, [user]);
+  }, [user, token]);
 
   const fetchUsers = async () => {
+    if (!token) return;
     try {
       setError("");
       setMsg("");
+      // 👇 Ici, le header Authorization est TOUJOURS forcé
       const { data } = await axios.get(`${API_URL}/user/admin/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       setUsers(data.users || []);
-    } catch {
-      setError("Impossible de charger les utilisateurs.");
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Impossible de charger les utilisateurs."
+      );
       setUsers([]);
     }
   };
@@ -67,8 +74,12 @@ export default function UserManager({ onNavigate }) {
       });
       setMsg("Utilisateur supprimé.");
       fetchUsers();
-    } catch {
-      setError("Suppression impossible.");
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Suppression impossible."
+      );
     }
   };
 
@@ -158,8 +169,12 @@ export default function UserManager({ onNavigate }) {
       }
       setMsg("Changement de rôle effectué.");
       fetchUsers();
-    } catch {
-      setError("Changement de rôle impossible.");
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Changement de rôle impossible."
+      );
     }
   };
 
