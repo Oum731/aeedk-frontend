@@ -61,6 +61,7 @@ export default function ProfileForm({
   };
 
   const handleSubmit = async (e) => {
+    console.log("Erreur complète:", err?.response?.data);
     e.preventDefault();
     setLoading(true);
     setError("");
