@@ -61,7 +61,6 @@ export default function ProfileForm({
   };
 
   const handleSubmit = async (e) => {
-    console.log("Erreur complète:", err?.response?.data);
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -177,15 +176,7 @@ export default function ProfileForm({
                   className="input input-bordered w-full"
                   value={form[name] || ""}
                   onChange={handleChange}
-                  required={[
-                    "username",
-                    "first_name",
-                    "last_name",
-                    "sub_prefecture",
-                    "village",
-                    "phone",
-                    "birth_date",
-                  ].includes(name)}
+                  required
                 />
               </div>
             ))}
