@@ -184,7 +184,6 @@ export default function PostManager() {
     );
   };
 
-  // Rendu sécurisé
   if (!user) {
     return (
       <div className="text-center mt-16 text-error">

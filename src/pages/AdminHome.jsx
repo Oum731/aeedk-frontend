@@ -11,7 +11,7 @@ export default function AdminHome({ onNavigate }) {
       <div className="flex justify-end mb-4">
         <button
           className="btn btn-outline btn-accent"
-          onClick={() => onNavigate("/home")}
+          onClick={() => onNavigate && onNavigate("/home")}
         >
           Retour à l'accueil
         </button>
