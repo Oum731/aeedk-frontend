@@ -25,15 +25,15 @@ export default function PostManager() {
 
   useEffect(() => {
     if (user) fetchPosts();
-    // eslint-disable-next-line
   }, [user]);
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/posts`);
-      // s'adapte si backend retourne {posts: [...]}, sinon tableau
-      setPosts(Array.isArray(data) ? data : data.posts || []);
+      // Ajuste ici selon la structure renvoyée par le backend
+      let postsArr = Array.isArray(data) ? data : data.posts;
+      setPosts(postsArr || []);
     } catch {
       setPosts([]);
     } finally {
@@ -84,12 +84,13 @@ export default function PostManager() {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
+      // Si backend retourne { post: {...} }
+      const post = data.post || data;
       setPosts((prev) =>
         editPost
-          ? prev.map((p) => (p.id === editPost.id ? data.post : p))
-          : [data.post, ...prev]
+          ? prev.map((p) => (p.id === editPost.id ? post : p))
+          : [post, ...prev]
       );
-
       setMsg(editPost ? "Post modifié avec succès !" : "Post ajouté !");
       resetForm();
     } catch (err) {
@@ -349,7 +350,7 @@ export default function PostManager() {
             ) : (
               posts.map((post) => (
                 <tr key={post.id}>
-                  <td>{post.title}</td>
+                  <td>{post.title || "-"}</td>
                   <td>
                     {post.content?.length > 100
                       ? post.content.slice(0, 100) + "..."
