@@ -75,16 +75,14 @@ export default function ProfileForm({
         "sub_prefecture",
         "village",
         "phone",
-        "email",
-        "role",
         "birth_date",
       ];
       const formData = new FormData();
       for (const key of allowedFields) {
         let value = form[key];
-        if (typeof value === "undefined" || value === null) continue;
-        if (key === "birth_date") {
-          if (!value || value === "") continue;
+        if (typeof value === "undefined" || value === null || value === "")
+          continue;
+        if (key === "birth_date" && value) {
           if (!isValidDate(value)) {
             setError("La date de naissance doit être au format YYYY-MM-DD.");
             setLoading(false);
@@ -162,9 +160,7 @@ export default function ProfileForm({
               { label: "Village", name: "village" },
               { label: "Téléphone", name: "phone" },
               { label: "Date de naissance", name: "birth_date", type: "date" },
-              { label: "Email", name: "email", disabled: true },
-              { label: "Rôle", name: "role", disabled: true },
-            ].map(({ label, name, type = "text", disabled = false }) => (
+            ].map(({ label, name, type = "text" }) => (
               <div key={name}>
                 <label className="label">{label}</label>
                 <input
@@ -173,10 +169,29 @@ export default function ProfileForm({
                   className="input input-bordered w-full"
                   value={form[name] || ""}
                   onChange={handleChange}
-                  disabled={disabled}
                 />
               </div>
             ))}
+            <div>
+              <label className="label">Email</label>
+              <input
+                type="email"
+                name="email"
+                className="input input-bordered w-full"
+                value={form.email || ""}
+                disabled
+              />
+            </div>
+            <div>
+              <label className="label">Rôle</label>
+              <input
+                type="text"
+                name="role"
+                className="input input-bordered w-full"
+                value={form.role || ""}
+                disabled
+              />
+            </div>
           </div>
           <div className="flex items-center gap-4 mt-4">
             <label className="btn btn-sm btn-accent cursor-pointer text-white border-blue-400 bg-blue-700">
