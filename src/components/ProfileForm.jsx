@@ -62,7 +62,9 @@ export default function ProfileForm({
     setError("");
     setMsg("");
     const idToUse = isMe ? user?.id : userData?.id;
-    if (!idToUse || !token) {
+    // Vérifie le token en priorité dans le context, sinon dans le localStorage (en cas de perte de contexte)
+    const effectiveToken = token || localStorage.getItem("token");
+    if (!idToUse || !effectiveToken) {
       setError("Session expirée. Veuillez vous reconnecter.");
       setLoading(false);
       return;
@@ -94,13 +96,14 @@ export default function ProfileForm({
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-      // DEBUG: Log ce qui est envoyé
+      // DEBUG : Affiche le token et le contenu envoyé
+      console.log("Token envoyé:", effectiveToken);
       for (let pair of formData.entries()) {
         console.log(pair[0] + ": " + pair[1]);
       }
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${effectiveToken}`,
         },
       });
       updateUserInContext(res.data.user, true);
