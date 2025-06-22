@@ -94,6 +94,7 @@ export default function ProfileForm({
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
+      console.log(idToUse, API_URL);
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${token || ""}`,
