@@ -82,17 +82,21 @@ export default function ProfileForm({
         let value = form[key];
         if (typeof value === "undefined" || value === null || value === "")
           continue;
-        if (key === "birth_date" && value) {
+        if (key === "birth_date") {
           if (!isValidDate(value)) {
             setError("La date de naissance doit être au format YYYY-MM-DD.");
             setLoading(false);
             return;
           }
         }
-        formData.append(key, value);
+        formData.append(key, String(value));
       }
       if (avatarFile) {
         formData.append("avatar", avatarFile);
+      }
+      // DEBUG: Log ce qui est envoyé
+      for (let pair of formData.entries()) {
+        console.log(pair[0] + ": " + pair[1]);
       }
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
