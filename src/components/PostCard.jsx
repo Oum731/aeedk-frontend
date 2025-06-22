@@ -15,21 +15,21 @@ export default function PostCard({
   onUserClick,
   commentCount = 0,
 }) {
-  const images = Array.isArray(post.media)
+  const images = Array.isArray(post?.media)
     ? post.media.filter((m) => m.type === "image")
     : [];
-  const videos = Array.isArray(post.media)
+  const videos = Array.isArray(post?.media)
     ? post.media.filter((m) => m.type === "video")
     : [];
   const [current, setCurrent] = useState(0);
   const [expanded, setExpanded] = useState(false);
 
   const maxLength = 200;
-  const isLong = post.content && post.content.length > maxLength;
+  const isLong = post?.content && post.content.length > maxLength;
   const displayedText =
     expanded || !isLong
-      ? post.content
-      : post.content.slice(0, maxLength) + "...";
+      ? post?.content
+      : post?.content?.slice(0, maxLength) + "...";
 
   const goPrev = (e) => {
     e.stopPropagation();
@@ -42,13 +42,13 @@ export default function PostCard({
   };
 
   const carouselHeight = "h-[180px] sm:h-[270px] md:h-[380px] lg:h-[430px]";
-  const user = post.user || {};
+  const user = post?.user || {};
   const displayName =
     (user.first_name && user.last_name
       ? `${user.first_name} ${user.last_name}`
       : user.first_name || user.username) || "Utilisateur";
   const avatarUrl = user.avatar ? getAvatarUrl(user.avatar) : null;
-  const dateLabel = post.created_at
+  const dateLabel = post?.created_at
     ? new Date(post.created_at).toLocaleDateString("fr-FR", {
         day: "2-digit",
         month: "short",
@@ -73,6 +73,10 @@ export default function PostCard({
             src={avatarUrl}
             alt={displayName}
             className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border border-accent"
+            onError={(e) => {
+              e.target.src = "/default-avatar.png";
+              e.target.alt = "Avatar";
+            }}
           />
         ) : (
           <span className="w-12 h-12 rounded-full bg-accent flex items-center justify-center text-white">
@@ -89,15 +93,20 @@ export default function PostCard({
         </div>
       </button>
 
+      {/* Medias */}
       {images.length > 0 ? (
         <div
           className={`relative w-full ${carouselHeight} overflow-hidden bg-black`}
         >
           <img
-            src={getMediaUrl(images[current].url)}
-            alt={post.title}
+            src={getMediaUrl(images[current]?.url)}
+            alt={post?.title || "media"}
             className="object-cover w-full h-full transition-all duration-300"
             style={{ minHeight: 100 }}
+            onError={(e) => {
+              e.target.src = "/placeholder-image.jpg";
+              e.target.alt = "Media";
+            }}
           />
 
           {images.length > 1 && (
@@ -131,7 +140,7 @@ export default function PostCard({
         </div>
       ) : videos.length > 0 ? (
         <video
-          src={getMediaUrl(videos[0].url)}
+          src={getMediaUrl(videos[0]?.url)}
           controls
           className={`w-full ${carouselHeight} object-cover rounded-t-xl bg-black`}
         >
@@ -141,8 +150,8 @@ export default function PostCard({
 
       <div className="p-4 sm:p-6 flex flex-col flex-1">
         <h2 className="font-semibold text-lg md:text-2xl mb-2 flex items-center gap-2">
-          {post.title}
-          {post.is_featured && (
+          {post?.title || ""}
+          {post?.is_featured && (
             <span className="badge badge-warning ml-2">Important</span>
           )}
         </h2>
@@ -162,14 +171,14 @@ export default function PostCard({
         <div className="flex items-center gap-4 mt-auto">
           <LikeButton
             contentType="post"
-            contentId={post.id}
-            initialLikes={post.likes || 0}
-            initialDislikes={post.dislikes || 0}
-            userLike={post.user_vote}
+            contentId={post?.id}
+            initialLikes={post?.likes || 0}
+            initialDislikes={post?.dislikes || 0}
+            userLike={post?.user_vote}
           />
           <button
             className="btn btn-sm btn-ghost flex items-center"
-            onClick={() => onComment(post)}
+            onClick={() => onComment && onComment(post)}
           >
             <MessageSquare size={18} className="mr-1" />
             <span>

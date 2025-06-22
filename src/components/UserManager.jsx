@@ -32,6 +32,8 @@ export default function UserManager({ onNavigate }) {
     village: "",
     birth_date: "",
   });
+  const [error, setError] = useState("");
+  const [msg, setMsg] = useState("");
 
   useEffect(() => {
     if (user?.role === "admin") fetchUsers();
@@ -40,18 +42,26 @@ export default function UserManager({ onNavigate }) {
 
   const fetchUsers = async () => {
     try {
-      const { data } = await axios.get(`${API_URL}/admin/users`);
+      setError("");
+      setMsg("");
+      const { data } = await axios.get(`${API_URL}/user/admin/users`);
       setUsers(data.users || []);
     } catch {
+      setError("Impossible de charger les utilisateurs.");
       setUsers([]);
     }
   };
 
   const handleDelete = async (userId) => {
+    if (!window.confirm("Confirmer la suppression de cet utilisateur ?"))
+      return;
     try {
-      await axios.delete(`${API_URL}/admin/users/${userId}`);
+      await axios.delete(`${API_URL}/user/admin/users/${userId}`);
+      setMsg("Utilisateur supprimé.");
       fetchUsers();
-    } catch {}
+    } catch {
+      setError("Suppression impossible.");
+    }
   };
 
   const handleEdit = (u) => {
@@ -67,15 +77,19 @@ export default function UserManager({ onNavigate }) {
       village: u.village || "",
       birth_date: u.birth_date || "",
     });
+    setError("");
+    setMsg("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!editUser) return;
+    setError("");
+    setMsg("");
     try {
       const response = await axios.put(
-        `${API_URL}/admin/users/${editUser.id}`,
+        `${API_URL}/user/admin/users/${editUser.id}`,
         form
       );
       if (user.id === editUser.id && form.role !== "admin") {
@@ -96,13 +110,22 @@ export default function UserManager({ onNavigate }) {
         village: "",
         birth_date: "",
       });
+      setMsg("Modifications enregistrées.");
       fetchUsers();
-    } catch {}
+    } catch (err) {
+      setError(
+        err.response?.data?.error ||
+          err.response?.data?.message ||
+          "Erreur lors de la modification."
+      );
+    }
   };
 
   const handleToggleAdmin = async (u) => {
+    setError("");
+    setMsg("");
     try {
-      const response = await axios.put(`${API_URL}/admin/users/${u.id}`, {
+      const response = await axios.put(`${API_URL}/user/admin/users/${u.id}`, {
         ...u,
         role: u.role === "admin" ? "membre" : "admin",
       });
@@ -112,8 +135,11 @@ export default function UserManager({ onNavigate }) {
         if (onNavigate) onNavigate("/");
         return;
       }
+      setMsg("Changement de rôle effectué.");
       fetchUsers();
-    } catch {}
+    } catch {
+      setError("Changement de rôle impossible.");
+    }
   };
 
   if (!user?.role || user.role !== "admin")
@@ -232,6 +258,8 @@ export default function UserManager({ onNavigate }) {
               Annuler
             </button>
           </div>
+          {msg && <div className="alert alert-success mt-4">{msg}</div>}
+          {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
       )}
 

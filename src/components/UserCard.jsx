@@ -24,7 +24,9 @@ export default function UserCard({ user }) {
           className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover flex-shrink-0"
         />
       ) : (
-        <UserIcon className="w-16 h-16 md:w-20 md:h-20 text-gray-400 flex-shrink-0" />
+        <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+          <UserIcon className="w-12 h-12 text-gray-400" />
+        </div>
       )}
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-lg md:text-2xl truncate">

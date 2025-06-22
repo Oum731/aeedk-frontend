@@ -24,14 +24,16 @@ export default function PostManager() {
   const mediaInputRef = useRef();
 
   useEffect(() => {
-    fetchPosts();
-  }, []);
+    if (user) fetchPosts();
+    // eslint-disable-next-line
+  }, [user]);
 
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/posts`);
-      setPosts(data);
+      // s'adapte si backend retourne {posts: [...]}, sinon tableau
+      setPosts(Array.isArray(data) ? data : data.posts || []);
     } catch {
       setPosts([]);
     } finally {
@@ -66,7 +68,6 @@ export default function PostManager() {
     formData.append("content", form.content);
     formData.append("is_featured", form.is_featured ? "true" : "false");
     formData.append("status", form.status);
-    // S'il y a une erreur "author_id" côté backend, changer ce champ
     formData.append("author_id", user.id);
 
     if (form.media && form.media.length > 0) {
@@ -112,7 +113,7 @@ export default function PostManager() {
 
     const previews = (post.media || []).map((media) => ({
       url: media.url,
-      type: media.url.match(/\.(mp4|webm)$/i) ? "video" : "image",
+      type: media.url && media.url.match(/\.(mp4|webm)$/i) ? "video" : "image",
       name: media.filename || "media",
     }));
     setMediaPreview(previews);
@@ -128,6 +129,7 @@ export default function PostManager() {
         data: { author_id: user.id },
       });
       setPosts((prev) => prev.filter((p) => p.id !== postId));
+      setMsg("Post supprimé.");
     } catch (err) {
       setError("Erreur lors de la suppression.");
     }
@@ -150,11 +152,10 @@ export default function PostManager() {
 
   const renderMedia = (mediaList) => {
     if (!mediaList || mediaList.length === 0) return "-";
-
     return (
       <div className="flex flex-wrap gap-2">
         {mediaList.map((media, idx) => {
-          const mediaUrl = media.url.startsWith("http")
+          const mediaUrl = media.url?.startsWith("http")
             ? media.url
             : `${API_URL}/posts/media/${media.url}`;
           return (
@@ -182,6 +183,21 @@ export default function PostManager() {
       </div>
     );
   };
+
+  // Rendu sécurisé
+  if (!user) {
+    return (
+      <div className="text-center mt-16 text-error">
+        Veuillez vous connecter pour accéder à la gestion des posts.
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-32">Chargement...</div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-6">
