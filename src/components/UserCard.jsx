@@ -15,9 +15,11 @@ function getAge(birth_date) {
 }
 
 export default function UserCard({ user }) {
+  if (!user) return null;
+
   return (
     <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-6 p-4 sm:p-6 md:p-8">
-      {user?.avatar ? (
+      {user.avatar ? (
         <img
           src={getAvatarUrl(user.avatar)}
           alt="avatar"
@@ -30,20 +32,20 @@ export default function UserCard({ user }) {
       )}
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-lg md:text-2xl truncate">
-          {user?.username}
+          {user.username}
         </h3>
         <p className="text-sm md:text-base text-gray-500 truncate">
-          {user?.email}
+          {user.email}
         </p>
         <div className="flex flex-wrap gap-4 mt-2 text-gray-600 text-sm md:text-base">
           <span>
-            <strong>Village:</strong> {user?.village || "-"}
+            <strong>Village:</strong> {user.village || "-"}
           </span>
           <span>
-            <strong>Sous-préf.:</strong> {user?.sub_prefecture || "-"}
+            <strong>Sous-préf.:</strong> {user.sub_prefecture || "-"}
           </span>
           <span>
-            <strong>Âge:</strong> {getAge(user?.birth_date)}
+            <strong>Âge:</strong> {getAge(user.birth_date)}
           </span>
         </div>
       </div>

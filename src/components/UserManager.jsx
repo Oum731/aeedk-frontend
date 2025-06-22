@@ -18,7 +18,7 @@ function getAge(birth_date) {
 }
 
 export default function UserManager({ onNavigate }) {
-  const { user, updateUserInContext, logout } = useAuth();
+  const { user, token, updateUserInContext, logout } = useAuth();
   const [users, setUsers] = useState([]);
   const [editUser, setEditUser] = useState(null);
   const [form, setForm] = useState({
@@ -44,7 +44,11 @@ export default function UserManager({ onNavigate }) {
     try {
       setError("");
       setMsg("");
-      const { data } = await axios.get(`${API_URL}/user/admin/users`);
+      const { data } = await axios.get(`${API_URL}/user/admin/users`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setUsers(data.users || []);
     } catch {
       setError("Impossible de charger les utilisateurs.");
@@ -56,7 +60,11 @@ export default function UserManager({ onNavigate }) {
     if (!window.confirm("Confirmer la suppression de cet utilisateur ?"))
       return;
     try {
-      await axios.delete(`${API_URL}/user/admin/users/${userId}`);
+      await axios.delete(`${API_URL}/user/admin/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       setMsg("Utilisateur supprimé.");
       fetchUsers();
     } catch {
@@ -90,7 +98,12 @@ export default function UserManager({ onNavigate }) {
     try {
       const response = await axios.put(
         `${API_URL}/user/admin/users/${editUser.id}`,
-        form
+        form,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       if (user.id === editUser.id && form.role !== "admin") {
         updateUserInContext(response.data.user);
@@ -125,10 +138,18 @@ export default function UserManager({ onNavigate }) {
     setError("");
     setMsg("");
     try {
-      const response = await axios.put(`${API_URL}/user/admin/users/${u.id}`, {
-        ...u,
-        role: u.role === "admin" ? "membre" : "admin",
-      });
+      const response = await axios.put(
+        `${API_URL}/user/admin/users/${u.id}`,
+        {
+          ...u,
+          role: u.role === "admin" ? "membre" : "admin",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       if (user.id === u.id && u.role === "admin") {
         updateUserInContext(response.data.user);
         logout();
