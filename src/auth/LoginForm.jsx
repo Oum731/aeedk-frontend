@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LoaderCircle } from "lucide-react";
 
-export default function LoginForm({ onNavigate }) {
+export default function LoginForm({ onNavigate, reset, verified }) {
   const { login, user } = useAuth();
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
@@ -36,6 +36,26 @@ export default function LoginForm({ onNavigate }) {
   return (
     <div className="max-w-md mx-auto p-6 rounded-xl shadow bg-base-100 my-8">
       <h2 className="text-2xl font-bold mb-4">Connexion</h2>
+      {reset === "success" && (
+        <div className="text-success text-sm mb-2">
+          Mot de passe réinitialisé. Vous pouvez vous connecter.
+        </div>
+      )}
+      {verified === "success" && (
+        <div className="text-success text-sm mb-2">
+          Email confirmé. Vous pouvez vous connecter.
+        </div>
+      )}
+      {reset === "fail" && (
+        <div className="text-error text-sm mb-2">
+          Erreur de réinitialisation de mot de passe.
+        </div>
+      )}
+      {verified === "fail" && (
+        <div className="text-error text-sm mb-2">
+          Erreur de confirmation d'email.
+        </div>
+      )}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label htmlFor="identifier" className="block text-sm font-medium">

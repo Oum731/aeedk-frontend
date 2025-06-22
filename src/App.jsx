@@ -34,15 +34,20 @@ export default function App() {
       window.removeEventListener("navigateProfile", handleCustomNavigate);
   }, []);
 
-  // Détection manuelle des URLs spéciales
   useEffect(() => {
     const pathname = window.location.pathname;
+    const search = window.location.search;
+
     if (pathname.startsWith("/verify/")) {
       const token = pathname.split("/verify/")[1];
       setPage(`/verify/${token}`);
     } else if (pathname.startsWith("/reset/")) {
       const token = pathname.split("/reset/")[1];
       setPage(`/reset/${token}`);
+    } else if (pathname === "/reset-password") {
+      const params = new URLSearchParams(search);
+      const token = params.get("token");
+      if (token) setPage(`/reset/${token}`);
     }
   }, []);
 
@@ -61,7 +66,16 @@ export default function App() {
   } else if (path === "home" || path === "/home") {
     mainContent = <Home onNavigate={handleNavigate} />;
   } else if (path === "/login") {
-    mainContent = <LoginForm onNavigate={handleNavigate} />;
+    const params = new URLSearchParams(window.location.search);
+    const reset = params.get("reset");
+    const verified = params.get("verified");
+    mainContent = (
+      <LoginForm
+        onNavigate={handleNavigate}
+        reset={reset}
+        verified={verified}
+      />
+    );
   } else if (path === "/register") {
     mainContent = <RegisterForm onNavigate={handleNavigate} />;
   } else if (path === "/profile") {

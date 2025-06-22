@@ -81,10 +81,10 @@ export default function ProfileForm({
       ];
       const formData = new FormData();
       for (const key of allowedFields) {
-        const value = form[key];
-        if (value === undefined || value === null) continue;
+        let value = form[key];
+        if (typeof value === "undefined" || value === null) continue;
         if (key === "birth_date") {
-          if (value === "") continue;
+          if (!value || value === "") continue;
           if (!isValidDate(value)) {
             setError("La date de naissance doit être au format YYYY-MM-DD.");
             setLoading(false);
@@ -93,25 +93,15 @@ export default function ProfileForm({
         }
         formData.append(key, value);
       }
-      if (typeof form.confirmed !== "undefined") {
-        formData.append(
-          "confirmed",
-          form.confirmed === true || form.confirmed === "true"
-            ? "true"
-            : "false"
-        );
-      }
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
-      updateUserInContext(res.data.user);
+      updateUserInContext(res.data.user, true);
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
       setAvatarPreview(null);
