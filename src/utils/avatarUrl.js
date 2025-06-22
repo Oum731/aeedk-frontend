@@ -3,8 +3,9 @@ import API_URL from "../config";
 export function getAvatarUrl(avatar) {
   if (!avatar) return "/default-avatar.png";
   if (avatar.startsWith("http")) return avatar;
-  const filename = avatar
-    .replace(/^\/?(media\/)?avatars\//, "")
-    .replace(/^user\/avatar\//, "");
-  return `${API_URL}/user/avatar/${filename}`;
+  // avatar: "avatars/xxxx.jpg"
+  return `https://aeedk-backend.onrender.com/api/user/avatar/${avatar.replace(
+    /^avatars[\\/]/,
+    ""
+  )}`;
 }
