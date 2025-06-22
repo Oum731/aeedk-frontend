@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import API_URL from "../config";
+import { getAvatarUrl } from "../utils/avatarUrl";
 
 export const AuthContext = createContext();
 
@@ -14,7 +15,8 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
     if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
+      const parsedUser = JSON.parse(savedUser);
+      setUser(parsedUser);
       setToken(savedToken);
       axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
     }
@@ -32,31 +34,25 @@ export function AuthProvider({ children }) {
   async function login(identifier, password) {
     setLoading(true);
     setError(null);
-
     try {
       const res = await axios.post(`${API_URL}/user/login`, {
         identifier,
         password,
       });
-
       const { user: userData, token: jwtToken } = res.data;
-
       if (!userData.confirmed) {
         setError(
           "Veuillez confirmer votre adresse email avant de vous connecter."
         );
         return { success: false, error: "Email non confirmé." };
       }
-
       setUser(userData);
       setToken(jwtToken);
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", jwtToken);
       axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
-
       return { success: true };
     } catch (err) {
-      console.error("Erreur login:", err);
       const msg = err.response?.data?.error || "Erreur de connexion";
       setError(msg);
       return { success: false, error: msg };
@@ -68,21 +64,17 @@ export function AuthProvider({ children }) {
   async function register(formData) {
     setLoading(true);
     setError(null);
-
     try {
       const headers =
         formData instanceof FormData
           ? { "Content-Type": "multipart/form-data" }
           : { "Content-Type": "application/json" };
-
       await axios.post(`${API_URL}/user/register`, formData, { headers });
-
       return {
         success: true,
         message: "Inscription réussie. Vérifiez votre email.",
       };
     } catch (err) {
-      console.error("Erreur register:", err);
       const msg = err.response?.data?.error || "Erreur d'inscription";
       setError(msg);
       return { success: false, error: msg };
@@ -102,13 +94,15 @@ export function AuthProvider({ children }) {
   async function fetchUser() {
     setLoading(true);
     setError(null);
-
     try {
       const res = await axios.get(`${API_URL}/user/${user?.id}`);
-      setUser(res.data);
-      localStorage.setItem("user", JSON.stringify(res.data));
+      const newUser = {
+        ...res.data,
+        avatar: getAvatarUrl(res.data.avatar, true),
+      };
+      setUser(newUser);
+      localStorage.setItem("user", JSON.stringify(newUser));
     } catch (err) {
-      console.error("Erreur fetchUser:", err);
       logout();
       setError("Session expirée ou connexion impossible");
     } finally {
@@ -116,9 +110,13 @@ export function AuthProvider({ children }) {
     }
   }
 
-  function updateUserInContext(userData) {
-    setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
+  function updateUserInContext(userData, bustAvatarCache = false) {
+    const updatedUser = {
+      ...userData,
+      avatar: getAvatarUrl(userData.avatar, bustAvatarCache),
+    };
+    setUser(updatedUser);
+    localStorage.setItem("user", JSON.stringify(updatedUser));
   }
 
   const value = {
