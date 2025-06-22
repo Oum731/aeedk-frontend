@@ -3,6 +3,7 @@ import { LoaderCircle, UploadCloud } from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config";
+import { getAvatarUrl } from "../utils/avatarUrl"; // si tu utilises cette fonction
 
 export default function ProfileForm({
   editing,
@@ -20,6 +21,7 @@ export default function ProfileForm({
   const [msg, setMsg] = useState("");
   const [error, setError] = useState("");
 
+  // Récupère la valeur la plus fraîche de l'utilisateur (après update ou changement d'utilisateur)
   useEffect(() => {
     const source = userData || user;
     if (source) {
@@ -27,7 +29,12 @@ export default function ProfileForm({
         ...source,
         birth_date: source.birth_date?.substring(0, 10) || "",
       });
+      // Si l'utilisateur a un avatar, affiche-le par défaut si aucun fichier n'a été choisi
+      if (!avatarPreview) {
+        setAvatarPreview(source.avatar ? getAvatarUrl(source.avatar) : null);
+      }
     }
+    // eslint-disable-next-line
   }, [userData, user]);
 
   const handleAvatarChange = (e) => {
@@ -54,6 +61,11 @@ export default function ProfileForm({
     const idToUse = isMe ? user?.id : userData?.id;
     if (!idToUse) {
       setError("Utilisateur introuvable");
+      setLoading(false);
+      return;
+    }
+    if (!token) {
+      setError("Votre session a expiré. Veuillez vous reconnecter.");
       setLoading(false);
       return;
     }
@@ -94,22 +106,41 @@ export default function ProfileForm({
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-      console.log(idToUse, API_URL);
+
+      // Pour debug, voir ce qu'on envoie :
+      // for (let pair of formData.entries()) { console.log(pair[0]+ ', ' + pair[1]); }
+
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
-          Authorization: `Bearer ${token || ""}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
       updateUserInContext(res.data.user);
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
+
+      // Met à jour l'avatar preview avec la nouvelle valeur, si avatarFile changé
+      if (avatarFile) {
+        setAvatarPreview(getAvatarUrl(res.data.user.avatar));
+        setAvatarFile(null);
+      }
     } catch (err) {
-      setError(
+      let errMsg =
         err.response?.data?.error ||
-          err.response?.data?.message ||
-          "Une erreur est survenue"
-      );
+        err.response?.data?.message ||
+        "Une erreur est survenue";
+      // Pour aider au debug JWT expired
+      if (
+        err.response?.data?.msg === "Missing Authorization Header" ||
+        err.response?.data?.msg === "Token has expired" ||
+        err.response?.data?.msg?.includes("expired")
+      ) {
+        errMsg = "Votre session a expiré, veuillez vous reconnecter.";
+      }
+      setError(errMsg);
+      // Optionnel, log complet pour dev :
+      // console.error("Erreur update profil:", err);
     } finally {
       setLoading(false);
     }
@@ -181,6 +212,7 @@ export default function ProfileForm({
                 onChange={handleAvatarChange}
               />
             </label>
+            {/* Affiche la preview si sélection, sinon l'avatar actuel */}
             {avatarPreview && (
               <img
                 src={avatarPreview}
