@@ -24,14 +24,19 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
           const res = await axios.get(`${API_URL}/user/${viewedUserId}`);
           setViewedUser(res.data.user || res.data);
         }
-      } catch (e) {
+      } catch {
         setViewedUser(null);
       } finally {
         setLoading(false);
       }
     };
     fetchUser();
+    setAvatarPreview(null);
   }, [viewedUserId, authUser]);
+
+  useEffect(() => {
+    if (!editing) setAvatarPreview(null);
+  }, [editing]);
 
   const userToShow = isOwnProfile ? authUser : viewedUser;
   const mainAvatar =
@@ -52,6 +57,9 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
               src={mainAvatar}
               alt="Avatar"
               className="w-36 h-36 rounded-full object-cover"
+              onError={(e) => {
+                e.target.src = "/default-avatar.png";
+              }}
             />
           ) : (
             <div className="w-36 h-36 flex items-center justify-center bg-gray-200 rounded-full">
