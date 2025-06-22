@@ -5,6 +5,12 @@ import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config";
 import { getAvatarUrl } from "../utils/avatarUrl";
 
+const isValidDate = (dateStr) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime()) && date.toISOString().slice(0, 10) === dateStr;
+};
+
 export default function ProfileForm({
   editing,
   setEditing,
@@ -54,53 +60,47 @@ export default function ProfileForm({
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const isValidDate = (dateStr) => /^\d{4}-\d{2}-\d{2}$/.test(dateStr);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setMsg("");
     const idToUse = isMe ? user?.id : userData?.id;
-    // Vérifie le token en priorité dans le context, sinon dans le localStorage (en cas de perte de contexte)
     const effectiveToken = token || localStorage.getItem("token");
     if (!idToUse || !effectiveToken) {
       setError("Session expirée. Veuillez vous reconnecter.");
       setLoading(false);
       return;
     }
-    try {
-      const allowedFields = [
-        "username",
-        "first_name",
-        "last_name",
-        "sub_prefecture",
-        "village",
-        "phone",
-        "birth_date",
-      ];
-      const formData = new FormData();
-      for (const key of allowedFields) {
-        let value = form[key];
-        if (typeof value === "undefined" || value === null || value === "")
-          continue;
-        if (key === "birth_date") {
-          if (!isValidDate(value)) {
-            setError("La date de naissance doit être au format YYYY-MM-DD.");
-            setLoading(false);
-            return;
-          }
+    const allowedFields = [
+      "username",
+      "first_name",
+      "last_name",
+      "sub_prefecture",
+      "village",
+      "phone",
+      "birth_date",
+    ];
+    const formData = new FormData();
+    for (const key of allowedFields) {
+      let value = form[key];
+      if (typeof value === "undefined" || value === null || value === "")
+        continue;
+      if (key === "birth_date") {
+        if (!isValidDate(value)) {
+          setError(
+            "La date de naissance doit être valide et au format YYYY-MM-DD."
+          );
+          setLoading(false);
+          return;
         }
-        formData.append(key, String(value));
       }
-      if (avatarFile) {
-        formData.append("avatar", avatarFile);
-      }
-      // DEBUG : Affiche le token et le contenu envoyé
-      console.log("Token envoyé:", effectiveToken);
-      for (let pair of formData.entries()) {
-        console.log(pair[0] + ": " + pair[1]);
-      }
+      formData.append(key, String(value));
+    }
+    if (avatarFile) {
+      formData.append("avatar", avatarFile);
+    }
+    try {
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
@@ -176,6 +176,15 @@ export default function ProfileForm({
                   className="input input-bordered w-full"
                   value={form[name] || ""}
                   onChange={handleChange}
+                  required={[
+                    "username",
+                    "first_name",
+                    "last_name",
+                    "sub_prefecture",
+                    "village",
+                    "phone",
+                    "birth_date",
+                  ].includes(name)}
                 />
               </div>
             ))}
