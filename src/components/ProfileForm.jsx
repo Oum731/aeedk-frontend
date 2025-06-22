@@ -94,7 +94,6 @@ export default function ProfileForm({
       if (avatarFile) {
         formData.append("avatar", avatarFile);
       }
-
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${token || ""}`,
@@ -105,9 +104,6 @@ export default function ProfileForm({
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
     } catch (err) {
-      if (err.response) {
-        alert(JSON.stringify(err.response.data));
-      }
       setError(
         err.response?.data?.error ||
           err.response?.data?.message ||
