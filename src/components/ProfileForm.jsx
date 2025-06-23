@@ -41,7 +41,9 @@ export default function ProfileForm({
   useEffect(() => {
     if (!editing) {
       const source = userData || user;
-      setAvatarPreview(source?.avatar ? getAvatarUrl(source.avatar) : null);
+      setAvatarPreview(
+        source?.avatar ? getAvatarUrl(source.avatar, true) : null
+      );
       setAvatarFile(null);
     }
   }, [editing, userData, user]);
@@ -66,7 +68,6 @@ export default function ProfileForm({
     setError("");
     setMsg("");
     const idToUse = isMe ? user?.id : userData?.id;
-    // Prend le token toujours à jour
     const effectiveToken = token || localStorage.getItem("token");
     if (!idToUse || !effectiveToken) {
       setError("Session expirée. Veuillez vous reconnecter.");
@@ -103,13 +104,12 @@ export default function ProfileForm({
     }
 
     try {
-      // ⚠️ NE PAS mettre Content-Type, axios le gère pour FormData !
-      // ⚠️ NE PAS mettre withCredentials sauf si tu utilises des cookies HttpOnly
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
         },
       });
+      // Bust le cache de l’avatar partout dans le Context
       updateUserInContext(res.data.user, true);
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);

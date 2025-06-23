@@ -15,8 +15,7 @@ export function AuthProvider({ children }) {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
     if (savedUser && savedToken) {
-      const parsedUser = JSON.parse(savedUser);
-      setUser(parsedUser);
+      setUser(JSON.parse(savedUser));
       setToken(savedToken);
       axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
     }
@@ -44,6 +43,7 @@ export function AuthProvider({ children }) {
         setError(
           "Veuillez confirmer votre adresse email avant de vous connecter."
         );
+        setLoading(false);
         return { success: false, error: "Email non confirmé." };
       }
       setUser(userData);
@@ -65,11 +65,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const headers =
-        formData instanceof FormData
-          ? { "Content-Type": "multipart/form-data" }
-          : { "Content-Type": "application/json" };
-      await axios.post(`${API_URL}/user/register`, formData, { headers });
+      await axios.post(`${API_URL}/user/register`, formData);
       return {
         success: true,
         message: "Inscription réussie. Vérifiez votre email.",
