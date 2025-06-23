@@ -17,13 +17,22 @@ function getAge(birth_date) {
 export default function UserCard({ user }) {
   if (!user) return null;
 
+  // Choisit d'abord avatar_url (fourni par le backend), sinon fallback
+  const avatarSrc =
+    user.avatar_url ||
+    (user.avatar ? getAvatarUrl(user.avatar) : "/default-avatar.png");
+
   return (
     <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-6 p-4 sm:p-6 md:p-8">
-      {user.avatar ? (
+      {avatarSrc ? (
         <img
-          src={getAvatarUrl(user.avatar)}
+          src={avatarSrc}
           alt="avatar"
           className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover flex-shrink-0"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = "/default-avatar.png";
+          }}
         />
       ) : (
         <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
