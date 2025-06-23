@@ -66,6 +66,7 @@ export default function ProfileForm({
     setError("");
     setMsg("");
     const idToUse = isMe ? user?.id : userData?.id;
+    // Prend le token toujours à jour
     const effectiveToken = token || localStorage.getItem("token");
     if (!idToUse || !effectiveToken) {
       setError("Session expirée. Veuillez vous reconnecter.");
@@ -100,12 +101,14 @@ export default function ProfileForm({
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
+
     try {
+      // ⚠️ NE PAS mettre Content-Type, axios le gère pour FormData !
+      // ⚠️ NE PAS mettre withCredentials sauf si tu utilises des cookies HttpOnly
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
         },
-        withCredentials: true,
       });
       updateUserInContext(res.data.user, true);
       setMsg("Profil mis à jour avec succès !");
