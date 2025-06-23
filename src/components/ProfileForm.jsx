@@ -37,7 +37,6 @@ export default function ProfileForm({
       });
       setAvatarPreview(null);
     }
-    // eslint-disable-next-line
   }, [userData, user]);
 
   useEffect(() => {
@@ -48,7 +47,6 @@ export default function ProfileForm({
       );
       setAvatarFile(null);
     }
-    // eslint-disable-next-line
   }, [editing, userData, user]);
 
   const handleAvatarChange = (e) => {
@@ -87,7 +85,6 @@ export default function ProfileForm({
       "sub_prefecture",
       "village",
       "phone",
-      "birth_date",
     ];
 
     const formData = new FormData();
@@ -96,13 +93,17 @@ export default function ProfileForm({
       let value = form[key];
       if (typeof value === "string") value = value.trim();
       if (value !== undefined && value !== null && value !== "") {
-        if (key === "birth_date" && !isValidDate(value)) {
-          setError("La date de naissance doit être au format YYYY-MM-DD.");
-          setLoading(false);
-          return;
-        }
         formData.append(key, String(value));
       }
+    }
+
+    if (form.birth_date !== undefined && form.birth_date !== null) {
+      if (form.birth_date === "" || !isValidDate(form.birth_date)) {
+        setError("La date de naissance doit être au format YYYY-MM-DD.");
+        setLoading(false);
+        return;
+      }
+      formData.append("birth_date", form.birth_date);
     }
 
     if (avatarFile) {
@@ -140,7 +141,7 @@ export default function ProfileForm({
               .join("; ");
           }
         } else if (err.response.status === 413) {
-          errMsg = "Image trop volumineux (max 2 Mo).";
+          errMsg = "Image trop volumineuse (max 2 Mo).";
         } else if (err.response.data?.error) {
           errMsg = err.response.data.error;
         } else if (err.response.data?.message) {
