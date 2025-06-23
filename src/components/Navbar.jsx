@@ -22,13 +22,12 @@ export default function Navbar({ user, onNavigate }) {
   const handleLinkClick = (href, e) => {
     e?.preventDefault();
 
-    if (href === "/" || href === "/home") {
+    if (href === "/" || href === "#home") {
       onNavigate("/home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (href.startsWith("#")) {
-      // Naviguer sur la home si besoin puis scroller
       if (
-        window.location.pathname !== "/home" &&
+        window.location.pathname !== "#home" &&
         window.location.pathname !== "/"
       ) {
         onNavigate("/home");
@@ -40,7 +39,7 @@ export default function Navbar({ user, onNavigate }) {
               section.getBoundingClientRect().top + window.scrollY - offset;
             window.scrollTo({ top: y, behavior: "smooth" });
           }
-        }, 50); // attendre que la home soit rendue
+        }, 50);
       } else {
         const section = document.querySelector(href);
         if (section) {
@@ -60,7 +59,7 @@ export default function Navbar({ user, onNavigate }) {
       ? `${user.first_name} ${user.last_name}`
       : user.first_name || user.username || user.email
     : "";
-  const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : null;
+  const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar_url) : null;
 
   return (
     <aside className="hidden md:flex fixed top-0 left-0 z-[89] h-screen w-16 md:w-20 bg-base-100 shadow-xl flex-col items-center py-4 gap-4">

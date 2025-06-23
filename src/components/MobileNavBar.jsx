@@ -39,7 +39,7 @@ export default function MobileNavBar({ user, onNavigate }) {
   };
 
   const handleNavigate = (path) => {
-    if (path === "/" || path === "/home") {
+    if (path === "/" || path === "#home") {
       onNavigate("home");
       setActiveSection("accueil");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -47,7 +47,7 @@ export default function MobileNavBar({ user, onNavigate }) {
       const id = path.substring(1);
       if (
         window.location.pathname !== "/" &&
-        window.location.pathname !== "/home"
+        window.location.pathname !== "#home"
       ) {
         onNavigate("home");
         setTimeout(() => {
@@ -119,7 +119,7 @@ export default function MobileNavBar({ user, onNavigate }) {
             >
               {user.avatar ? (
                 <img
-                  src={getAvatarUrl(user.avatar)}
+                  src={getAvatarUrl(user.avatar_url)}
                   alt={displayName}
                   className="w-7 h-7 rounded-full object-cover border mr-1"
                   style={{ minWidth: 28 }}

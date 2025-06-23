@@ -48,7 +48,7 @@ export default function ProfileMenu({ onNavigate }) {
       >
         {user.avatar ? (
           <img
-            src={getAvatarUrl(user.avatar)}
+            src={getAvatarUrl(user.avatar_url)}
             alt={displayName}
             className="w-10 h-10 rounded-full object-cover border"
             onError={(e) => (e.target.src = "/default-avatar.png")}
@@ -62,7 +62,7 @@ export default function ProfileMenu({ onNavigate }) {
           <div className="flex justify-center mb-2">
             {user.avatar ? (
               <img
-                src={getAvatarUrl(user.avatar)}
+                src={getAvatarUrl(user.avatar_url)}
                 alt={displayName}
                 className="w-14 h-14 rounded-full object-cover border shadow"
                 onError={(e) => (e.target.src = "/default-avatar.png")}

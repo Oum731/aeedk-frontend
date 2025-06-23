@@ -45,7 +45,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
   const userToShow = isOwnProfile ? authUser : viewedUser;
   const mainAvatar =
     avatarPreview ||
-    (userToShow?.avatar ? getAvatarUrl(userToShow.avatar) : null);
+    (userToShow?.avatar ? getAvatarUrl(userToShow.avatar_url) : null);
 
   if (loading) return <div className="text-center mt-16">Chargement...</div>;
 
