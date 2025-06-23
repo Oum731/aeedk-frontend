@@ -8,3 +8,4 @@ export function getAvatarUrl(avatar, bustCache = false) {
   if (bustCache) url += `?t=${Date.now()}`;
   return url;
 }
+console.log("Avatar URL:", url);
