@@ -21,11 +21,18 @@ export function AuthProvider({ children }) {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setToken(savedToken);
+
           const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
-          updateUserInContext(res.data);
-        } catch {
+
+          // Sécurise la gestion du retour
+          if (res && res.data && res.data.id) {
+            updateUserInContext(res.data);
+          } else {
+            logout();
+          }
+        } catch (err) {
           logout();
         }
       }
@@ -120,14 +127,23 @@ export function AuthProvider({ children }) {
 
   const fetchUser = async () => {
     if (!user?.id) return;
-
     setLoading(true);
     setError(null);
-
     try {
-      const res = await axios.get(`${API_URL}/user/${user.id}`);
-      updateUserInContext(res.data);
-    } catch {
+      const res = await axios.get(`${API_URL}/user/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
+        },
+      });
+      if (res && res.data && res.data.id) {
+        updateUserInContext(res.data);
+      } else {
+        logout();
+      }
+    } catch (err) {
+      if (err.response?.status === 404) {
+        logout();
+      }
       setError("Erreur lors de la mise à jour du profil");
     } finally {
       setLoading(false);
@@ -135,6 +151,10 @@ export function AuthProvider({ children }) {
   };
 
   const updateUserInContext = (userData, bustAvatarCache = false) => {
+    if (!userData || !userData.id) {
+      logout();
+      return;
+    }
     const updatedUser = {
       ...userData,
       avatar: getAvatarUrl(userData.avatar, bustAvatarCache),

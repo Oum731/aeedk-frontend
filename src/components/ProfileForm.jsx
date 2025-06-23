@@ -91,7 +91,8 @@ export default function ProfileForm({
     const formData = new FormData();
 
     for (const key of allowedFields) {
-      const value = form[key];
+      let value = form[key];
+      if (typeof value === "string") value = value.trim();
       if (value === undefined || value === null || value === "") continue;
       if (key === "birth_date" && !isValidDate(value)) {
         setError("La date de naissance doit être au format YYYY-MM-DD.");
@@ -112,23 +113,36 @@ export default function ProfileForm({
         },
       });
 
-      updateUserInContext(res.data.user, true);
-      setMsg("Profil mis à jour avec succès !");
-      if (setEditing) setEditing(false);
-      setAvatarPreview(null);
-      setAvatarFile(null);
+      if (res.data && res.data.user) {
+        updateUserInContext(res.data.user, true);
+        setMsg("Profil mis à jour avec succès !");
+        if (setEditing) setEditing(false);
+        setAvatarPreview(null);
+        setAvatarFile(null);
+      } else {
+        setError("Mise à jour échouée (données serveur inattendues)");
+      }
     } catch (err) {
-      console.log(err.response?.data);
-
       let errMsg = "Une erreur est survenue";
       if (err.response) {
+        // Gestion des erreurs précises du backend
         if (err.response.status === 422) {
-          errMsg = Object.entries(err.response.data.errors || {})
-            .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
-            .join("; ");
-        } else {
-          errMsg =
-            err.response.data?.error || err.response.data?.message || errMsg;
+          if (
+            typeof err.response.data === "object" &&
+            err.response.data.error
+          ) {
+            errMsg = err.response.data.error;
+          } else if (err.response.data.errors) {
+            errMsg = Object.entries(err.response.data.errors)
+              .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
+              .join("; ");
+          }
+        } else if (err.response.status === 413) {
+          errMsg = "Avatar trop volumineux (max 2 Mo).";
+        } else if (err.response.data?.error) {
+          errMsg = err.response.data.error;
+        } else if (err.response.data?.message) {
+          errMsg = err.response.data.message;
         }
       }
       setError(errMsg);
