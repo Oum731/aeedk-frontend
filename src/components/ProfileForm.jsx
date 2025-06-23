@@ -97,7 +97,7 @@ export default function ProfileForm({
       if (typeof value === "string") value = value.trim();
       if (value !== undefined && value !== null && value !== "") {
         if (key === "birth_date" && !isValidDate(value)) {
-          setError("La date de naissance doit être au format YYYY-MM-DD.");
+          setError("La date de naissance doit être au format DD-MM-YYYY.");
           setLoading(false);
           return;
         }

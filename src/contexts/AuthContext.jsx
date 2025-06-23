@@ -26,13 +26,22 @@ export function AuthProvider({ children }) {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
 
-          if (res && res.data && res.data.id) {
-            updateUserInContext(res.data);
+          if (res && res.data) {
+            const userObj = res.data.user ? res.data.user : res.data;
+            if (userObj && userObj.id) {
+              updateUserInContext(userObj);
+            } else {
+              setError("Impossible de retrouver l'utilisateur.");
+            }
           } else {
-            logout();
+            setError("Erreur de session utilisateur.");
           }
-        } catch {
-          logout();
+        } catch (err) {
+          if (err.response?.status === 401 || err.response?.status === 403) {
+            logout();
+          } else {
+            setError("Erreur réseau temporaire, veuillez réessayer.");
+          }
         }
       }
       setLoading(false);
@@ -55,7 +64,8 @@ export function AuthProvider({ children }) {
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) logout();
+        if (error.response?.status === 401 || error.response?.status === 403)
+          logout();
         return Promise.reject(error);
       }
     );
@@ -135,13 +145,16 @@ export function AuthProvider({ children }) {
           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
         },
       });
-      if (res && res.data && res.data.id) {
-        updateUserInContext(res.data);
+      if (res && res.data) {
+        const userObj = res.data.user ? res.data.user : res.data;
+        if (userObj && userObj.id) {
+          updateUserInContext(userObj);
+        }
       } else {
-        logout();
+        setError("Erreur lors de la mise à jour du profil");
       }
     } catch (err) {
-      if (err.response?.status === 404) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
         logout();
       }
       setError("Erreur lors de la mise à jour du profil");
