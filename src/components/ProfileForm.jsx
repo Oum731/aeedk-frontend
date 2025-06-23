@@ -118,6 +118,8 @@ export default function ProfileForm({
       setAvatarPreview(null);
       setAvatarFile(null);
     } catch (err) {
+      console.log(err.response?.data);
+
       let errMsg = "Une erreur est survenue";
       if (err.response) {
         if (err.response.status === 422) {
