@@ -21,7 +21,6 @@ export function AuthProvider({ children }) {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setToken(savedToken);
-          console.log("🔐 Initial token:", savedToken);
 
           const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
             headers: { Authorization: `Bearer ${savedToken}` },
@@ -58,7 +57,6 @@ export function AuthProvider({ children }) {
         const tk = token || localStorage.getItem("token");
         if (tk) {
           config.headers.Authorization = `Bearer ${tk}`;
-          console.log("✅ Token attaché à la requête:", tk);
         }
         return config;
       },
