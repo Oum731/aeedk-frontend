@@ -5,6 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config";
 import { getAvatarUrl } from "../utils/avatarUrl";
 
+// Vérifie que la date est au format correct YYYY-MM-DD
 const isValidDate = (dateStr) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
   const date = new Date(dateStr);
@@ -20,6 +21,7 @@ export default function ProfileForm({
 }) {
   const { user, token, updateUserInContext } = useAuth();
   const isMe = !userData || (user && userData && user.id === userData.id);
+
   const [form, setForm] = useState(null);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -67,14 +69,17 @@ export default function ProfileForm({
     setLoading(true);
     setError("");
     setMsg("");
+
     const idToUse = isMe ? user?.id : userData?.id;
     const effectiveToken = token || localStorage.getItem("token");
+
     if (!idToUse || !effectiveToken) {
       setError("Session expirée. Veuillez vous reconnecter.");
       setLoading(false);
       return;
     }
 
+    // Crée le formulaire de données à envoyer
     const allowedFields = [
       "username",
       "first_name",
@@ -83,24 +88,17 @@ export default function ProfileForm({
       "village",
       "phone",
       "birth_date",
-      "email", // Ajouté
-      "role", // Ajouté (si modifiable côté back-end)
     ];
-
     const formData = new FormData();
+
     for (const key of allowedFields) {
       let value = form[key];
-      if (typeof value === "undefined" || value === null || value === "")
-        continue;
-
+      if (value === undefined || value === null || value === "") continue;
       if (key === "birth_date" && !isValidDate(value)) {
-        setError(
-          "La date de naissance doit être valide et au format YYYY-MM-DD."
-        );
+        setError("La date de naissance doit être au format YYYY-MM-DD.");
         setLoading(false);
         return;
       }
-
       formData.append(key, String(value));
     }
 
@@ -108,16 +106,11 @@ export default function ProfileForm({
       formData.append("avatar", avatarFile);
     }
 
-    // Debug : log des données envoyées
-    for (let pair of formData.entries()) {
-      console.log(`${pair[0]}: ${pair[1]}`);
-    }
-
     try {
-      const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
+      // 🔁 Changement ici : on utilise POST à la place de PUT (multipart/form-data)
+      const res = await axios.post(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
-          // Ne pas définir manuellement 'Content-Type' avec FormData !
         },
       });
 
@@ -131,31 +124,30 @@ export default function ProfileForm({
         err.response?.data?.error ||
         err.response?.data?.message ||
         "Une erreur est survenue";
-
       if (
         err.response?.data?.msg === "Missing Authorization Header" ||
-        err.response?.data?.msg === "Token has expired" ||
         err.response?.data?.msg?.includes("expired")
       ) {
         errMsg = "Votre session a expiré, veuillez vous reconnecter.";
       }
-
       setError(errMsg);
     } finally {
       setLoading(false);
     }
   };
 
-  if (!form)
+  if (!form) {
     return (
       <div className="flex justify-center items-center h-full min-h-[120px]">
         <LoaderCircle className="animate-spin" />
       </div>
     );
+  }
 
   return (
     <div className="w-full">
       {!editing || readOnly ? (
+        // Mode lecture seule
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg w-full">
           {[
             { label: "Prénom", key: "first_name" },
@@ -174,6 +166,7 @@ export default function ProfileForm({
           ))}
         </div>
       ) : (
+        // Mode édition
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[
@@ -218,6 +211,7 @@ export default function ProfileForm({
               />
             </div>
           </div>
+
           <div className="flex items-center gap-4 mt-4">
             <label className="btn btn-sm btn-accent cursor-pointer text-white border-blue-400 bg-blue-700">
               <UploadCloud size={16} className="mr-1" />
@@ -238,6 +232,7 @@ export default function ProfileForm({
               />
             )}
           </div>
+
           <div className="flex gap-4 mt-4">
             <button
               type="submit"
@@ -262,6 +257,7 @@ export default function ProfileForm({
               Annuler
             </button>
           </div>
+
           {msg && <div className="alert alert-success mt-4">{msg}</div>}
           {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
