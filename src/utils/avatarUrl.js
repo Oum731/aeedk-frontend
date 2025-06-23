@@ -2,7 +2,7 @@ import API_URL from "../config";
 
 export function getAvatarUrl(avatar, bustCache = false) {
   if (!avatar || typeof avatar !== "string") {
-    return `${API_URL}/user/avatar/avatar.jpeg`;
+    return "/default-avatar.png";
   }
 
   if (avatar.startsWith("http") || avatar.startsWith("data:")) return avatar;
