@@ -105,6 +105,7 @@ export default function ProfileForm({
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
         },
+        withCredentials: false,
       });
       updateUserInContext(res.data.user, true);
       setMsg("Profil mis à jour avec succès !");
