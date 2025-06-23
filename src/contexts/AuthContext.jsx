@@ -21,15 +21,16 @@ export function AuthProvider({ children }) {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setToken(savedToken);
+          console.log("🔐 Initial token:", savedToken);
 
           const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
 
-          if (res && res.data) {
-            const userObj = res.data.user ? res.data.user : res.data;
-            if (userObj && userObj.id) {
-              updateUserInContext(userObj);
+          if (res?.data?.user || res?.data) {
+            const userObj = res.data.user || res.data;
+            if (userObj?.id) {
+              updateUserInContext(userObj, true);
             } else {
               setError("Impossible de retrouver l'utilisateur.");
             }
@@ -37,7 +38,7 @@ export function AuthProvider({ children }) {
             setError("Erreur de session utilisateur.");
           }
         } catch (err) {
-          if (err.response?.status === 401 || err.response?.status === 403) {
+          if ([401, 403].includes(err.response?.status)) {
             logout();
           } else {
             setError("Erreur réseau temporaire, veuillez réessayer.");
@@ -55,7 +56,10 @@ export function AuthProvider({ children }) {
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
-        if (tk) config.headers.Authorization = `Bearer ${tk}`;
+        if (tk) {
+          config.headers.Authorization = `Bearer ${tk}`;
+          console.log("✅ Token attaché à la requête:", tk);
+        }
         return config;
       },
       (error) => Promise.reject(error)
@@ -64,8 +68,9 @@ export function AuthProvider({ children }) {
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401 || error.response?.status === 403)
+        if ([401, 403].includes(error.response?.status)) {
           logout();
+        }
         return Promise.reject(error);
       }
     );
@@ -88,13 +93,13 @@ export function AuthProvider({ children }) {
 
       const { user: userData, token: jwtToken } = res.data;
 
-      if (!userData.confirmed) {
+      if (!userData?.confirmed) {
         throw new Error(
           "Veuillez confirmer votre email avant de vous connecter."
         );
       }
 
-      updateUserInContext(userData);
+      updateUserInContext(userData, true);
       setToken(jwtToken);
       localStorage.setItem("token", jwtToken);
 
@@ -139,22 +144,24 @@ export function AuthProvider({ children }) {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
+
     try {
       const res = await axios.get(`${API_URL}/user/${user.id}`, {
         headers: {
           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
         },
       });
-      if (res && res.data) {
-        const userObj = res.data.user ? res.data.user : res.data;
-        if (userObj && userObj.id) {
-          updateUserInContext(userObj);
+
+      if (res?.data?.user || res?.data) {
+        const userObj = res.data.user || res.data;
+        if (userObj?.id) {
+          updateUserInContext(userObj, true);
         }
       } else {
         setError("Erreur lors de la mise à jour du profil");
       }
     } catch (err) {
-      if (err.response?.status === 401 || err.response?.status === 403) {
+      if ([401, 403].includes(err.response?.status)) {
         logout();
       }
       setError("Erreur lors de la mise à jour du profil");
@@ -164,16 +171,16 @@ export function AuthProvider({ children }) {
   };
 
   const updateUserInContext = (userData, bustAvatarCache = false) => {
-    if (!userData || !userData.id) {
+    if (!userData?.id) {
       logout();
       return;
     }
+
     const updatedUser = {
       ...userData,
-      avatar_url: bustAvatarCache
-        ? `${userData.avatar_url}?t=${Date.now()}`
-        : userData.avatar_url,
+      avatar: getAvatarUrl(userData.avatar, bustAvatarCache),
     };
+
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
   };
