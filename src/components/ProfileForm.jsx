@@ -5,7 +5,6 @@ import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config";
 import { getAvatarUrl } from "../utils/avatarUrl";
 
-// Vérifie que la date est au format correct YYYY-MM-DD
 const isValidDate = (dateStr) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
   const date = new Date(dateStr);
@@ -79,7 +78,6 @@ export default function ProfileForm({
       return;
     }
 
-    // Crée le formulaire de données à envoyer
     const allowedFields = [
       "username",
       "first_name",
@@ -107,8 +105,7 @@ export default function ProfileForm({
     }
 
     try {
-      // 🔁 Changement ici : on utilise POST à la place de PUT (multipart/form-data)
-      const res = await axios.post(`${API_URL}/user/${idToUse}`, formData, {
+      const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
         },
@@ -120,15 +117,16 @@ export default function ProfileForm({
       setAvatarPreview(null);
       setAvatarFile(null);
     } catch (err) {
-      let errMsg =
-        err.response?.data?.error ||
-        err.response?.data?.message ||
-        "Une erreur est survenue";
-      if (
-        err.response?.data?.msg === "Missing Authorization Header" ||
-        err.response?.data?.msg?.includes("expired")
-      ) {
-        errMsg = "Votre session a expiré, veuillez vous reconnecter.";
+      let errMsg = "Une erreur est survenue";
+      if (err.response) {
+        if (err.response.status === 422) {
+          errMsg = Object.entries(err.response.data.errors || {})
+            .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
+            .join("; ");
+        } else {
+          errMsg =
+            err.response.data?.error || err.response.data?.message || errMsg;
+        }
       }
       setError(errMsg);
     } finally {
@@ -147,7 +145,6 @@ export default function ProfileForm({
   return (
     <div className="w-full">
       {!editing || readOnly ? (
-        // Mode lecture seule
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg w-full">
           {[
             { label: "Prénom", key: "first_name" },
@@ -166,7 +163,6 @@ export default function ProfileForm({
           ))}
         </div>
       ) : (
-        // Mode édition
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {[

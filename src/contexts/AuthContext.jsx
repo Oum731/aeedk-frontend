@@ -12,7 +12,34 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const interceptor = axios.interceptors.request.use(
+    const initializeAuth = async () => {
+      const savedUser = localStorage.getItem("user");
+      const savedToken = localStorage.getItem("token");
+
+      if (savedUser && savedToken) {
+        try {
+          const parsedUser = JSON.parse(savedUser);
+          setUser(parsedUser);
+          setToken(savedToken);
+
+          const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
+            headers: { Authorization: `Bearer ${savedToken}` },
+          });
+
+          updateUserInContext(res.data);
+        } catch (err) {
+          console.error("Session validation failed:", err);
+          logout();
+        }
+      }
+      setLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
+
+  useEffect(() => {
+    const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
         if (tk) config.headers.Authorization = `Bearer ${tk}`;
@@ -20,52 +47,60 @@ export function AuthProvider({ children }) {
       },
       (error) => Promise.reject(error)
     );
-    return () => axios.interceptors.request.eject(interceptor);
+
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          logout();
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(requestInterceptor);
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, [token]);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    const savedToken = localStorage.getItem("token");
-    if (savedUser && savedToken) {
-      setUser(JSON.parse(savedUser));
-      setToken(savedToken);
-    }
-    setLoading(false);
-  }, []);
-
-  async function login(identifier, password) {
+  const login = async (identifier, password) => {
     setLoading(true);
     setError(null);
+
     try {
       const res = await axios.post(`${API_URL}/user/login`, {
         identifier,
         password,
       });
+
       const { user: userData, token: jwtToken } = res.data;
+
       if (!userData.confirmed) {
-        setError(
-          "Veuillez confirmer votre adresse email avant de vous connecter."
+        throw new Error(
+          "Veuillez confirmer votre email avant de vous connecter."
         );
-        setLoading(false);
-        return { success: false, error: "Email non confirmé." };
       }
-      setUser(userData);
+
+      updateUserInContext(userData);
       setToken(jwtToken);
-      localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", jwtToken);
+
       return { success: true };
     } catch (err) {
-      const msg = err.response?.data?.error || "Erreur de connexion";
-      setError(msg);
-      return { success: false, error: msg };
+      const errorMsg =
+        err.response?.data?.error || err.message || "Erreur de connexion";
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  async function register(formData) {
+  const register = async (formData) => {
     setLoading(true);
     setError(null);
+
     try {
       await axios.post(`${API_URL}/user/register`, formData);
       return {
@@ -73,48 +108,47 @@ export function AuthProvider({ children }) {
         message: "Inscription réussie. Vérifiez votre email.",
       };
     } catch (err) {
-      const msg = err.response?.data?.error || "Erreur d'inscription";
-      setError(msg);
-      return { success: false, error: msg };
+      const errorMsg = err.response?.data?.error || "Erreur d'inscription";
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  function logout() {
+  const logout = () => {
     setUser(null);
     setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-  }
+  };
 
-  async function fetchUser() {
+  const fetchUser = async () => {
+    if (!user?.id) return;
+
     setLoading(true);
     setError(null);
+
     try {
-      const res = await axios.get(`${API_URL}/user/${user?.id}`);
-      const newUser = {
-        ...res.data,
-        avatar: getAvatarUrl(res.data.avatar, true),
-      };
-      setUser(newUser);
-      localStorage.setItem("user", JSON.stringify(newUser));
+      const res = await axios.get(`${API_URL}/user/${user.id}`);
+      updateUserInContext(res.data);
     } catch (err) {
-      logout();
-      setError("Session expirée ou connexion impossible");
+      console.error("Failed to fetch user:", err);
+      setError("Erreur lors de la mise à jour du profil");
+      throw err;
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  function updateUserInContext(userData, bustAvatarCache = false) {
+  const updateUserInContext = (userData, bustAvatarCache = false) => {
     const updatedUser = {
       ...userData,
       avatar: getAvatarUrl(userData.avatar, bustAvatarCache),
     };
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
-  }
+  };
 
   const value = {
     user,
@@ -133,6 +167,4 @@ export function AuthProvider({ children }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);
