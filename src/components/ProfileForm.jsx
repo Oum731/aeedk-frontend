@@ -87,10 +87,11 @@ export default function ProfileForm({
       "phone",
       "birth_date",
     ];
+
     const formData = new FormData();
 
     for (const key of allowedFields) {
-      let value = form[key];
+      const value = form[key];
       if (value === undefined || value === null || value === "") continue;
       if (key === "birth_date" && !isValidDate(value)) {
         setError("La date de naissance doit être au format YYYY-MM-DD.");

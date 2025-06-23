@@ -21,14 +21,11 @@ export function AuthProvider({ children }) {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setToken(savedToken);
-
           const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
-
           updateUserInContext(res.data);
-        } catch (err) {
-          console.error("Session validation failed:", err);
+        } catch {
           logout();
         }
       }
@@ -51,9 +48,7 @@ export function AuthProvider({ children }) {
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if (error.response?.status === 401) {
-          logout();
-        }
+        if (error.response?.status === 401) logout();
         return Promise.reject(error);
       }
     );
@@ -132,10 +127,8 @@ export function AuthProvider({ children }) {
     try {
       const res = await axios.get(`${API_URL}/user/${user.id}`);
       updateUserInContext(res.data);
-    } catch (err) {
-      console.error("Failed to fetch user:", err);
+    } catch {
       setError("Erreur lors de la mise à jour du profil");
-      throw err;
     } finally {
       setLoading(false);
     }
