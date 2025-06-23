@@ -88,28 +88,22 @@ export default function ProfileForm({
       let value = form[key];
       if (typeof value === "undefined" || value === null || value === "")
         continue;
-      if (key === "birth_date") {
-        if (!isValidDate(value)) {
-          setError(
-            "La date de naissance doit être valide et au format YYYY-MM-DD."
-          );
-          setLoading(false);
-          return;
-        }
+      if (key === "birth_date" && !isValidDate(value)) {
+        setError(
+          "La date de naissance doit être valide et au format YYYY-MM-DD."
+        );
+        setLoading(false);
+        return;
       }
       formData.append(key, String(value));
     }
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
-
     try {
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
-        headers: {
-          Authorization: `Bearer ${effectiveToken}`,
-        },
+        headers: { Authorization: `Bearer ${effectiveToken}` },
       });
-      // Bust le cache de l’avatar partout dans le Context
       updateUserInContext(res.data.user, true);
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);

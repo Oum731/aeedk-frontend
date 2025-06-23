@@ -12,23 +12,26 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        const tk = token || localStorage.getItem("token");
+        if (tk) config.headers.Authorization = `Bearer ${tk}`;
+        return config;
+      },
+      (error) => Promise.reject(error)
+    );
+    return () => axios.interceptors.request.eject(interceptor);
+  }, [token]);
+
+  useEffect(() => {
     const savedUser = localStorage.getItem("user");
     const savedToken = localStorage.getItem("token");
     if (savedUser && savedToken) {
       setUser(JSON.parse(savedUser));
       setToken(savedToken);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
     }
     setLoading(false);
   }, []);
-
-  useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    } else {
-      delete axios.defaults.headers.common["Authorization"];
-    }
-  }, [token]);
 
   async function login(identifier, password) {
     setLoading(true);
@@ -50,7 +53,6 @@ export function AuthProvider({ children }) {
       setToken(jwtToken);
       localStorage.setItem("user", JSON.stringify(userData));
       localStorage.setItem("token", jwtToken);
-      axios.defaults.headers.common["Authorization"] = `Bearer ${jwtToken}`;
       return { success: true };
     } catch (err) {
       const msg = err.response?.data?.error || "Erreur de connexion";
@@ -84,7 +86,6 @@ export function AuthProvider({ children }) {
     setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    delete axios.defaults.headers.common["Authorization"];
   }
 
   async function fetchUser() {
