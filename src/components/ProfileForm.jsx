@@ -74,6 +74,7 @@ export default function ProfileForm({
       setLoading(false);
       return;
     }
+
     const allowedFields = [
       "username",
       "first_name",
@@ -82,12 +83,16 @@ export default function ProfileForm({
       "village",
       "phone",
       "birth_date",
+      "email", // Ajouté
+      "role", // Ajouté (si modifiable côté back-end)
     ];
+
     const formData = new FormData();
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "undefined" || value === null || value === "")
         continue;
+
       if (key === "birth_date" && !isValidDate(value)) {
         setError(
           "La date de naissance doit être valide et au format YYYY-MM-DD."
@@ -95,15 +100,27 @@ export default function ProfileForm({
         setLoading(false);
         return;
       }
+
       formData.append(key, String(value));
     }
+
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
+
+    // Debug : log des données envoyées
+    for (let pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
     try {
       const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
-        headers: { Authorization: `Bearer ${effectiveToken}` },
+        headers: {
+          Authorization: `Bearer ${effectiveToken}`,
+          // Ne pas définir manuellement 'Content-Type' avec FormData !
+        },
       });
+
       updateUserInContext(res.data.user, true);
       setMsg("Profil mis à jour avec succès !");
       if (setEditing) setEditing(false);
@@ -114,6 +131,7 @@ export default function ProfileForm({
         err.response?.data?.error ||
         err.response?.data?.message ||
         "Une erreur est survenue";
+
       if (
         err.response?.data?.msg === "Missing Authorization Header" ||
         err.response?.data?.msg === "Token has expired" ||
@@ -121,6 +139,7 @@ export default function ProfileForm({
       ) {
         errMsg = "Votre session a expiré, veuillez vous reconnecter.";
       }
+
       setError(errMsg);
     } finally {
       setLoading(false);
