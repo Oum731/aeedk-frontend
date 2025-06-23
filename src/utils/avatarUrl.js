@@ -8,4 +8,6 @@ export function getAvatarUrl(avatar, bustCache = false) {
   if (bustCache) url += `?t=${Date.now()}`;
   return url;
 }
+let url = `${API_URL}/user/avatar/${encodeURIComponent(filename)}`;
 console.log("Avatar URL:", url);
+return url;
