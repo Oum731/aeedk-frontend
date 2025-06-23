@@ -170,7 +170,9 @@ export function AuthProvider({ children }) {
     }
     const updatedUser = {
       ...userData,
-      avatar: getAvatarUrl(userData.avatar, bustAvatarCache),
+      avatar_url: bustAvatarCache
+        ? `${userData.avatar_url}?t=${Date.now()}`
+        : userData.avatar_url,
     };
     setUser(updatedUser);
     localStorage.setItem("user", JSON.stringify(updatedUser));
