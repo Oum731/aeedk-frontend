@@ -21,15 +21,34 @@ const menuItems = [
 export default function Navbar({ user, onNavigate }) {
   const handleLinkClick = (href, e) => {
     e?.preventDefault();
+
     if (href === "/" || href === "/home") {
-      onNavigate("home");
+      onNavigate("/home");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else if (href.startsWith("#")) {
-      const section = document.querySelector(href);
-      if (section) {
-        const offset = 70;
-        const y = section.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top: y, behavior: "smooth" });
+      // Naviguer sur la home si besoin puis scroller
+      if (
+        window.location.pathname !== "/home" &&
+        window.location.pathname !== "/"
+      ) {
+        onNavigate("/home");
+        setTimeout(() => {
+          const section = document.querySelector(href);
+          if (section) {
+            const offset = 70;
+            const y =
+              section.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: y, behavior: "smooth" });
+          }
+        }, 50); // attendre que la home soit rendue
+      } else {
+        const section = document.querySelector(href);
+        if (section) {
+          const offset = 70;
+          const y =
+            section.getBoundingClientRect().top + window.scrollY - offset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
       }
     } else {
       onNavigate(href);

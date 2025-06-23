@@ -37,6 +37,7 @@ export default function ProfileForm({
       });
       setAvatarPreview(null);
     }
+    // eslint-disable-next-line
   }, [userData, user]);
 
   useEffect(() => {
@@ -47,6 +48,7 @@ export default function ProfileForm({
       );
       setAvatarFile(null);
     }
+    // eslint-disable-next-line
   }, [editing, userData, user]);
 
   const handleAvatarChange = (e) => {
@@ -93,13 +95,14 @@ export default function ProfileForm({
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "string") value = value.trim();
-      if (value === undefined || value === null || value === "") continue;
-      if (key === "birth_date" && !isValidDate(value)) {
-        setError("La date de naissance doit être au format YYYY-MM-DD.");
-        setLoading(false);
-        return;
+      if (value !== undefined && value !== null && value !== "") {
+        if (key === "birth_date" && !isValidDate(value)) {
+          setError("La date de naissance doit être au format YYYY-MM-DD.");
+          setLoading(false);
+          return;
+        }
+        formData.append(key, String(value));
       }
-      formData.append(key, String(value));
     }
 
     if (avatarFile) {
@@ -125,7 +128,6 @@ export default function ProfileForm({
     } catch (err) {
       let errMsg = "Une erreur est survenue";
       if (err.response) {
-        // Gestion des erreurs précises du backend
         if (err.response.status === 422) {
           if (
             typeof err.response.data === "object" &&
@@ -138,7 +140,7 @@ export default function ProfileForm({
               .join("; ");
           }
         } else if (err.response.status === 413) {
-          errMsg = "Avatar trop volumineux (max 2 Mo).";
+          errMsg = "Image trop volumineux (max 2 Mo).";
         } else if (err.response.data?.error) {
           errMsg = err.response.data.error;
         } else if (err.response.data?.message) {

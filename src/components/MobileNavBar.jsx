@@ -9,6 +9,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import logo from "../assets/logo.jpeg";
+import { getAvatarUrl } from "../utils/avatarUrl";
 
 const sections = [
   { id: "accueil", icon: <Home size={20} />, label: "Accueil", path: "/" },
@@ -19,7 +20,6 @@ const sections = [
     label: "Contact",
     path: "#contact",
   },
-
   { id: "about", icon: <Info size={20} />, label: "À Propos", path: "#about" },
 ];
 
@@ -117,7 +117,16 @@ export default function MobileNavBar({ user, onNavigate }) {
               onClick={() => handleNavigate("/profile")}
               className="flex items-center gap-1 text-xs text-gray-700 hover:text-blue-600 font-medium"
             >
-              <User size={18} />
+              {user.avatar ? (
+                <img
+                  src={getAvatarUrl(user.avatar)}
+                  alt={displayName}
+                  className="w-7 h-7 rounded-full object-cover border mr-1"
+                  style={{ minWidth: 28 }}
+                />
+              ) : (
+                <User size={18} />
+              )}
               {displayName.length > 12 ? "Moi" : displayName}
             </button>
           )}

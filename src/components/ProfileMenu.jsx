@@ -10,19 +10,16 @@ export default function ProfileMenu({ onNavigate }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
+      if (menuRef.current && !menuRef.current.contains(event.target))
         setOpen(false);
-      }
     };
     const handleEscape = (e) => {
       if (e.key === "Escape") setOpen(false);
     };
-
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
       document.addEventListener("keydown", handleEscape);
     }
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
       document.removeEventListener("keydown", handleEscape);
@@ -30,6 +27,11 @@ export default function ProfileMenu({ onNavigate }) {
   }, [open]);
 
   if (!user) return null;
+
+  const displayName =
+    user.first_name && user.last_name
+      ? `${user.first_name} ${user.last_name}`
+      : user.first_name || user.username || user.email || "Moi";
 
   const handleNavigation = (path) => {
     setOpen(false);
@@ -41,54 +43,51 @@ export default function ProfileMenu({ onNavigate }) {
       <button
         className="flex items-center gap-2 px-2 focus:outline-none"
         onClick={() => setOpen((prev) => !prev)}
+        tabIndex={0}
         aria-label="Ouvrir le menu du profil"
       >
         {user.avatar ? (
           <img
             src={getAvatarUrl(user.avatar)}
-            alt={`Avatar de ${user.username}`}
+            alt={displayName}
             className="w-10 h-10 rounded-full object-cover border"
+            onError={(e) => (e.target.src = "/default-avatar.png")}
           />
         ) : (
           <UserIcon className="w-9 h-9 text-gray-400" />
         )}
       </button>
-
       {open && (
         <div className="absolute right-0 z-30 mt-2 bg-white border rounded-xl shadow-lg min-w-[200px] p-2 flex flex-col gap-1">
           <div className="flex justify-center mb-2">
             {user.avatar ? (
               <img
                 src={getAvatarUrl(user.avatar)}
-                alt="Avatar"
+                alt={displayName}
                 className="w-14 h-14 rounded-full object-cover border shadow"
+                onError={(e) => (e.target.src = "/default-avatar.png")}
               />
             ) : (
               <UserIcon className="w-12 h-12 text-gray-300 rounded-full border" />
             )}
           </div>
           <div className="text-center font-semibold text-base mb-2 truncate px-2">
-            {user.username}
+            {displayName}
           </div>
-
           <button
             className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded"
             onClick={() => handleNavigation("/profile")}
           >
-            <Edit2 size={18} />
-            Modifier mon profil
+            <Edit2 size={18} /> Modifier mon profil
           </button>
-
           {user.role === "admin" && (
             <button
               className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded"
               onClick={() => handleNavigation("/admin")}
             >
-              <LayoutDashboard size={18} />
-              Tableau de bord admin
+              <LayoutDashboard size={18} /> Tableau de bord admin
             </button>
           )}
-
           <button
             className="flex items-center gap-2 px-3 py-2 hover:bg-red-50 rounded text-red-600"
             onClick={() => {
@@ -96,8 +95,7 @@ export default function ProfileMenu({ onNavigate }) {
               logout();
             }}
           >
-            <LogOut size={18} />
-            Déconnexion
+            <LogOut size={18} /> Déconnexion
           </button>
         </div>
       )}

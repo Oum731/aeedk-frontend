@@ -17,21 +17,25 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
     !viewedUserId || (authUser && String(viewedUserId) === String(authUser.id));
 
   useEffect(() => {
+    let canceled = false;
     const fetchUser = async () => {
       setLoading(true);
-      try {
-        if (!isOwnProfile && viewedUserId) {
+      if (!isOwnProfile && viewedUserId) {
+        try {
           const res = await axios.get(`${API_URL}/user/${viewedUserId}`);
-          setViewedUser(res.data.user || res.data);
+          if (!canceled) setViewedUser(res.data.user || res.data);
+        } catch {
+          if (!canceled) setViewedUser(null);
         }
-      } catch {
-        setViewedUser(null);
-      } finally {
-        setLoading(false);
       }
+      setLoading(false);
     };
     fetchUser();
     setAvatarPreview(null);
+    return () => {
+      canceled = true;
+    };
+    // eslint-disable-next-line
   }, [viewedUserId, authUser]);
 
   useEffect(() => {
@@ -89,6 +93,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
       <div className="w-full max-w-3xl flex-1 flex px-2 sm:px-4">
         <div className="bg-base-100 shadow-xl rounded-2xl p-4 sm:p-8 flex-1 flex flex-col justify-center w-full">
           <ProfileForm
+            key={userToShow?.id || "no-user"} // Clé pour forcer le refresh du form sur changement d'id
             editing={isOwnProfile ? editing : false}
             setEditing={isOwnProfile ? setEditing : undefined}
             userData={userToShow}

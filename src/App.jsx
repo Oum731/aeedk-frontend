@@ -11,8 +11,22 @@ import { useAuth } from "./contexts/AuthContext";
 import VerifyEmail from "./auth/VerifyEmail";
 import ResetPasswordForm from "./auth/ResetPassword";
 
+const getCurrentPath = () => {
+  const pathname = window.location.pathname;
+  const search = window.location.search;
+  if (pathname.startsWith("/verify/")) return pathname;
+  if (pathname.startsWith("/reset/")) return pathname;
+  if (pathname === "/reset-password") {
+    const params = new URLSearchParams(search);
+    const token = params.get("token");
+    if (token) return `/reset/${token}`;
+    return pathname;
+  }
+  return pathname === "/" ? "/home" : pathname;
+};
+
 export default function App() {
-  const [page, setPage] = useState("home");
+  const [page, setPage] = useState(getCurrentPath());
   const [viewedUserId, setViewedUserId] = useState(null);
   const { user } = useAuth();
 
@@ -22,6 +36,14 @@ export default function App() {
     window.history.pushState({}, "", p);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  useEffect(() => {
+    const onPopState = () => {
+      setPage(getCurrentPath());
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
 
   useEffect(() => {
     const handleCustomNavigate = (e) => {
@@ -34,38 +56,18 @@ export default function App() {
       window.removeEventListener("navigateProfile", handleCustomNavigate);
   }, []);
 
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    const search = window.location.search;
-
-    if (pathname.startsWith("/verify/")) {
-      const token = pathname.split("/verify/")[1];
-      setPage(`/verify/${token}`);
-    } else if (pathname.startsWith("/reset/")) {
-      const token = pathname.split("/reset/")[1];
-      setPage(`/reset/${token}`);
-    } else if (pathname === "/reset-password") {
-      const params = new URLSearchParams(search);
-      const token = params.get("token");
-      if (token) setPage(`/reset/${token}`);
-    }
-  }, []);
-
-  const path = page;
-
   let mainContent = null;
-
-  if (path.startsWith("/verify/")) {
-    const token = path.split("/verify/")[1];
+  if (page.startsWith("/verify/")) {
+    const token = page.split("/verify/")[1];
     mainContent = <VerifyEmail token={token} onNavigate={handleNavigate} />;
-  } else if (path.startsWith("/reset/")) {
-    const token = path.split("/reset/")[1];
+  } else if (page.startsWith("/reset/")) {
+    const token = page.split("/reset/")[1];
     mainContent = (
       <ResetPasswordForm token={token} onNavigate={handleNavigate} />
     );
-  } else if (path === "home" || path === "/home") {
+  } else if (page === "/home" || page === "home" || page === "/") {
     mainContent = <Home onNavigate={handleNavigate} />;
-  } else if (path === "/login") {
+  } else if (page === "/login") {
     const params = new URLSearchParams(window.location.search);
     const reset = params.get("reset");
     const verified = params.get("verified");
@@ -76,9 +78,9 @@ export default function App() {
         verified={verified}
       />
     );
-  } else if (path === "/register") {
+  } else if (page === "/register") {
     mainContent = <RegisterForm onNavigate={handleNavigate} />;
-  } else if (path === "/profile") {
+  } else if (page === "/profile") {
     if (!user && !viewedUserId) {
       mainContent = (
         <div className="text-center mt-16 text-error">
@@ -91,11 +93,11 @@ export default function App() {
           key={viewedUserId || "me"}
           onNavigate={handleNavigate}
           viewedUserId={viewedUserId}
-          onBack={() => handleNavigate("home")}
+          onBack={() => handleNavigate("/home")}
         />
       );
     }
-  } else if (path === "/admin") {
+  } else if (page === "/admin") {
     if (user?.role === "admin") {
       mainContent = <AdminHome onNavigate={handleNavigate} />;
     } else {

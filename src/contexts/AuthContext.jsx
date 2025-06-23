@@ -26,13 +26,12 @@ export function AuthProvider({ children }) {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
 
-          // Sécurise la gestion du retour
           if (res && res.data && res.data.id) {
             updateUserInContext(res.data);
           } else {
             logout();
           }
-        } catch (err) {
+        } catch {
           logout();
         }
       }
@@ -40,6 +39,7 @@ export function AuthProvider({ children }) {
     };
 
     initializeAuth();
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
