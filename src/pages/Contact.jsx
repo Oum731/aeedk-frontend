@@ -22,7 +22,15 @@ export default function Contact() {
             </h2>
             <div className="flex items-center gap-3">
               <MapPin className="text-primary" />
-              <span>KOUTO, Région de la BAGOUE, Côte d'Ivoire</span>
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Centre+Culturel+de+Kouto,+Côte+d'Ivoire"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="link link-hover font-semibold"
+                title="Voir l’itinéraire sur Google Maps"
+              >
+                Centre Culturel de Kouto, Région de la Bagoué, Côte d'Ivoire
+              </a>
             </div>
             <div className="flex items-center gap-3">
               <Phone className="text-primary" />
@@ -51,7 +59,7 @@ export default function Contact() {
         </div>
 
         <div className="flex-1 w-full">
-          <div className="h-[350px] bg-base-200 rounded-xl shadow overflow-hidden mb-4">
+          <div className="h-[350px] bg-base-200 rounded-xl shadow overflow-hidden mb-4 relative">
             <iframe
               title="Centre Culturel de Kouto"
               width="100%"
@@ -60,9 +68,9 @@ export default function Contact() {
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps/place/Kouto,+C%C3%B4te+d'Ivoire/@9.8922317,-6.4213372,15z/data=!3m1!4b1!4m6!3m5!1s0xfb37e29720cf553:0xd01a418ffb55cb3f!8m2!3d9.8938829!4d-6.4103979!16zL20vMDU2a214?entry=ttu&g_ep=EgoyMDI1MDYxNy4wIKXMDSoASAFQAw%3D%3D"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31721.229111979546!2d-6.423095252073819!3d9.89380993367686!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfb37e29720cf553%3A0xd01a418ffb55cb3f!2sCentre%20Culturel%20de%20Kouto!5e0!3m2!1sfr!2sci!4v1719222208137!5m2!1sfr!2sci"
             ></iframe>
-            <span>
+            <span className="absolute bottom-2 left-2 bg-white bg-opacity-70 px-3 py-1 rounded text-sm">
               <strong>Itinéraire :</strong>{" "}
               <a
                 href="https://www.google.com/maps/dir/?api=1&destination=Centre+Culturel+de+Kouto,+Côte+d'Ivoire"
@@ -70,7 +78,7 @@ export default function Contact() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                ici
+                Cliquez ici
               </a>
             </span>
           </div>
