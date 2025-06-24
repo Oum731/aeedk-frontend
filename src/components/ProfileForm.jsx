@@ -109,14 +109,13 @@ export default function ProfileForm({
     }
 
     try {
-      const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
+      const res = await axios.post(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
         },
       });
-
       if (res.data && res.data.user) {
-        updateUserInContext(res.data.user, true);
+        updateUserInContext(res.data.user);
         setMsg("Profil mis à jour avec succès !");
         if (setEditing) setEditing(false);
         setAvatarPreview(null);

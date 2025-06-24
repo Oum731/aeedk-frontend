@@ -1,7 +1,6 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import API_URL from "../config";
-import { getAvatarUrl } from "../utils/avatarUrl";
 
 export const AuthContext = createContext();
 
@@ -15,21 +14,18 @@ export function AuthProvider({ children }) {
     const initializeAuth = async () => {
       const savedUser = localStorage.getItem("user");
       const savedToken = localStorage.getItem("token");
-
       if (savedUser && savedToken) {
         try {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setToken(savedToken);
-
           const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
             headers: { Authorization: `Bearer ${savedToken}` },
           });
-
           if (res?.data?.user || res?.data) {
             const userObj = res.data.user || res.data;
             if (userObj?.id) {
-              updateUserInContext(userObj, true);
+              updateUserInContext(userObj);
             } else {
               setError("Impossible de retrouver l'utilisateur.");
             }
@@ -46,9 +42,7 @@ export function AuthProvider({ children }) {
       }
       setLoading(false);
     };
-
     initializeAuth();
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -62,7 +56,6 @@ export function AuthProvider({ children }) {
       },
       (error) => Promise.reject(error)
     );
-
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -72,7 +65,6 @@ export function AuthProvider({ children }) {
         return Promise.reject(error);
       }
     );
-
     return () => {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
@@ -82,25 +74,20 @@ export function AuthProvider({ children }) {
   const login = async (identifier, password) => {
     setLoading(true);
     setError(null);
-
     try {
       const res = await axios.post(`${API_URL}/user/login`, {
         identifier,
         password,
       });
-
       const { user: userData, token: jwtToken } = res.data;
-
       if (!userData?.confirmed) {
         throw new Error(
           "Veuillez confirmer votre email avant de vous connecter."
         );
       }
-
-      updateUserInContext(userData, true);
+      updateUserInContext(userData);
       setToken(jwtToken);
       localStorage.setItem("token", jwtToken);
-
       return { success: true };
     } catch (err) {
       const errorMsg =
@@ -115,7 +102,6 @@ export function AuthProvider({ children }) {
   const register = async (formData) => {
     setLoading(true);
     setError(null);
-
     try {
       await axios.post(`${API_URL}/user/register`, formData);
       return {
@@ -142,18 +128,16 @@ export function AuthProvider({ children }) {
     if (!user?.id) return;
     setLoading(true);
     setError(null);
-
     try {
       const res = await axios.get(`${API_URL}/user/${user.id}`, {
         headers: {
           Authorization: `Bearer ${token || localStorage.getItem("token")}`,
         },
       });
-
       if (res?.data?.user || res?.data) {
         const userObj = res.data.user || res.data;
         if (userObj?.id) {
-          updateUserInContext(userObj, true);
+          updateUserInContext(userObj);
         }
       } else {
         setError("Erreur lors de la mise à jour du profil");
@@ -168,19 +152,13 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const updateUserInContext = (userData, bustAvatarCache = false) => {
+  const updateUserInContext = (userData) => {
     if (!userData?.id) {
       logout();
       return;
     }
-
-    const updatedUser = {
-      ...userData,
-      avatar: getAvatarUrl(userData.avatar, bustAvatarCache),
-    };
-
-    setUser(updatedUser);
-    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(userData);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const value = {
