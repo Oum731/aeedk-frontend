@@ -92,13 +92,11 @@ export default function ProfileForm({
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "string") value = value.trim();
-      if (value !== undefined && value !== null && value !== "") {
-        formData.append(key, String(value));
-      }
+      if (value) formData.append(key, value);
     }
 
-    if (form.birth_date !== undefined && form.birth_date !== null) {
-      if (form.birth_date === "" || !isValidDate(form.birth_date)) {
+    if (form.birth_date) {
+      if (!isValidDate(form.birth_date)) {
         setError("La date de naissance doit être au format YYYY-MM-DD.");
         setLoading(false);
         return;
@@ -130,15 +128,17 @@ export default function ProfileForm({
       let errMsg = "Une erreur est survenue";
       if (err.response) {
         if (err.response.status === 422) {
-          if (
-            typeof err.response.data === "object" &&
-            err.response.data.error
-          ) {
-            errMsg = err.response.data.error;
-          } else if (err.response.data.errors) {
+          if (err.response.data?.errors) {
             errMsg = Object.entries(err.response.data.errors)
-              .map(([field, errors]) => `${field}: ${errors.join(", ")}`)
+              .map(
+                ([field, errors]) =>
+                  `${field}: ${
+                    Array.isArray(errors) ? errors.join(", ") : errors
+                  }`
+              )
               .join("; ");
+          } else if (err.response.data?.error) {
+            errMsg = err.response.data.error;
           }
         } else if (err.response.status === 413) {
           errMsg = "Image trop volumineuse (max 2 Mo).";
