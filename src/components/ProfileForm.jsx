@@ -107,6 +107,9 @@ export default function ProfileForm({
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ": " + pair[1]);
+    }
 
     try {
       const res = await axios.post(`${API_URL}/user/${idToUse}`, formData, {
