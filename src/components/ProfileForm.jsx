@@ -95,7 +95,7 @@ export default function ProfileForm({
       if (value) formData.append(key, value);
     }
 
-    if (form.birth_date) {
+    if (form.birth_date && form.birth_date.trim() !== "") {
       if (!isValidDate(form.birth_date)) {
         setError("La date de naissance doit être au format YYYY-MM-DD.");
         setLoading(false);
@@ -201,7 +201,6 @@ export default function ProfileForm({
                   className="input input-bordered w-full"
                   value={form[name] || ""}
                   onChange={handleChange}
-                  required
                 />
               </div>
             ))}
