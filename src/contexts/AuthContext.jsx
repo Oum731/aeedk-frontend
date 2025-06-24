@@ -11,42 +11,10 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const savedUser = localStorage.getItem("user");
-      const savedToken = localStorage.getItem("token");
-      if (savedUser && savedToken) {
-        setUser(JSON.parse(savedUser));
-        setToken(savedToken);
-        // Token sur axios global avant le premier appel
-        axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
-        try {
-          const res = await axios.get(
-            `${API_URL}/user/${JSON.parse(savedUser).id}`
-          );
-          if (res?.data?.user || res?.data) {
-            const userObj = res.data.user || res.data;
-            if (userObj?.id) updateUserInContext(userObj);
-            else setError("Impossible de retrouver l'utilisateur.");
-          } else {
-            setError("Erreur de session utilisateur.");
-          }
-        } catch (err) {
-          if ([401, 403].includes(err.response?.status)) logout();
-          else setError("Erreur réseau temporaire, veuillez réessayer.");
-        }
-      }
-      setLoading(false);
-    };
-    initializeAuth();
-  }, []);
-
-  useEffect(() => {
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
-        if (tk) {
-          config.headers.Authorization = `Bearer ${tk}`;
-        }
+        if (tk) config.headers.Authorization = `Bearer ${tk}`;
         return config;
       },
       (error) => Promise.reject(error)
@@ -65,6 +33,31 @@ export function AuthProvider({ children }) {
       axios.interceptors.response.eject(responseInterceptor);
     };
   }, [token]);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const savedUser = localStorage.getItem("user");
+      const savedToken = localStorage.getItem("token");
+      if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser));
+        setToken(savedToken);
+        try {
+          const res = await axios.get(
+            `${API_URL}/user/${JSON.parse(savedUser).id}`
+          );
+          const userObj = res.data.user || res.data;
+          if (userObj?.id) updateUserInContext(userObj);
+          else setError("Impossible de retrouver l'utilisateur.");
+        } catch (err) {
+          if ([401, 403].includes(err.response?.status)) logout();
+          else setError("Erreur réseau temporaire, veuillez réessayer.");
+        }
+      }
+      setLoading(false);
+    };
+    initializeAuth();
+    // eslint-disable-next-line
+  }, []);
 
   const login = async (identifier, password) => {
     setLoading(true);
@@ -117,6 +110,7 @@ export function AuthProvider({ children }) {
     setToken(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
+    delete axios.defaults.headers.common["Authorization"];
   };
 
   const fetchUser = async () => {
@@ -124,16 +118,10 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/user/${user.id}`, {
-        headers: {
-          Authorization: `Bearer ${token || localStorage.getItem("token")}`,
-        },
-      });
-      if (res?.data?.user || res?.data) {
-        const userObj = res.data.user || res.data;
-        if (userObj?.id) {
-          updateUserInContext(userObj);
-        }
+      const res = await axios.get(`${API_URL}/user/${user.id}`);
+      const userObj = res.data.user || res.data;
+      if (userObj?.id) {
+        updateUserInContext(userObj);
       } else {
         setError("Erreur lors de la mise à jour du profil");
       }
