@@ -60,7 +60,7 @@ export default function Contact() {
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps/place/H%C3%94TEL+PRINTEMPS+KATANA/@9.8926808,-6.4222343,17z/data=!3m1!4b1!4m9!3m8!1s0xfb37f73737de579:0xd56f91d6b7dac154!5m2!4m1!1i2!8m2!3d9.8926755!4d-6.4196594!16s%2Fg%2F11t01ctqlm?entry=ttu&g_ep=EgoyMDI1MDYxNy4wIKXMDSoASAFQAw%3D%3D"
+              src="https://www.google.com/maps/place/Kouto,+C%C3%B4te+d'Ivoire/@9.8922317,-6.4213372,15z/data=!3m1!4b1!4m6!3m5!1s0xfb37e29720cf553:0xd01a418ffb55cb3f!8m2!3d9.8938829!4d-6.4103979!16zL20vMDU2a214?entry=ttu&g_ep=EgoyMDI1MDYxNy4wIKXMDSoASAFQAw%3D%3D"
             ></iframe>
             <span>
               <strong>Itinéraire :</strong>{" "}
