@@ -109,9 +109,10 @@ export default function ProfileForm({
     }
 
     try {
-      const res = await axios.post(`${API_URL}/user/${idToUse}`, formData, {
+      const res = await axios.put(`${API_URL}/user/${idToUse}`, formData, {
         headers: {
           Authorization: `Bearer ${effectiveToken}`,
+          "Content-Type": "multipart/form-data",
         },
       });
       if (res.data && res.data.user) {

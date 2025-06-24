@@ -7,7 +7,7 @@ import axios from "axios";
 import API_URL from "../config";
 
 export default function Profile({ onNavigate, viewedUserId, onBack }) {
-  const { user: authUser, logout } = useAuth();
+  const { user: authUser, token, logout } = useAuth();
   const [editing, setEditing] = useState(false);
   const [viewedUser, setViewedUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -18,24 +18,31 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
 
   useEffect(() => {
     let canceled = false;
+
     const fetchUser = async () => {
       setLoading(true);
-      if (!isOwnProfile && viewedUserId) {
+      if (!isOwnProfile && viewedUserId && token) {
         try {
-          const res = await axios.get(`${API_URL}/user/${viewedUserId}`);
+          const res = await axios.get(`${API_URL}/user/${viewedUserId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           if (!canceled) setViewedUser(res.data.user || res.data);
-        } catch {
+        } catch (err) {
           if (!canceled) setViewedUser(null);
         }
       }
       setLoading(false);
     };
+
     fetchUser();
     setAvatarPreview(null);
+
     return () => {
       canceled = true;
     };
-  }, [viewedUserId, authUser]);
+  }, [viewedUserId, authUser, token, isOwnProfile]);
 
   useEffect(() => {
     if (!editing) setAvatarPreview(null);
