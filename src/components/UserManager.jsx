@@ -46,7 +46,6 @@ export default function UserManager({ onNavigate }) {
     try {
       setError("");
       setMsg("");
-      // 👇 Ici, le header Authorization est TOUJOURS forcé
       const { data } = await axios.get(`${API_URL}/user/admin/users`, {
         headers: {
           Authorization: `Bearer ${token}`,
