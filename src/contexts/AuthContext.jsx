@@ -15,29 +15,24 @@ export function AuthProvider({ children }) {
       const savedUser = localStorage.getItem("user");
       const savedToken = localStorage.getItem("token");
       if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser));
+        setToken(savedToken);
+        // Token sur axios global avant le premier appel
+        axios.defaults.headers.common["Authorization"] = `Bearer ${savedToken}`;
         try {
-          const parsedUser = JSON.parse(savedUser);
-          setUser(parsedUser);
-          setToken(savedToken);
-          const res = await axios.get(`${API_URL}/user/${parsedUser.id}`, {
-            headers: { Authorization: `Bearer ${savedToken}` },
-          });
+          const res = await axios.get(
+            `${API_URL}/user/${JSON.parse(savedUser).id}`
+          );
           if (res?.data?.user || res?.data) {
             const userObj = res.data.user || res.data;
-            if (userObj?.id) {
-              updateUserInContext(userObj);
-            } else {
-              setError("Impossible de retrouver l'utilisateur.");
-            }
+            if (userObj?.id) updateUserInContext(userObj);
+            else setError("Impossible de retrouver l'utilisateur.");
           } else {
             setError("Erreur de session utilisateur.");
           }
         } catch (err) {
-          if ([401, 403].includes(err.response?.status)) {
-            logout();
-          } else {
-            setError("Erreur réseau temporaire, veuillez réessayer.");
-          }
+          if ([401, 403].includes(err.response?.status)) logout();
+          else setError("Erreur réseau temporaire, veuillez réessayer.");
         }
       }
       setLoading(false);
