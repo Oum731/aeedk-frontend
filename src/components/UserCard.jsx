@@ -1,6 +1,6 @@
 import React from "react";
 import { User as UserIcon } from "lucide-react";
-import { getAvatarUrl } from "../utils/avatarUrl";
+import { getUserAvatarSrc } from "../utils/avatarUrl";
 
 function getAge(birth_date) {
   if (!birth_date) return "-";
@@ -16,11 +16,7 @@ function getAge(birth_date) {
 
 export default function UserCard({ user }) {
   if (!user) return null;
-
-  // Choisit d'abord avatar_url (fourni par le backend), sinon fallback
-  const avatarSrc =
-    user.avatar_url ||
-    (user.avatar ? getAvatarUrl(user.avatar) : "/default-avatar.png");
+  const avatarSrc = getUserAvatarSrc(user);
 
   return (
     <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-6 p-4 sm:p-6 md:p-8">

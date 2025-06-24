@@ -9,7 +9,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import logo from "../assets/logo.jpeg";
-import { getAvatarUrl } from "../utils/avatarUrl";
+import { getUserAvatarSrc } from "../utils/avatarUrl";
 
 const menuItems = [
   { label: "Accueil", icon: <Home size={22} />, href: "/" },
@@ -21,7 +21,6 @@ const menuItems = [
 export default function Navbar({ user, onNavigate }) {
   const handleLinkClick = (href, e) => {
     e?.preventDefault();
-
     if (href === "/" || href === "#home") {
       onNavigate("/home");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -59,7 +58,7 @@ export default function Navbar({ user, onNavigate }) {
       ? `${user.first_name} ${user.last_name}`
       : user.first_name || user.username || user.email
     : "";
-  const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar_url) : null;
+  const avatarUrl = getUserAvatarSrc(user);
 
   return (
     <aside className="hidden md:flex fixed top-0 left-0 z-[89] h-screen w-16 md:w-20 bg-base-100 shadow-xl flex-col items-center py-4 gap-4">
@@ -70,7 +69,6 @@ export default function Navbar({ user, onNavigate }) {
           className="w-9 h-9 rounded-full object-cover border-2 border-[#1D4ED8]"
         />
       </button>
-
       {menuItems.map((item) => (
         <button
           key={item.label}
@@ -81,7 +79,6 @@ export default function Navbar({ user, onNavigate }) {
           {item.icon}
         </button>
       ))}
-
       {!user ? (
         <>
           <button

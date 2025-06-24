@@ -1,15 +1,7 @@
 import React, { useState, useEffect } from "react";
-import {
-  Home,
-  Info,
-  Newspaper,
-  Mail,
-  User,
-  LogIn,
-  UserPlus,
-} from "lucide-react";
+import { Home, Info, Newspaper, Mail, User } from "lucide-react";
 import logo from "../assets/logo.jpeg";
-import { getAvatarUrl } from "../utils/avatarUrl";
+import { getUserAvatarSrc } from "../utils/avatarUrl";
 
 const sections = [
   { id: "accueil", icon: <Home size={20} />, label: "Accueil", path: "/" },
@@ -25,7 +17,6 @@ const sections = [
 
 export default function MobileNavBar({ user, onNavigate }) {
   const [activeSection, setActiveSection] = useState("accueil");
-
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
 
@@ -95,7 +86,6 @@ export default function MobileNavBar({ user, onNavigate }) {
           />
           <span className="font-bold text-blue-700 text-base">AEEDK</span>
         </div>
-
         <div className="flex items-center gap-3">
           {!user ? (
             <>
@@ -117,22 +107,17 @@ export default function MobileNavBar({ user, onNavigate }) {
               onClick={() => handleNavigate("/profile")}
               className="flex items-center gap-1 text-xs text-gray-700 hover:text-blue-600 font-medium"
             >
-              {user.avatar ? (
-                <img
-                  src={getAvatarUrl(user.avatar_url)}
-                  alt={displayName}
-                  className="w-7 h-7 rounded-full object-cover border mr-1"
-                  style={{ minWidth: 28 }}
-                />
-              ) : (
-                <User size={18} />
-              )}
+              <img
+                src={getUserAvatarSrc(user)}
+                alt={displayName}
+                className="w-7 h-7 rounded-full object-cover border mr-1"
+                style={{ minWidth: 28 }}
+              />
               {displayName.length > 12 ? "Moi" : displayName}
             </button>
           )}
         </div>
       </header>
-
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow md:hidden flex justify-between items-center h-14 px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
         {sections.map((s) => (
           <button

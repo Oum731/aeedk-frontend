@@ -33,7 +33,6 @@ export default function App() {
   const handleNavigate = (p, userId = null) => {
     setPage(p);
     setViewedUserId(userId);
-    window.history.pushState({}, "", p);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -114,15 +113,12 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar user={user} onNavigate={handleNavigate} />
-
       <main className="pt-16 pb-16 md:pt-16 md:pb-0 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
         {mainContent}
       </main>
-
       <div className="pl-0 md:pl-20 w-full hidden md:block">
         <Footer />
       </div>
-
       <MobileNavBar user={user} onNavigate={handleNavigate} />
     </div>
   );
