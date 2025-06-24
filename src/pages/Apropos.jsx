@@ -169,17 +169,6 @@ export default function Apropos() {
           <span>
             <strong>Année de création :</strong> 2003
           </span>
-          <span>
-            <strong>Itinéraire :</strong>{" "}
-            <a
-              href="https://www.google.com/maps/dir/?api=1&destination=Centre+Culturel+de+Kouto,+Côte+d'Ivoire"
-              className="text-blue-500 underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Voir l’itinéraire vers le Centre Culturel de Kouto
-            </a>
-          </span>
         </div>
         <div className="w-full h-56 md:h-72 rounded-lg overflow-hidden shadow flex items-center justify-center">
           <img

@@ -60,8 +60,19 @@ export default function Contact() {
               loading="lazy"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3975.8874288744493!2d-5.333718!3d9.265997!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xfc0eac2cc0880de9%3A0xb8fd5f8885fdc768!2sCentre%20Culturel%20de%20Kouto!5e0!3m2!1sfr!2sci!4v1718999999999"
+              src="https://www.google.com/maps/place/H%C3%94TEL+PRINTEMPS+KATANA/@9.8926808,-6.4222343,17z/data=!3m1!4b1!4m9!3m8!1s0xfb37f73737de579:0xd56f91d6b7dac154!5m2!4m1!1i2!8m2!3d9.8926755!4d-6.4196594!16s%2Fg%2F11t01ctqlm?entry=ttu&g_ep=EgoyMDI1MDYxNy4wIKXMDSoASAFQAw%3D%3D"
             ></iframe>
+            <span>
+              <strong>Itinéraire :</strong>{" "}
+              <a
+                href="https://www.google.com/maps/dir/?api=1&destination=Centre+Culturel+de+Kouto,+Côte+d'Ivoire"
+                className="text-blue-500 underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                ici
+              </a>
+            </span>
           </div>
           <div className="w-full rounded-xl overflow-hidden shadow">
             <img
