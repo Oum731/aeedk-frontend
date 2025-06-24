@@ -32,8 +32,21 @@ export default function ProfileForm({
     const source = userData || user;
     if (source) {
       setForm({
-        ...source,
+        username: source.username || "",
+        first_name: source.first_name || "",
+        last_name: source.last_name || "",
+        sub_prefecture:
+          source.sub_prefecture ||
+          source["sub_prefecture"] ||
+          source["sous-prefecture"] ||
+          source["sous_préfecture"] ||
+          source["sous-préfecture"] ||
+          "",
+        village: source.village || "",
+        phone: source.phone || "",
         birth_date: source.birth_date?.substring(0, 10) || "",
+        email: source.email || "",
+        role: source.role || "",
       });
       setAvatarPreview(null);
     }
@@ -107,6 +120,7 @@ export default function ProfileForm({
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
+
     for (let pair of formData.entries()) {
       console.log(pair[0] + ": " + pair[1]);
     }
