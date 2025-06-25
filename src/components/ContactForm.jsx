@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Mail } from "lucide-react";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+const EMAIL_REGEX = /^[\w.-]+@[\w.-]+\.\w+$/;
 
 export default function ContactForm() {
   const [form, setForm] = useState({
@@ -11,22 +13,50 @@ export default function ContactForm() {
     subject: "",
     message: "",
   });
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const validateForm = () => {
+    if (!form.name.trim()) {
+      toast.error("Le nom est requis.");
+      return false;
+    }
+    if (!form.email.trim() || !EMAIL_REGEX.test(form.email.trim())) {
+      toast.error("L'email est invalide.");
+      return false;
+    }
+    if (!form.subject.trim()) {
+      toast.error("Le sujet est requis.");
+      return false;
+    }
+    if (!form.message.trim() || form.message.trim().length < 5) {
+      toast.error("Le message doit contenir au moins 5 caractères.");
+      return false;
+    }
+    return true;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
     setLoading(true);
-    setSuccess(false);
     try {
       await axios.post(`${API_URL}/contact/send/`, form);
-      setSuccess(true);
+      toast.success(
+        <>
+          <div className="font-bold">Message envoyé !</div>
+          <div className="text-sm mt-1">
+            Merci de nous avoir contactés.
+            <br />
+            Un responsable vous répondra très bientôt.
+          </div>
+        </>
+      );
       setForm({ name: "", email: "", subject: "", message: "" });
     } catch (err) {
-      alert("Erreur lors de l'envoi");
+      toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
     }
     setLoading(false);
   };
@@ -35,6 +65,7 @@ export default function ContactForm() {
     <form
       className="bg-base-200 p-4 rounded shadow flex flex-col gap-3 max-w-lg mx-auto"
       onSubmit={handleSubmit}
+      noValidate
     >
       <div className="flex items-center gap-2 mb-2">
         <Mail size={20} />
@@ -77,30 +108,6 @@ export default function ContactForm() {
       <button className="btn btn-primary" disabled={loading}>
         {loading ? "Envoi..." : "Envoyer"}
       </button>
-      {success && (
-        <div className="alert alert-success flex items-center gap-3 mt-4 rounded-xl shadow-md px-4 py-3 text-green-800 bg-green-50 border border-green-300">
-          <svg
-            className="w-6 h-6 shrink-0"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <div>
-            <div className="font-bold">Message envoyé !</div>
-            <div className="text-sm mt-1">
-              Merci de nous avoir contactés. Un responsable reviendra vers vous
-              très bientôt.
-            </div>
-          </div>
-        </div>
-      )}
     </form>
   );
 }

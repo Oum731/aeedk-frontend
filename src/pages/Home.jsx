@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import { ArrowUp } from "lucide-react";
@@ -30,22 +30,52 @@ const carouselImages = [
   },
 ];
 
-export default function Home() {
+export default function Home({ onNavigate }) {
   const [showTopBtn, setShowTopBtn] = useState(false);
+  const sectionRefs = {
+    accueil: useRef(null),
+    actu: useRef(null),
+    contact: useRef(null),
+    apropos: useRef(null),
+  };
+
+  // Pour scroll smooth vers une section depuis la navbar
+  useEffect(() => {
+    const handler = (e) => {
+      if (!e.detail) return;
+      if (sectionRefs[e.detail] && sectionRefs[e.detail].current) {
+        sectionRefs[e.detail].current.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    };
+    window.addEventListener("navigateSection", handler);
+    return () => window.removeEventListener("navigateSection", handler);
+  }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setShowTopBtn(window.scrollY > 250);
-    };
+    const handleScroll = () => setShowTopBtn(window.scrollY > 250);
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleSectionNav = (id) => {
+    if (sectionRefs[id] && sectionRefs[id].current) {
+      sectionRefs[id].current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+    if (onNavigate) onNavigate(id);
+  };
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full bg-white">
       {/* Hero */}
       <section
         id="accueil"
+        ref={sectionRefs.accueil}
         className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-10 flex flex-col items-center text-center space-y-7"
       >
         <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 drop-shadow-lg">
@@ -59,7 +89,6 @@ export default function Home() {
             Ensemble, partageons l'information, la solidarité et l'excellence !
           </span>
         </p>
-
         <div className="w-full rounded-2xl overflow-hidden shadow-2xl">
           <Swiper
             modules={[Autoplay, Pagination, Navigation]}
@@ -75,9 +104,8 @@ export default function Home() {
             pagination={{
               clickable: true,
               dynamicBullets: true,
-              renderBullet: (index, className) => {
-                return `<span class="${className}" style="background-color: #1D4ED8"></span>`;
-              },
+              renderBullet: (index, className) =>
+                `<span class="${className}" style="background-color: #1D4ED8"></span>`,
             }}
             navigation={{
               nextEl: ".swiper-button-next",
@@ -93,6 +121,10 @@ export default function Home() {
                     alt={image.alt}
                     className="w-full h-full object-cover object-center"
                     loading="lazy"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/placeholder-image.jpg";
+                    }}
                   />
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
                     <p className="text-white text-lg font-semibold text-center tracking-wide drop-shadow-lg">
@@ -117,36 +149,36 @@ export default function Home() {
       {/* Sections */}
       <section
         id="actu"
+        ref={sectionRefs.actu}
         className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
       >
         <Actu />
       </section>
-
       <section
         id="contact"
+        ref={sectionRefs.contact}
         className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
       >
         <Contact />
       </section>
-
       <section
-        id="about"
+        id="apropos"
+        ref={sectionRefs.apropos}
         className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
       >
         <Apropos />
       </section>
 
-      {/* Button haut de page */}
       {showTopBtn && (
         <button
           className="fixed bottom-10 right-10 btn btn-circle z-50"
+          aria-label="Haut de page"
           style={{
             background: "#1D4ED8",
             color: "#fff",
             border: "none",
             boxShadow: "0 4px 24px 0 rgba(0,0,0,.2)",
           }}
-          title="Haut de page"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
           <ArrowUp size={26} />

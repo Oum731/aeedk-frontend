@@ -35,10 +35,10 @@ export default function UserManager({ onNavigate }) {
   });
   const [error, setError] = useState("");
   const [msg, setMsg] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
     if (user?.role === "admin" && token) fetchUsers();
-    // eslint-disable-next-line
   }, [user, token]);
 
   const fetchUsers = async () => {
@@ -62,16 +62,19 @@ export default function UserManager({ onNavigate }) {
     }
   };
 
-  const handleDelete = async (userId) => {
-    if (!window.confirm("Confirmer la suppression de cet utilisateur ?"))
-      return;
+  // Nouvelle méthode de suppression sans alert native
+  const handleDelete = (userId) => {
+    setConfirmDeleteId(userId);
+  };
+  const confirmDelete = async () => {
     try {
-      await axios.delete(`${API_URL}/user/admin/users/${userId}`, {
+      await axios.delete(`${API_URL}/user/admin/users/${confirmDeleteId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       setMsg("Utilisateur supprimé.");
+      setConfirmDeleteId(null);
       fetchUsers();
     } catch (err) {
       setError(
@@ -79,6 +82,7 @@ export default function UserManager({ onNavigate }) {
           err.response?.data?.message ||
           "Suppression impossible."
       );
+      setConfirmDeleteId(null);
     }
   };
 
@@ -136,11 +140,14 @@ export default function UserManager({ onNavigate }) {
       setMsg("Modifications enregistrées.");
       fetchUsers();
     } catch (err) {
-      setError(
+      let msg =
         err.response?.data?.error ||
-          err.response?.data?.message ||
-          "Erreur lors de la modification."
-      );
+        err.response?.data?.message ||
+        "Erreur lors de la modification.";
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        msg = Object.values(err.response.data.errors).flat().join(" / ");
+      }
+      setError(msg);
     }
   };
 
@@ -169,11 +176,14 @@ export default function UserManager({ onNavigate }) {
       setMsg("Changement de rôle effectué.");
       fetchUsers();
     } catch (err) {
-      setError(
+      let msg =
         err.response?.data?.error ||
-          err.response?.data?.message ||
-          "Changement de rôle impossible."
-      );
+        err.response?.data?.message ||
+        "Changement de rôle impossible.";
+      if (err.response?.status === 422 && err.response?.data?.errors) {
+        msg = Object.values(err.response.data.errors).flat().join(" / ");
+      }
+      setError(msg);
     }
   };
 
@@ -183,6 +193,29 @@ export default function UserManager({ onNavigate }) {
   return (
     <div className="w-full max-w-7xl mx-auto px-2">
       <h2 className="text-2xl font-bold mb-6">Gestion des utilisateurs</h2>
+
+      {/* MODALE de confirmation suppression */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
+          <div className="bg-white rounded-xl p-6 shadow max-w-xs w-full flex flex-col gap-4">
+            <h4 className="text-lg font-bold text-error">Confirmation</h4>
+            <div>
+              Supprimer cet utilisateur ? Cette action est irréversible.
+            </div>
+            <div className="flex gap-3 mt-3">
+              <button className="btn btn-error flex-1" onClick={confirmDelete}>
+                Supprimer
+              </button>
+              <button
+                className="btn btn-ghost flex-1"
+                onClick={() => setConfirmDeleteId(null)}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {editUser && (
         <form

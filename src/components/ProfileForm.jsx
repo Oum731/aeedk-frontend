@@ -1,9 +1,36 @@
 import React, { useEffect, useState } from "react";
-import { LoaderCircle, UploadCloud } from "lucide-react";
+import {
+  LoaderCircle,
+  UploadCloud,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config";
 import { getAvatarUrl } from "../utils/avatarUrl";
+
+function Toast({ type = "success", msg = "", onClose }) {
+  if (!msg) return null;
+  return (
+    <div
+      className={`fixed bottom-5 right-5 z-[999] px-5 py-3 border rounded-xl shadow-lg flex items-center gap-3 min-w-[180px] max-w-xs ${
+        type === "error"
+          ? "bg-red-50 border-red-500 text-red-700"
+          : "bg-green-50 border-green-500 text-green-700"
+      }`}
+      style={{ animation: "fadeIn 0.3s" }}
+      onClick={onClose}
+    >
+      {type === "success" ? (
+        <CheckCircle2 className="w-5 h-5 text-green-500" />
+      ) : (
+        <AlertCircle className="w-5 h-5 text-red-500" />
+      )}
+      <span>{msg}</span>
+    </div>
+  );
+}
 
 const isValidDate = (dateStr) => {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return false;
@@ -17,6 +44,8 @@ export default function ProfileForm({
   userData,
   readOnly,
   onAvatarChange,
+  onNavigate, // Ajout
+  autoRedirect = false, // Ajout (pour rediriger après succès)
 }) {
   const { user, token, updateUserInContext } = useAuth();
   const isMe = !userData || (user && userData && user.id === userData.id);
@@ -25,8 +54,7 @@ export default function ProfileForm({
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
-  const [error, setError] = useState("");
+  const [toast, setToast] = useState({ type: "", msg: "" });
 
   useEffect(() => {
     const source = userData || user;
@@ -62,6 +90,11 @@ export default function ProfileForm({
     }
   }, [editing, userData, user]);
 
+  const showToast = (msg, type = "success", delay = 2500) => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "" }), delay);
+  };
+
   const handleAvatarChange = (e) => {
     if (e.target.files[0]) {
       const previewUrl = URL.createObjectURL(e.target.files[0]);
@@ -79,14 +112,11 @@ export default function ProfileForm({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
-    setMsg("");
 
     const idToUse = isMe ? user?.id : userData?.id;
     const effectiveToken = token || localStorage.getItem("token");
-
     if (!idToUse || !effectiveToken) {
-      setError("Session expirée. Veuillez vous reconnecter.");
+      showToast("Session expirée. Veuillez vous reconnecter.", "error");
       setLoading(false);
       return;
     }
@@ -99,46 +129,41 @@ export default function ProfileForm({
       "village",
       "phone",
     ];
-
     const formData = new FormData();
-
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "string") value = value.trim();
       if (value) formData.append(key, value);
     }
-
     if (form.birth_date && form.birth_date.trim() !== "") {
       if (!isValidDate(form.birth_date)) {
-        setError("La date de naissance doit être au format YYYY-MM-DD.");
+        showToast(
+          "La date de naissance doit être au format YYYY-MM-DD.",
+          "error"
+        );
         setLoading(false);
         return;
       }
       formData.append("birth_date", form.birth_date);
     }
-
     if (avatarFile) {
       formData.append("avatar", avatarFile);
     }
 
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ": " + pair[1]);
-    }
-
     try {
       const res = await axios.post(`${API_URL}/user/${idToUse}`, formData, {
-        headers: {
-          Authorization: `Bearer ${effectiveToken}`,
-        },
+        headers: { Authorization: `Bearer ${effectiveToken}` },
       });
       if (res.data && res.data.user) {
         updateUserInContext(res.data.user);
-        setMsg("Profil mis à jour avec succès !");
-        if (setEditing) setEditing(false);
+        showToast("Profil mis à jour avec succès !");
         setAvatarPreview(null);
         setAvatarFile(null);
+        setEditing && setEditing(false);
+        if (onNavigate && autoRedirect)
+          setTimeout(() => onNavigate("/profile"), 1200);
       } else {
-        setError("Mise à jour échouée (données serveur inattendues)");
+        showToast("Mise à jour échouée (données serveur inattendues)", "error");
       }
     } catch (err) {
       let errMsg = "Une erreur est survenue";
@@ -164,7 +189,7 @@ export default function ProfileForm({
           errMsg = err.response.data.message;
         }
       }
-      setError(errMsg);
+      showToast(errMsg, "error", 3800);
     } finally {
       setLoading(false);
     }
@@ -180,6 +205,11 @@ export default function ProfileForm({
 
   return (
     <div className="w-full">
+      <Toast
+        msg={toast.msg}
+        type={toast.type}
+        onClose={() => setToast({ msg: "", type: "" })}
+      />
       {!editing || readOnly ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg w-full">
           {[
@@ -242,7 +272,6 @@ export default function ProfileForm({
               />
             </div>
           </div>
-
           <div className="flex items-center gap-4 mt-4">
             <label className="btn btn-sm btn-accent cursor-pointer text-white border-blue-400 bg-blue-700">
               <UploadCloud size={16} className="mr-1" />
@@ -263,7 +292,6 @@ export default function ProfileForm({
               />
             )}
           </div>
-
           <div className="flex gap-4 mt-4">
             <button
               type="submit"
@@ -288,9 +316,6 @@ export default function ProfileForm({
               Annuler
             </button>
           </div>
-
-          {msg && <div className="alert alert-success mt-4">{msg}</div>}
-          {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
       )}
     </div>

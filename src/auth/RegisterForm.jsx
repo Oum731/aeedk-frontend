@@ -2,12 +2,17 @@ import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LoaderCircle } from "lucide-react";
 
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
+const EMAIL_REGEX = /^[\w\.-]+@[\w\.-]+\.\w+$/;
+
 export default function RegisterForm({ onNavigate }) {
   const { register } = useAuth();
   const [form, setForm] = useState({
     username: "",
     email: "",
     password: "",
+    confirm_password: "",
     first_name: "",
     last_name: "",
     birth_date: "",
@@ -30,9 +35,23 @@ export default function RegisterForm({ onNavigate }) {
     }
   };
 
+  const validateForm = () => {
+    if (!EMAIL_REGEX.test(form.email)) return "Email invalide";
+    if (!PASSWORD_REGEX.test(form.password))
+      return "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.";
+    if (form.password !== form.confirm_password)
+      return "Les mots de passe ne correspondent pas";
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    const validationError = validateForm();
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
     setLoading(true);
 
     const cleanedForm = {
@@ -43,7 +62,7 @@ export default function RegisterForm({ onNavigate }) {
 
     const formData = new FormData();
     Object.entries(cleanedForm).forEach(([key, value]) => {
-      if (value) formData.append(key, value);
+      if (key !== "confirm_password" && value) formData.append(key, value);
     });
 
     const result = await register(formData);
@@ -89,6 +108,15 @@ export default function RegisterForm({ onNavigate }) {
           placeholder="Mot de passe"
           required
           value={form.password}
+          onChange={handleChange}
+        />
+        <input
+          type="password"
+          name="confirm_password"
+          className="input input-bordered w-full"
+          placeholder="Confirmer le mot de passe"
+          required
+          value={form.confirm_password}
           onChange={handleChange}
         />
         <div className="flex gap-2">
@@ -170,7 +198,7 @@ export default function RegisterForm({ onNavigate }) {
         <button
           type="submit"
           className="btn btn-primary w-full"
-          disabled={loading}
+          disabled={loading || !!validateForm()}
         >
           {loading && <LoaderCircle className="animate-spin mr-2" size={18} />}
           S'inscrire

@@ -40,6 +40,19 @@ export default function Apropos() {
         </p>
       </div>
 
+      {/* Carrousel d'images inspirantes */}
+      <div className="flex justify-center my-4">
+        <div className="w-full max-w-2xl aspect-video rounded-xl overflow-hidden shadow border-2 border-blue-100 bg-gray-100">
+          <img
+            src={images[index]}
+            alt="Inspirations Kouto"
+            className="w-full h-full object-cover transition duration-500"
+            draggable={false}
+          />
+        </div>
+      </div>
+
+      {/* Vidéo présentation */}
       <div className="w-full flex justify-center my-8">
         <div className="rounded-xl overflow-hidden shadow-lg w-full max-w-2xl aspect-video bg-gray-200">
           <iframe
@@ -47,6 +60,7 @@ export default function Apropos() {
             title="Présentation AEEDK"
             className="w-full h-full"
             allowFullScreen
+            aria-label="Présentation vidéo AEEDK"
           ></iframe>
         </div>
       </div>
@@ -175,6 +189,7 @@ export default function Apropos() {
             src={plage}
             alt="Kouto Côte d'Ivoire"
             className="w-full h-full object-cover opacity-90"
+            draggable={false}
           />
         </div>
       </div>

@@ -1,3 +1,4 @@
+import { Toaster } from "react-hot-toast";
 import React, { useState, useEffect } from "react";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
@@ -11,6 +12,7 @@ import { useAuth } from "./contexts/AuthContext";
 import VerifyEmail from "./auth/VerifyEmail";
 import ResetPasswordForm from "./auth/ResetPassword";
 
+// Calcule la page à afficher selon l'URL (SPA)
 const getCurrentPath = () => {
   const pathname = window.location.pathname;
   const search = window.location.search;
@@ -30,8 +32,15 @@ export default function App() {
   const [viewedUserId, setViewedUserId] = useState(null);
   const { user } = useAuth();
 
-  const handleNavigate = (p, userId = null) => {
-    setPage(p);
+  const handleNavigate = (to, userId = null) => {
+    if (
+      to !== window.location.pathname &&
+      !to.startsWith("/verify/") &&
+      !to.startsWith("/reset/")
+    ) {
+      window.history.pushState({}, "", to);
+    }
+    setPage(to);
     setViewedUserId(userId);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -39,6 +48,7 @@ export default function App() {
   useEffect(() => {
     const onPopState = () => {
       setPage(getCurrentPath());
+      setViewedUserId(null);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
@@ -46,13 +56,12 @@ export default function App() {
 
   useEffect(() => {
     const handleCustomNavigate = (e) => {
-      setPage("/profile");
-      setViewedUserId(e.detail ?? null);
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      handleNavigate("/profile", e.detail ?? null);
     };
     window.addEventListener("navigateProfile", handleCustomNavigate);
     return () =>
       window.removeEventListener("navigateProfile", handleCustomNavigate);
+    // eslint-disable-next-line
   }, []);
 
   let mainContent = null;
@@ -112,6 +121,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
+      <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Navbar user={user} onNavigate={handleNavigate} />
       <main className="pt-16 pb-16 md:pt-16 md:pb-0 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
         {mainContent}

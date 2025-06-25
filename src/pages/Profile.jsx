@@ -18,30 +18,26 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
 
   useEffect(() => {
     let canceled = false;
-
     const fetchUser = async () => {
       setLoading(true);
       if (!isOwnProfile && viewedUserId && token) {
         try {
           const res = await axios.get(`${API_URL}/user/${viewedUserId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           });
           if (!canceled) setViewedUser(res.data.user || res.data);
-        } catch (err) {
+        } catch {
           if (!canceled) setViewedUser(null);
         }
       }
       setLoading(false);
     };
-
     fetchUser();
     setAvatarPreview(null);
-
     return () => {
       canceled = true;
     };
+    // eslint-disable-next-line
   }, [viewedUserId, authUser, token, isOwnProfile]);
 
   useEffect(() => {
@@ -66,6 +62,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
               alt="Avatar"
               className="w-36 h-36 rounded-full object-cover"
               onError={(e) => {
+                e.target.onerror = null;
                 e.target.src = "/default-avatar.png";
               }}
             />
@@ -108,7 +105,8 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
       <div className="flex flex-wrap justify-center gap-3 mt-7 w-full max-w-3xl px-2">
         <button
           className="btn btn-ghost flex items-center gap-1"
-          onClick={() => onNavigate("/home")}
+          onClick={() => onNavigate && onNavigate("/home")}
+          aria-label="Retour à l'accueil"
         >
           <Home size={18} /> Retour à l'accueil
         </button>
@@ -118,13 +116,16 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
               className="btn btn-accent flex items-center gap-2 text-white bg-blue-700"
               onClick={() => setEditing(true)}
               disabled={editing}
+              aria-disabled={editing}
+              aria-label="Modifier mon profil"
             >
               <Edit2 size={18} /> Modifier mon profil
             </button>
             {authUser?.role === "admin" && (
               <button
                 className="btn btn-neutral flex items-center gap-2"
-                onClick={() => onNavigate("/admin")}
+                onClick={() => onNavigate && onNavigate("/admin")}
+                aria-label="Tableau de bord admin"
               >
                 <LayoutDashboard size={18} /> Tableau de bord admin
               </button>
@@ -133,15 +134,20 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
               className="btn btn-outline flex items-center gap-2 text-red-600 border-red-400 hover:bg-red-50"
               onClick={() => {
                 logout();
-                onNavigate("/home");
+                onNavigate && onNavigate("/home");
               }}
+              aria-label="Déconnexion"
             >
               <LogOut size={18} /> Déconnexion
             </button>
           </>
         )}
         {!isOwnProfile && (
-          <button className="btn btn-neutral" onClick={onBack}>
+          <button
+            className="btn btn-neutral"
+            onClick={onBack ? onBack : () => onNavigate && onNavigate("/home")}
+            aria-label="Retour"
+          >
             <ArrowLeft className="mr-1" size={18} /> Retour
           </button>
         )}

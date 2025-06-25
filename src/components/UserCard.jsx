@@ -19,7 +19,7 @@ export default function UserCard({ user }) {
   const avatarSrc = getUserAvatarSrc(user);
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-6 p-4 sm:p-6 md:p-8">
+    <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-6 p-4 sm:p-6 md:p-8 hover:shadow-xl transition">
       {avatarSrc ? (
         <img
           src={avatarSrc}
@@ -36,8 +36,11 @@ export default function UserCard({ user }) {
         </div>
       )}
       <div className="flex-1 min-w-0">
-        <h3 className="font-semibold text-lg md:text-2xl truncate">
+        <h3 className="font-semibold text-lg md:text-2xl truncate text-blue-700 flex items-center gap-2">
           {user.username}
+          {user.role === "admin" && (
+            <span className="badge badge-info ml-2 align-middle">Admin</span>
+          )}
         </h3>
         <p className="text-sm md:text-base text-gray-500 truncate">
           {user.email}

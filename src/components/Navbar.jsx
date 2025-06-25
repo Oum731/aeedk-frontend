@@ -8,8 +8,10 @@ import {
   LogIn,
   UserPlus,
 } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 import logo from "../assets/logo.jpeg";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
+import { useAuth } from "../contexts/AuthContext";
 
 const menuItems = [
   { label: "Accueil", icon: <Home size={22} />, href: "/" },
@@ -18,51 +20,54 @@ const menuItems = [
   { label: "À Propos", icon: <Info size={22} />, href: "#about" },
 ];
 
-export default function Navbar({ user, onNavigate }) {
-  const handleLinkClick = (href, e) => {
-    e?.preventDefault();
-    if (href === "/" || href === "#home") {
-      onNavigate("/home");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } else if (href.startsWith("#")) {
-      if (
-        window.location.pathname !== "#home" &&
-        window.location.pathname !== "/"
-      ) {
-        onNavigate("/home");
-        setTimeout(() => {
-          const section = document.querySelector(href);
-          if (section) {
-            const offset = 70;
-            const y =
-              section.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top: y, behavior: "smooth" });
-          }
-        }, 50);
-      } else {
-        const section = document.querySelector(href);
-        if (section) {
-          const offset = 70;
-          const y =
-            section.getBoundingClientRect().top + window.scrollY - offset;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
-      }
-    } else {
-      onNavigate(href);
-    }
-  };
+export default function Navbar() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const displayName = user
     ? user.first_name && user.last_name
       ? `${user.first_name} ${user.last_name}`
       : user.first_name || user.username || user.email
     : "";
+
   const avatarUrl = getUserAvatarSrc(user);
+
+  const handleLinkClick = (href, e) => {
+    e?.preventDefault();
+
+    if (href === "/" || href === "#home") {
+      navigate("/");
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 10);
+    } else if (href.startsWith("#")) {
+      if (location.pathname !== "/") {
+        navigate("/");
+        setTimeout(() => {
+          const section = document.getElementById(href.slice(1));
+          if (section) {
+            section.scrollIntoView({ behavior: "smooth", block: "start" });
+          }
+        }, 200);
+      } else {
+        const section = document.getElementById(href.slice(1));
+        if (section) {
+          section.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+    } else {
+      navigate(href);
+    }
+  };
 
   return (
     <aside className="hidden md:flex fixed top-0 left-0 z-[89] h-screen w-16 md:w-20 bg-base-100 shadow-xl flex-col items-center py-4 gap-4">
-      <button onClick={(e) => handleLinkClick("/", e)} className="mb-5">
+      <button
+        onClick={(e) => handleLinkClick("/", e)}
+        className="mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+        title="Accueil"
+      >
         <img
           src={logo}
           alt="logo"
@@ -73,8 +78,9 @@ export default function Navbar({ user, onNavigate }) {
         <button
           key={item.label}
           onClick={(e) => handleLinkClick(item.href, e)}
-          className="flex items-center justify-center w-10 h-10 mx-auto hover:bg-[#1D4ED8] hover:text-white rounded transition"
+          className="flex items-center justify-center w-10 h-10 mx-auto hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
           title={item.label}
+          tabIndex={0}
         >
           {item.icon}
         </button>
@@ -83,15 +89,17 @@ export default function Navbar({ user, onNavigate }) {
         <>
           <button
             onClick={(e) => handleLinkClick("/register", e)}
-            className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+            className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
             title="Inscription"
+            tabIndex={0}
           >
             <UserPlus size={22} />
           </button>
           <button
             onClick={(e) => handleLinkClick("/login", e)}
-            className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+            className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
             title="Connexion"
+            tabIndex={0}
           >
             <LogIn size={22} />
           </button>
@@ -99,8 +107,9 @@ export default function Navbar({ user, onNavigate }) {
       ) : (
         <button
           onClick={(e) => handleLinkClick("/profile", e)}
-          className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition"
+          className="w-10 h-10 mx-auto flex items-center justify-center hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
           title={displayName}
+          tabIndex={0}
         >
           {avatarUrl ? (
             <img

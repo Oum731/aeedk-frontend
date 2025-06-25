@@ -2,7 +2,7 @@ import React from "react";
 import DashboardHeader from "../components/DashboardHeader";
 import PostManager from "../components/PostManager";
 import UserManager from "../components/UserManager";
-import AdminCommentManager from "../components/CommentManager";
+import CommentManager from "../components/CommentManager";
 
 export default function AdminHome({ onNavigate }) {
   return (
@@ -23,7 +23,7 @@ export default function AdminHome({ onNavigate }) {
         <UserManager />
       </section>
       <section className="bg-white rounded-xl shadow p-4 md:p-6">
-        <AdminCommentManager />
+        <CommentManager />
       </section>
     </div>
   );

@@ -3,15 +3,15 @@ import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import CommentCard from "./CommentCard";
 import countAllComments from "../utils/countAllComments";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function CommentSection({ postId, onCountChange, onUserClick }) {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
-  const [error, setError] = useState("");
 
   useEffect(() => {
     fetchComments();
@@ -27,7 +27,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
         onCountChange(countAllComments(data.comments || []));
       }
     } catch {
-      setError("Erreur lors du chargement des commentaires");
+      toast.error("Erreur lors du chargement des commentaires");
       setComments([]);
       if (onCountChange) onCountChange(0);
     } finally {
@@ -37,21 +37,30 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    if (!user) return setError("Vous devez être connecté pour commenter.");
-    if (!content.trim())
-      return setError("Le commentaire ne peut pas être vide.");
+    if (!user) {
+      toast.error("Vous devez être connecté pour commenter.");
+      return;
+    }
+    if (!content.trim()) {
+      toast.error("Le commentaire ne peut pas être vide.");
+      return;
+    }
 
     try {
-      await axios.post(`${API_URL}/comments/`, {
-        content,
-        post_id: postId,
-        user_id: user.id,
-      });
+      await axios.post(
+        `${API_URL}/comments/`,
+        {
+          content,
+          post_id: postId,
+          user_id: user.id,
+        },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+      );
       setContent("");
+      toast.success("Commentaire ajouté !");
       fetchComments();
     } catch (err) {
-      setError(
+      toast.error(
         err.response?.data?.message ||
           err.response?.data?.error ||
           "Erreur lors de l'envoi du commentaire"
@@ -60,31 +69,68 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
   };
 
   const handleDelete = async (commentId) => {
-    try {
-      await axios.delete(`${API_URL}/comments/${commentId}?user_id=${user.id}`);
-      fetchComments();
-    } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Erreur lors de la suppression du commentaire"
-      );
-    }
+    toast(
+      (t) => (
+        <span>
+          Supprimer ce commentaire ?
+          <div className="flex gap-2 mt-2">
+            <button
+              className="btn btn-xs btn-error"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await axios.delete(
+                    `${API_URL}/comments/${commentId}?user_id=${user.id}`,
+                    token
+                      ? { headers: { Authorization: `Bearer ${token}` } }
+                      : undefined
+                  );
+                  toast.success("Commentaire supprimé !");
+                  fetchComments();
+                } catch (err) {
+                  toast.error(
+                    err.response?.data?.message ||
+                      err.response?.data?.error ||
+                      "Erreur lors de la suppression du commentaire"
+                  );
+                }
+              }}
+            >
+              Oui
+            </button>
+            <button className="btn btn-xs" onClick={() => toast.dismiss(t.id)}>
+              Annuler
+            </button>
+          </div>
+        </span>
+      ),
+      { duration: 5000 }
+    );
   };
 
   const handleUpdate = async (newContent, commentId) => {
-    if (!user) return setError("Connectez-vous pour modifier un commentaire.");
-    if (!newContent.trim())
-      return setError("Le commentaire ne peut pas être vide.");
+    if (!user) {
+      toast.error("Connectez-vous pour modifier un commentaire.");
+      return;
+    }
+    if (!newContent.trim()) {
+      toast.error("Le commentaire ne peut pas être vide.");
+      return;
+    }
 
     try {
-      await axios.put(`${API_URL}/comments/${commentId}`, {
-        content: newContent,
-        user_id: user.id,
-      });
+      await axios.put(
+        `${API_URL}/comments/${commentId}`,
+        {
+          content: newContent,
+          user_id: user.id,
+        },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+      );
+      toast.success("Commentaire modifié !");
       fetchComments();
     } catch (err) {
-      setError(
+      toast.error(
         err.response?.data?.message ||
           err.response?.data?.error ||
           "Erreur lors de la mise à jour du commentaire"
@@ -130,12 +176,6 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
         </form>
       )}
 
-      {error && (
-        <div className="alert alert-error mb-4">
-          <span>{error}</span>
-        </div>
-      )}
-
       <div className="space-y-4">
         {loading ? (
           <div className="flex justify-center py-4">
@@ -153,17 +193,24 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
               user={user}
               onDelete={handleDelete}
               onReply={async (replyContent) => {
-                if (!user) return setError("Connectez-vous pour répondre.");
+                if (!user) return toast.error("Connectez-vous pour répondre.");
                 try {
-                  await axios.post(`${API_URL}/comments/`, {
-                    content: replyContent,
-                    post_id: postId,
-                    user_id: user.id,
-                    parent_comment_id: comment.id,
-                  });
+                  await axios.post(
+                    `${API_URL}/comments/`,
+                    {
+                      content: replyContent,
+                      post_id: postId,
+                      user_id: user.id,
+                      parent_comment_id: comment.id,
+                    },
+                    token
+                      ? { headers: { Authorization: `Bearer ${token}` } }
+                      : undefined
+                  );
+                  toast.success("Réponse ajoutée !");
                   fetchComments();
                 } catch (err) {
-                  setError(
+                  toast.error(
                     err.response?.data?.message ||
                       err.response?.data?.error ||
                       "Erreur lors de l'envoi de la réponse"

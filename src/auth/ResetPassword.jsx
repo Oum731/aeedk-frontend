@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import API_URL from "../config";
 
+const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
+
 export default function ResetPasswordForm({ token, onNavigate }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -9,11 +12,23 @@ export default function ResetPasswordForm({ token, onNavigate }) {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  const validate = () => {
+    if (!PASSWORD_REGEX.test(password)) {
+      return "Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial.";
+    }
+    if (password !== confirm) {
+      return "Les mots de passe ne correspondent pas.";
+    }
+    return "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    if (password !== confirm) {
-      return setError("Les mots de passe ne correspondent pas.");
+    const err = validate();
+    if (err) {
+      setError(err);
+      return;
     }
 
     setLoading(true);
@@ -60,7 +75,7 @@ export default function ResetPasswordForm({ token, onNavigate }) {
         <button
           className="btn btn-primary w-full"
           type="submit"
-          disabled={loading}
+          disabled={loading || !!validate()}
         >
           {loading && <LoaderCircle className="animate-spin mr-2" size={18} />}{" "}
           Valider

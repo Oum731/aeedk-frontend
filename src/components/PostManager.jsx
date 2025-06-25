@@ -5,6 +5,54 @@ import { useAuth } from "../contexts/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
+function Toast({ msg, type, onClose }) {
+  if (!msg) return null;
+  const color =
+    type === "success"
+      ? "bg-green-50 border-green-400 text-green-700"
+      : type === "error"
+      ? "bg-red-50 border-red-400 text-red-700"
+      : "bg-blue-50 border-blue-400 text-blue-700";
+  return (
+    <div
+      className={`fixed bottom-5 right-5 z-[9999] px-5 py-3 border rounded-xl shadow-md flex items-center gap-3 min-w-[180px] max-w-xs ${color}`}
+      style={{ animation: "fadeIn 0.3s" }}
+      onClick={onClose}
+    >
+      {type === "success" ? (
+        <svg
+          className="w-5 h-5 text-green-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M5 13l4 4L19 7"
+          />
+        </svg>
+      ) : type === "error" ? (
+        <svg
+          className="w-5 h-5 text-red-500"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={2}
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M6 18L18 6M6 6l12 12"
+          />
+        </svg>
+      ) : null}
+      <div>{msg}</div>
+    </div>
+  );
+}
+
 export default function PostManager() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -19,19 +67,23 @@ export default function PostManager() {
     media: [],
   });
   const [mediaPreview, setMediaPreview] = useState([]);
-  const [error, setError] = useState("");
-  const [msg, setMsg] = useState("");
+  const [toast, setToast] = useState({ msg: "", type: "" });
+  const [modal, setModal] = useState({ open: false, postId: null });
   const mediaInputRef = useRef();
 
   useEffect(() => {
     if (user) fetchPosts();
   }, [user]);
 
+  const showToast = (msg, type = "success", time = 2400) => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "" }), time);
+  };
+
   const fetchPosts = async () => {
     setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/posts`);
-      // Ajuste ici selon la structure renvoyée par le backend
       let postsArr = Array.isArray(data) ? data : data.posts;
       setPosts(postsArr || []);
     } catch {
@@ -44,7 +96,6 @@ export default function PostManager() {
   const handleMediaChange = (e) => {
     const files = Array.from(e.target.files);
     setForm((prev) => ({ ...prev, media: files }));
-
     const previews = files.map((file) => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith("video") ? "video" : "image",
@@ -55,49 +106,41 @@ export default function PostManager() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
-    setMsg("");
-
     if (!form.title || !form.content || !user?.id) {
-      setError("Tous les champs sont obligatoires.");
+      showToast("Tous les champs sont obligatoires.", "error");
       return;
     }
-
     const formData = new FormData();
     formData.append("title", form.title);
     formData.append("content", form.content);
     formData.append("is_featured", form.is_featured ? "true" : "false");
     formData.append("status", form.status);
     formData.append("author_id", user.id);
-
     if (form.media && form.media.length > 0) {
       form.media.forEach((file) => formData.append("media", file));
     }
-
     try {
       const method = editPost ? "put" : "post";
       const url = editPost
         ? `${API_URL}/posts/${editPost.id}`
         : `${API_URL}/posts`;
-
       const { data } = await axios[method](url, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      // Si backend retourne { post: {...} }
       const post = data.post || data;
       setPosts((prev) =>
         editPost
           ? prev.map((p) => (p.id === editPost.id ? post : p))
           : [post, ...prev]
       );
-      setMsg(editPost ? "Post modifié avec succès !" : "Post ajouté !");
+      showToast(editPost ? "Post modifié avec succès !" : "Post ajouté !");
       resetForm();
     } catch (err) {
-      setError(
+      showToast(
         err.response?.data?.error ||
           err.response?.data?.message ||
-          "Erreur lors de l’envoi."
+          "Erreur lors de l’envoi.",
+        "error"
       );
     }
   };
@@ -111,28 +154,27 @@ export default function PostManager() {
       status: post.status,
       media: [],
     });
-
     const previews = (post.media || []).map((media) => ({
       url: media.url,
       type: media.url && media.url.match(/\.(mp4|webm)$/i) ? "video" : "image",
       name: media.filename || "media",
     }));
     setMediaPreview(previews);
-
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleDelete = async (postId) => {
-    if (!window.confirm("Confirmer la suppression ?")) return;
+  const handleDelete = async () => {
+    if (!modal.postId) return setModal({ open: false, postId: null });
     try {
-      await axios.delete(`${API_URL}/posts/${postId}`, {
+      await axios.delete(`${API_URL}/posts/${modal.postId}`, {
         data: { author_id: user.id },
       });
-      setPosts((prev) => prev.filter((p) => p.id !== postId));
-      setMsg("Post supprimé.");
+      setPosts((prev) => prev.filter((p) => p.id !== modal.postId));
+      showToast("Post supprimé !");
+      setModal({ open: false, postId: null });
     } catch (err) {
-      setError("Erreur lors de la suppression.");
+      showToast("Erreur lors de la suppression.", "error");
     }
   };
 
@@ -201,6 +243,31 @@ export default function PostManager() {
 
   return (
     <div className="container mx-auto px-4 py-6">
+      <Toast
+        msg={toast.msg}
+        type={toast.type}
+        onClose={() => setToast({ msg: "", type: "" })}
+      />
+
+      {modal.open && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/40">
+          <div className="bg-base-100 rounded-xl shadow-lg p-6 min-w-[320px]">
+            <div className="text-lg mb-3">Confirmer la suppression ?</div>
+            <div className="flex gap-4 mt-4">
+              <button className="btn btn-error flex-1" onClick={handleDelete}>
+                Oui, supprimer
+              </button>
+              <button
+                className="btn btn-ghost flex-1"
+                onClick={() => setModal({ open: false, postId: null })}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
         className="btn btn-primary mb-4 flex items-center gap-2"
         onClick={() => {
@@ -324,8 +391,6 @@ export default function PostManager() {
               Annuler
             </button>
           </div>
-          {msg && <div className="alert alert-success mt-4">{msg}</div>}
-          {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
       )}
 
@@ -373,7 +438,7 @@ export default function PostManager() {
                     </button>
                     <button
                       className="btn btn-xs btn-error"
-                      onClick={() => handleDelete(post.id)}
+                      onClick={() => setModal({ open: true, postId: post.id })}
                     >
                       <Trash2 size={15} />
                     </button>

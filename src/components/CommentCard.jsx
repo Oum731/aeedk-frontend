@@ -8,6 +8,7 @@ import {
   X,
 } from "lucide-react";
 import LikeButton from "./LikeButton";
+import { getUserAvatarSrc } from "../utils/avatarUrl";
 
 export default function CommentCard({
   comment,
@@ -58,22 +59,11 @@ export default function CommentCard({
             role="button"
             title="Voir le profil"
           >
-            {comment.user?.avatar ? (
-              <img
-                src={
-                  comment.user.avatar.startsWith("http")
-                    ? comment.user.avatar
-                    : `https://aeedk-backend.onrender.com/api/user/avatar/${comment.user.avatar.replace(
-                        "avatars/",
-                        ""
-                      )}`
-                }
-                alt="avatar"
-                className="w-7 h-7 rounded-full object-cover"
-              />
-            ) : (
-              <UserIcon className="w-6 h-6 text-accent" />
-            )}
+            <img
+              src={getUserAvatarSrc(comment.user)}
+              alt={`Avatar de ${comment.user?.username || "utilisateur"}`}
+              className="w-7 h-7 rounded-full object-cover bg-gray-200"
+            />
             <span className="font-semibold text-sm group-hover:underline">
               {comment.user?.username || "Anonyme"}
             </span>

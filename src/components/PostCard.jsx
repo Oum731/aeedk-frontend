@@ -93,7 +93,6 @@ export default function PostCard({
         </div>
       </button>
 
-      {/* Medias */}
       {images.length > 0 ? (
         <div
           className={`relative w-full ${carouselHeight} overflow-hidden bg-black`}
@@ -108,7 +107,6 @@ export default function PostCard({
               e.target.alt = "Media";
             }}
           />
-
           {images.length > 1 && (
             <>
               <button
@@ -155,7 +153,6 @@ export default function PostCard({
             <span className="badge badge-warning ml-2">Important</span>
           )}
         </h2>
-
         <div className="mb-3 text-sm md:text-base">
           <p>{displayedText}</p>
           {isLong && (
@@ -167,7 +164,6 @@ export default function PostCard({
             </button>
           )}
         </div>
-
         <div className="flex items-center gap-4 mt-auto">
           <LikeButton
             contentType="post"

@@ -3,7 +3,6 @@ import axios from "axios";
 import API_URL from "../config";
 
 const DEFAULT_AVATAR = "avatar.jpeg";
-
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -13,6 +12,7 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    // Axios global interceptor pour l'auth
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
@@ -25,9 +25,7 @@ export function AuthProvider({ children }) {
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
-        if ([401, 403].includes(error.response?.status)) {
-          logout();
-        }
+        if ([401, 403].includes(error.response?.status)) logout();
         return Promise.reject(error);
       }
     );
@@ -38,6 +36,7 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   useEffect(() => {
+    // Initialisation depuis le localStorage
     const initializeAuth = async () => {
       const savedUser = localStorage.getItem("user");
       const savedToken = localStorage.getItem("token");
@@ -54,9 +53,7 @@ export function AuthProvider({ children }) {
         setUser(userObj);
         try {
           const res = await axios.get(`${API_URL}/user/${userObj.id}`, {
-            headers: {
-              Authorization: `Bearer ${savedToken}`,
-            },
+            headers: { Authorization: `Bearer ${savedToken}` },
           });
           const latestUser = res.data.user || res.data;
           if (latestUser?.id) updateUserInContext(latestUser);
@@ -69,6 +66,7 @@ export function AuthProvider({ children }) {
       setLoading(false);
     };
     initializeAuth();
+    // eslint-disable-next-line
   }, []);
 
   const login = async (identifier, password) => {
@@ -81,17 +79,22 @@ export function AuthProvider({ children }) {
       });
       const { user: userData, token: jwtToken } = res.data;
       if (!userData?.confirmed) {
-        throw new Error(
-          "Veuillez confirmer votre email avant de vous connecter."
-        );
+        return {
+          success: false,
+          error: "Veuillez confirmer votre email avant de vous connecter.",
+        };
       }
       updateUserInContext(userData);
       setToken(jwtToken);
       localStorage.setItem("token", jwtToken);
       return { success: true };
     } catch (err) {
-      const errorMsg =
-        err.response?.data?.error || err.message || "Erreur de connexion";
+      let errorMsg = "Erreur de connexion";
+      if (err.response?.status === 422 && err.response.data?.errors) {
+        errorMsg = Object.values(err.response.data.errors).flat().join(" / ");
+      } else {
+        errorMsg = err.response?.data?.error || err.message || errorMsg;
+      }
       setError(errorMsg);
       return { success: false, error: errorMsg };
     } finally {
@@ -109,7 +112,12 @@ export function AuthProvider({ children }) {
         message: "Inscription réussie. Vérifiez votre email.",
       };
     } catch (err) {
-      const errorMsg = err.response?.data?.error || "Erreur d'inscription";
+      let errorMsg = "Erreur d'inscription";
+      if (err.response?.status === 422 && err.response.data?.errors) {
+        errorMsg = Object.values(err.response.data.errors).flat().join(" / ");
+      } else {
+        errorMsg = err.response?.data?.error || errorMsg;
+      }
       setError(errorMsg);
       return { success: false, error: errorMsg };
     } finally {
@@ -120,6 +128,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     setUser(null);
     setToken(null);
+    setError(null);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
@@ -132,9 +141,7 @@ export function AuthProvider({ children }) {
     try {
       const tk = token || localStorage.getItem("token");
       const res = await axios.get(`${API_URL}/user/${user.id}`, {
-        headers: {
-          Authorization: `Bearer ${tk}`,
-        },
+        headers: { Authorization: `Bearer ${tk}` },
       });
       const userObj = res.data.user || res.data;
       if (userObj?.id) {
@@ -143,9 +150,7 @@ export function AuthProvider({ children }) {
         setError("Erreur lors de la mise à jour du profil");
       }
     } catch (err) {
-      if ([401, 403].includes(err.response?.status)) {
-        logout();
-      }
+      if ([401, 403].includes(err.response?.status)) logout();
       setError("Erreur lors de la mise à jour du profil");
     } finally {
       setLoading(false);

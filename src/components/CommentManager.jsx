@@ -2,34 +2,65 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Trash2, MessageCircle, User as UserIcon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function CommentManager() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchComments();
-    // eslint-disable-next-line
   }, []);
 
   const fetchComments = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_URL}/comments`);
+      const { data } = await axios.get(`${API_URL}/comments`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       setComments(data.comments || []);
     } catch {
       setComments([]);
+      toast.error("Erreur de chargement des commentaires");
     }
     setLoading(false);
   };
 
-  const handleDelete = async (commentId) => {
-    if (!window.confirm("Supprimer ce commentaire ?")) return;
-    await axios.delete(`${API_URL}/comments/${commentId}?user_id=${user.id}`);
-    fetchComments();
+  const handleDelete = (commentId) => {
+    toast(
+      (t) => (
+        <span>
+          Supprimer ce commentaire ?
+          <div className="flex gap-2 mt-2">
+            <button
+              className="btn btn-xs btn-error"
+              onClick={async () => {
+                toast.dismiss(t.id);
+                try {
+                  await axios.delete(
+                    `${API_URL}/comments/${commentId}?user_id=${user.id}`,
+                    { headers: { Authorization: `Bearer ${token}` } }
+                  );
+                  fetchComments();
+                  toast.success("Commentaire supprimé !");
+                } catch {
+                  toast.error("Erreur lors de la suppression");
+                }
+              }}
+            >
+              Oui
+            </button>
+            <button className="btn btn-xs" onClick={() => toast.dismiss(t.id)}>
+              Annuler
+            </button>
+          </div>
+        </span>
+      ),
+      { duration: 5000 }
+    );
   };
 
   const getAvatarUrl = (avatar) => {

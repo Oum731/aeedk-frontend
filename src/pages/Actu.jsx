@@ -7,23 +7,32 @@ import API_URL from "../config";
 export default function Actu({ onNavigate }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [showComments, setShowComments] = useState({});
   const [commentCounts, setCommentCounts] = useState({});
   const { user } = useAuth();
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setLoading(true);
+      setError("");
       try {
         const res = await fetch(`${API_URL}/posts`);
+        if (!res.ok) throw new Error("Erreur lors du chargement des posts");
         const data = await res.json();
-        setPosts(data);
+        const postsArr = Array.isArray(data) ? data : data.posts || [];
+        setPosts(postsArr);
         const counts = {};
-        data.forEach((post) => {
+        postsArr.forEach((post) => {
           counts[post.id] = post.comments_count || 0;
         });
         setCommentCounts(counts);
-      } catch {
+      } catch (e) {
         setPosts([]);
+        setError(
+          e.message ||
+            "Erreur réseau. Impossible de charger les actualités pour le moment."
+        );
       } finally {
         setLoading(false);
       }
@@ -33,15 +42,11 @@ export default function Actu({ onNavigate }) {
 
   const handleUserClick = (userId) => {
     if (!userId) return;
-    if (user && String(userId) === String(user.id)) {
-      window.dispatchEvent(
-        new CustomEvent("navigateProfile", { detail: null })
-      );
-    } else {
-      window.dispatchEvent(
-        new CustomEvent("navigateProfile", { detail: userId })
-      );
-    }
+    window.dispatchEvent(
+      new CustomEvent("navigateProfile", {
+        detail: user && String(userId) === String(user.id) ? null : userId,
+      })
+    );
   };
 
   const handleShowComments = (postId) => {
@@ -59,17 +64,23 @@ export default function Actu({ onNavigate }) {
   };
 
   return (
-    <div className="w-full min-h-screen p-0 m-0 bg-[#ffffff]">
+    <div className="w-full min-h-screen p-0 m-0 bg-white">
       <h1 className="text-3xl font-bold mb-2 text-center text-blue-700">
         Actualités
       </h1>
-      <p className="text-center mb-8 text-black-">
+      <p className="text-center mb-8 text-gray-600">
         Consultez les dernières actualités de l’association ici.
       </p>
       {loading ? (
-        <div className="text-center text-gray-200 py-8">Chargement…</div>
+        <div className="text-center text-blue-700/50 py-8 font-semibold">
+          Chargement…
+        </div>
+      ) : error ? (
+        <div className="alert alert-error mt-8 mb-4 max-w-xl mx-auto text-center">
+          {error}
+        </div>
       ) : posts.length === 0 ? (
-        <div className="text-center text-gray-200 py-8">
+        <div className="text-center text-gray-500 py-8">
           Aucun post pour le moment.
         </div>
       ) : (
