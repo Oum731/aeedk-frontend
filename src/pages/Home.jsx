@@ -161,8 +161,8 @@ export default function Home({ onNavigate }) {
         <Contact />
       </section>
       <section
-        id="apropos"
-        ref={sectionRefs.apropos}
+        id="about"
+        ref={sectionRefs.about}
         className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
       >
         <Apropos />
