@@ -44,8 +44,8 @@ export default function ProfileForm({
   userData,
   readOnly,
   onAvatarChange,
-  onNavigate, // Ajout
-  autoRedirect = false, // Ajout (pour rediriger après succès)
+  onNavigate,
+  autoRedirect = false,
 }) {
   const { user, token, updateUserInContext } = useAuth();
   const isMe = !userData || (user && userData && user.id === userData.id);
@@ -63,13 +63,7 @@ export default function ProfileForm({
         username: source.username || "",
         first_name: source.first_name || "",
         last_name: source.last_name || "",
-        sub_prefecture:
-          source.sub_prefecture ||
-          source["sub_prefecture"] ||
-          source["sous-prefecture"] ||
-          source["sous_préfecture"] ||
-          source["sous-préfecture"] ||
-          "",
+        sub_prefecture: source.sub_prefecture || "",
         village: source.village || "",
         phone: source.phone || "",
         birth_date: source.birth_date?.substring(0, 10) || "",
@@ -128,23 +122,24 @@ export default function ProfileForm({
       "sub_prefecture",
       "village",
       "phone",
+      "birth_date",
     ];
+
     const formData = new FormData();
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "string") value = value.trim();
-      if (value) formData.append(key, value);
-    }
-    if (form.birth_date && form.birth_date.trim() !== "") {
-      if (!isValidDate(form.birth_date)) {
-        showToast(
-          "La date de naissance doit être au format YYYY-MM-DD.",
-          "error"
-        );
-        setLoading(false);
-        return;
+      if (key === "birth_date" && value) {
+        if (!isValidDate(value)) {
+          showToast(
+            "La date de naissance doit être au format YYYY-MM-DD.",
+            "error"
+          );
+          setLoading(false);
+          return;
+        }
       }
-      formData.append("birth_date", form.birth_date);
+      formData.append(key, value || "");
     }
     if (avatarFile) {
       formData.append("avatar", avatarFile);
