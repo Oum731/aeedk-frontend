@@ -130,7 +130,12 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await axios.get(`${API_URL}/user/${user.id}`);
+      const tk = token || localStorage.getItem("token");
+      const res = await axios.get(`${API_URL}/user/${user.id}`, {
+        headers: {
+          Authorization: `Bearer ${tk}`,
+        },
+      });
       const userObj = res.data.user || res.data;
       if (userObj?.id) {
         updateUserInContext(userObj);
