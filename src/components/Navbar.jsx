@@ -8,7 +8,7 @@ import {
   LogIn,
   UserPlus,
 } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import logo from "../assets/logo.jpeg";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
 import { useAuth } from "../contexts/AuthContext";
@@ -33,28 +33,27 @@ export default function Navbar() {
 
   const avatarUrl = getUserAvatarSrc(user);
 
+  // Scroll vers la section ou vers le haut
+  const scrollToSection = (id) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.focus?.(); // accessibilité
+    }
+  };
+
   const handleLinkClick = (href, e) => {
     e?.preventDefault();
-
     if (href === "/" || href === "#home") {
-      navigate("/");
-      setTimeout(() => {
-        window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 10);
+      if (location.pathname !== "/") navigate("/");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 10);
     } else if (href.startsWith("#")) {
+      const sectionId = href.slice(1);
       if (location.pathname !== "/") {
         navigate("/");
-        setTimeout(() => {
-          const section = document.getElementById(href.slice(1));
-          if (section) {
-            section.scrollIntoView({ behavior: "smooth", block: "start" });
-          }
-        }, 200);
+        setTimeout(() => scrollToSection(sectionId), 350);
       } else {
-        const section = document.getElementById(href.slice(1));
-        if (section) {
-          section.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
+        scrollToSection(sectionId);
       }
     } else {
       navigate(href);

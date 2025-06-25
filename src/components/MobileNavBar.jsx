@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Info, Newspaper, Mail, User } from "lucide-react";
 import logo from "../assets/logo.jpeg";
@@ -22,30 +22,55 @@ export default function MobileNavBar() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [active, setActive] = useState("accueil");
+  const lastNavRef = useRef("");
 
-  useEffect(() => {
-    const hash = location.hash?.replace("#", "");
-    if (hash && sections.find((s) => s.id === hash)) {
-      setActive(hash);
-      const el = document.getElementById(hash);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    } else {
-      setActive("accueil");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-  }, [location]);
-
-  const handleKeyDown = (e, path) => {
-    if (e.key === "Enter" || e.key === " ") {
-      navigate(path);
-    }
-  };
-
+  // Affiche le nom ou "Moi" si trop long
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
+
+  // Gestion du scroll (section home/actu/contact/about)
+  const handleNav = (s) => {
+    if (s.path.startsWith("/#")) {
+      // On veut aller à une section sur Home
+      const sectionId = s.path.replace("/#", "");
+      if (location.pathname !== "/") {
+        navigate("/");
+        // après le rendu, on scroll à la section
+        setTimeout(() => {
+          const el = document.getElementById(sectionId);
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 350);
+      } else {
+        const el = document.getElementById(sectionId);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        else window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    } else {
+      if (location.pathname !== s.path) {
+        navigate(s.path);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    }
+    lastNavRef.current = s.id;
+  };
+
+  // Pour colorer l'onglet actif
+  const activeSection = (() => {
+    const hash = location.hash?.replace("#", "");
+    if (
+      location.pathname === "/" &&
+      hash &&
+      sections.find((s) => s.id === hash)
+    )
+      return hash;
+    if (location.pathname === "/" || location.pathname === "") return "accueil";
+    if (location.pathname === "/about") return "about";
+    if (location.pathname === "/contact") return "contact";
+    if (location.pathname === "/actu") return "actu";
+    return "";
+  })();
 
   return (
     <>
@@ -99,22 +124,21 @@ export default function MobileNavBar() {
       </header>
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow md:hidden flex justify-between items-center h-14 px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
         {sections.map((s) => (
-          <Link
+          <button
             key={s.id}
-            to={s.path}
+            onClick={() => handleNav(s)}
             className={clsx(
               "flex flex-col items-center justify-center text-[11px] sm:text-xs w-full py-1 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 rounded",
-              active === s.id
+              activeSection === s.id
                 ? "text-blue-600 font-semibold border-t-2 border-blue-600 bg-blue-50 shadow-inner"
                 : "text-gray-600 hover:text-blue-600"
             )}
             tabIndex={0}
-            aria-current={active === s.id ? "page" : undefined}
-            onKeyDown={(e) => handleKeyDown(e, s.path)}
+            aria-current={activeSection === s.id ? "page" : undefined}
           >
             {s.icon}
             <span>{s.label}</span>
-          </Link>
+          </button>
         ))}
       </nav>
     </>
