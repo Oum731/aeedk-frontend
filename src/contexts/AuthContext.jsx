@@ -16,7 +16,8 @@ export function AuthProvider({ children }) {
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
-        if (tk) config.headers.Authorization = `Bearer ${tk}`;
+        if (tk && !config.headers.Authorization)
+          config.headers.Authorization = `Bearer ${tk}`;
         return config;
       },
       (error) => Promise.reject(error)
@@ -43,7 +44,6 @@ export function AuthProvider({ children }) {
       if (savedUser && savedToken) {
         let userObj = JSON.parse(savedUser);
         setToken(savedToken);
-
         if (
           !userObj.avatar ||
           typeof userObj.avatar !== "string" ||
@@ -51,11 +51,13 @@ export function AuthProvider({ children }) {
         ) {
           userObj.avatar = DEFAULT_AVATAR;
         }
-
         setUser(userObj);
-
         try {
-          const res = await axios.get(`${API_URL}/user/${userObj.id}`);
+          const res = await axios.get(`${API_URL}/user/${userObj.id}`, {
+            headers: {
+              Authorization: `Bearer ${savedToken}`,
+            },
+          });
           const latestUser = res.data.user || res.data;
           if (latestUser?.id) updateUserInContext(latestUser);
           else setError("Impossible de retrouver l'utilisateur.");
@@ -65,7 +67,6 @@ export function AuthProvider({ children }) {
         }
       }
       setLoading(false);
-      // eslint-disable-next-line
     };
     initializeAuth();
   }, []);
