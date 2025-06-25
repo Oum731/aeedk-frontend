@@ -1,5 +1,7 @@
 import API_URL from "../config";
 
+const DEFAULT_CLOUDINARY_AVATAR = "/default-avatar.png";
+
 export function getAvatarUrl(avatar, bustCache = false) {
   if (
     !avatar ||
@@ -8,19 +10,20 @@ export function getAvatarUrl(avatar, bustCache = false) {
     avatar === "avatar.jpeg" ||
     avatar.endsWith("/default-avatar.png")
   ) {
-    return "/default-avatar.png";
+    return DEFAULT_CLOUDINARY_AVATAR;
   }
 
-  if (avatar.startsWith("http") || avatar.startsWith("data:")) return avatar;
+  if (avatar.startsWith("http") || avatar.startsWith("data:")) {
+    let url = avatar;
+    if (bustCache) url += (url.includes("?") ? "&" : "?") + "v=" + Date.now();
+    return url;
+  }
 
-  const filename = encodeURIComponent(avatar.split("/").pop());
-  let url = `${API_URL}/user/avatar/${filename}`;
-  if (bustCache) url += `?v=${Date.now()}`;
-  return url;
+  return DEFAULT_CLOUDINARY_AVATAR;
 }
 
 export function getUserAvatarSrc(user, bustCache = false) {
-  if (!user) return "/default-avatar.png";
+  if (!user) return DEFAULT_CLOUDINARY_AVATAR;
   if (
     user.avatar_url &&
     typeof user.avatar_url === "string" &&
@@ -41,5 +44,5 @@ export function getUserAvatarSrc(user, bustCache = false) {
   ) {
     return getAvatarUrl(user.avatar, bustCache);
   }
-  return "/default-avatar.png";
+  return DEFAULT_CLOUDINARY_AVATAR;
 }

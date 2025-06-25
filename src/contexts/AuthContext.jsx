@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import API_URL from "../config";
 
-const DEFAULT_AVATAR = "avatar.jpeg";
+const DEFAULT_AVATAR = "/default-avatar.png";
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -12,7 +12,6 @@ export function AuthProvider({ children }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Axios global interceptor pour l'auth
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
@@ -36,20 +35,13 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   useEffect(() => {
-    // Initialisation depuis le localStorage
     const initializeAuth = async () => {
       const savedUser = localStorage.getItem("user");
       const savedToken = localStorage.getItem("token");
       if (savedUser && savedToken) {
         let userObj = JSON.parse(savedUser);
         setToken(savedToken);
-        if (
-          !userObj.avatar ||
-          typeof userObj.avatar !== "string" ||
-          userObj.avatar.trim() === ""
-        ) {
-          userObj.avatar = DEFAULT_AVATAR;
-        }
+        userObj = fixAvatar(userObj);
         setUser(userObj);
         try {
           const res = await axios.get(`${API_URL}/user/${userObj.id}`, {
@@ -68,6 +60,26 @@ export function AuthProvider({ children }) {
     initializeAuth();
     // eslint-disable-next-line
   }, []);
+
+  const fixAvatar = (userObj) => {
+    if (
+      !userObj.avatar ||
+      typeof userObj.avatar !== "string" ||
+      userObj.avatar.trim() === "" ||
+      userObj.avatar === "avatar.jpeg"
+    ) {
+      userObj.avatar = DEFAULT_AVATAR;
+    }
+    if (
+      !userObj.avatar_url ||
+      typeof userObj.avatar_url !== "string" ||
+      userObj.avatar_url.trim() === "" ||
+      userObj.avatar_url === "avatar.jpeg"
+    ) {
+      userObj.avatar_url = userObj.avatar;
+    }
+    return userObj;
+  };
 
   const login = async (identifier, password) => {
     setLoading(true);
@@ -162,13 +174,7 @@ export function AuthProvider({ children }) {
       logout();
       return;
     }
-    if (
-      !userData.avatar ||
-      typeof userData.avatar !== "string" ||
-      userData.avatar.trim() === ""
-    ) {
-      userData.avatar = DEFAULT_AVATAR;
-    }
+    userData = fixAvatar(userData);
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
   };
