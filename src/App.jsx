@@ -1,5 +1,11 @@
-import { Toaster } from "react-hot-toast";
-import React, { useState, useEffect } from "react";
+import React from "react";
+import {
+  Routes,
+  Route,
+  Navigate,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import RegisterForm from "./auth/RegisterForm";
@@ -11,124 +17,77 @@ import MobileNavBar from "./components/MobileNavBar";
 import { useAuth } from "./contexts/AuthContext";
 import VerifyEmail from "./auth/VerifyEmail";
 import ResetPasswordForm from "./auth/ResetPassword";
+import { Toaster } from "react-hot-toast";
 
-const getCurrentPath = () => {
-  const pathname = window.location.pathname;
-  const search = window.location.search;
-  if (pathname.startsWith("/verify/")) return pathname;
-  if (pathname.startsWith("/reset/")) return pathname;
-  if (pathname === "/reset-password") {
-    const params = new URLSearchParams(search);
-    const token = params.get("token");
-    if (token) return `/reset/${token}`;
-    return pathname;
+// Optional: Guards
+function RequireAuth({ children }) {
+  const { user } = useAuth();
+  const location = useLocation();
+  if (!user) return <Navigate to="/login" state={{ from: location }} replace />;
+  return children;
+}
+
+function RequireAdmin({ children }) {
+  const { user } = useAuth();
+  if (!user || user.role !== "admin") {
+    return (
+      <div className="text-center mt-16 text-error">
+        Accès refusé : réservé aux administrateurs.
+      </div>
+    );
   }
-  return pathname === "/" ? "/home" : pathname;
-};
+  return children;
+}
 
 export default function App() {
-  const [page, setPage] = useState(getCurrentPath());
-  const [viewedUserId, setViewedUserId] = useState(null);
   const { user } = useAuth();
-
-  const handleNavigate = (to, userId = null) => {
-    if (
-      to !== window.location.pathname &&
-      !to.startsWith("/verify/") &&
-      !to.startsWith("/reset/")
-    ) {
-      window.history.pushState({}, "", to);
-    }
-    setPage(to);
-    setViewedUserId(userId);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    const onPopState = () => {
-      setPage(getCurrentPath());
-      setViewedUserId(null);
-    };
-    window.addEventListener("popstate", onPopState);
-    return () => window.removeEventListener("popstate", onPopState);
-  }, []);
-
-  useEffect(() => {
-    const handleCustomNavigate = (e) => {
-      handleNavigate("/profile", e.detail ?? null);
-    };
-    window.addEventListener("navigateProfile", handleCustomNavigate);
-    return () =>
-      window.removeEventListener("navigateProfile", handleCustomNavigate);
-    // eslint-disable-next-line
-  }, []);
-
-  let mainContent = null;
-  if (page.startsWith("/verify/")) {
-    const token = page.split("/verify/")[1];
-    mainContent = <VerifyEmail token={token} onNavigate={handleNavigate} />;
-  } else if (page.startsWith("/reset/")) {
-    const token = page.split("/reset/")[1];
-    mainContent = (
-      <ResetPasswordForm token={token} onNavigate={handleNavigate} />
-    );
-  } else if (page === "/home" || page === "home" || page === "/") {
-    mainContent = <Home onNavigate={handleNavigate} />;
-  } else if (page === "/login") {
-    const params = new URLSearchParams(window.location.search);
-    const reset = params.get("reset");
-    const verified = params.get("verified");
-    mainContent = (
-      <LoginForm
-        onNavigate={handleNavigate}
-        reset={reset}
-        verified={verified}
-      />
-    );
-  } else if (page === "/register") {
-    mainContent = <RegisterForm onNavigate={handleNavigate} />;
-  } else if (page === "/profile") {
-    if (!user && !viewedUserId) {
-      mainContent = (
-        <div className="text-center mt-16 text-error">
-          Veuillez vous connecter pour accéder à votre profil.
-        </div>
-      );
-    } else {
-      mainContent = (
-        <Profile
-          key={viewedUserId || "me"}
-          onNavigate={handleNavigate}
-          viewedUserId={viewedUserId}
-          onBack={() => handleNavigate("/home")}
-        />
-      );
-    }
-  } else if (page === "/admin") {
-    if (user?.role === "admin") {
-      mainContent = <AdminHome onNavigate={handleNavigate} />;
-    } else {
-      mainContent = (
-        <div className="text-center mt-16 text-error">
-          Accès refusé : réservé aux administrateurs.
-        </div>
-      );
-    }
-  } else {
-    mainContent = <div className="text-center mt-16">Page non trouvée</div>;
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
-      <Navbar user={user} onNavigate={handleNavigate} />
+      <Navbar user={user} />
       <main className="pt-16 pb-16 md:pt-16 md:pb-0 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
-        {mainContent}
+        <Routes>
+          <Route path="/" element={<Navigate to="/home" />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          <Route path="/verify/:token" element={<VerifyEmail />} />
+          <Route path="/reset/:token" element={<ResetPasswordForm />} />
+          <Route
+            path="/profile"
+            element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/profile/:userId"
+            element={
+              <RequireAuth>
+                <Profile />
+              </RequireAuth>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <RequireAdmin>
+                <AdminHome />
+              </RequireAdmin>
+            }
+          />
+          <Route
+            path="*"
+            element={<div className="text-center mt-16">Page non trouvée</div>}
+          />
+        </Routes>
       </main>
       <div className="pl-0 md:pl-20 w-full hidden md:block">
         <Footer />
       </div>
-      <MobileNavBar user={user} onNavigate={handleNavigate} />
+      <MobileNavBar user={user} />
     </div>
   );
 }
