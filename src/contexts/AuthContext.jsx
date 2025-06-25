@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect, useContext } from "react";
 import axios from "axios";
 import API_URL from "../config";
 
+const DEFAULT_AVATAR = "avatar.jpeg";
+
 export const AuthContext = createContext();
 
 export function AuthProvider({ children }) {
@@ -39,14 +41,23 @@ export function AuthProvider({ children }) {
       const savedUser = localStorage.getItem("user");
       const savedToken = localStorage.getItem("token");
       if (savedUser && savedToken) {
-        setUser(JSON.parse(savedUser));
+        let userObj = JSON.parse(savedUser);
         setToken(savedToken);
+
+        if (
+          !userObj.avatar ||
+          typeof userObj.avatar !== "string" ||
+          userObj.avatar.trim() === ""
+        ) {
+          userObj.avatar = DEFAULT_AVATAR;
+        }
+
+        setUser(userObj);
+
         try {
-          const res = await axios.get(
-            `${API_URL}/user/${JSON.parse(savedUser).id}`
-          );
-          const userObj = res.data.user || res.data;
-          if (userObj?.id) updateUserInContext(userObj);
+          const res = await axios.get(`${API_URL}/user/${userObj.id}`);
+          const latestUser = res.data.user || res.data;
+          if (latestUser?.id) updateUserInContext(latestUser);
           else setError("Impossible de retrouver l'utilisateur.");
         } catch (err) {
           if ([401, 403].includes(err.response?.status)) logout();
@@ -54,9 +65,9 @@ export function AuthProvider({ children }) {
         }
       }
       setLoading(false);
+      // eslint-disable-next-line
     };
     initializeAuth();
-    // eslint-disable-next-line
   }, []);
 
   const login = async (identifier, password) => {
@@ -139,6 +150,13 @@ export function AuthProvider({ children }) {
     if (!userData?.id) {
       logout();
       return;
+    }
+    if (
+      !userData.avatar ||
+      typeof userData.avatar !== "string" ||
+      userData.avatar.trim() === ""
+    ) {
+      userData.avatar = DEFAULT_AVATAR;
     }
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
