@@ -39,7 +39,6 @@ export default function Home({ onNavigate }) {
     apropos: useRef(null),
   };
 
-  // Pour scroll smooth vers une section depuis la navbar
   useEffect(() => {
     const handler = (e) => {
       if (!e.detail) return;

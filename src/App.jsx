@@ -12,7 +12,6 @@ import { useAuth } from "./contexts/AuthContext";
 import VerifyEmail from "./auth/VerifyEmail";
 import ResetPasswordForm from "./auth/ResetPassword";
 
-// Calcule la page à afficher selon l'URL (SPA)
 const getCurrentPath = () => {
   const pathname = window.location.pathname;
   const search = window.location.search;
