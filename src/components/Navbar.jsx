@@ -72,7 +72,6 @@ export default function Navbar() {
       style={{ minWidth: isOpen ? 192 : 64 }}
       aria-label="Navigation principale"
     >
-      {/* Header : logo + toggle */}
       <div
         className="relative flex flex-col items-center w-full px-4 mb-5"
         style={{ paddingTop: isOpen ? "0" : "12px" }}
@@ -89,7 +88,7 @@ export default function Navbar() {
 
         <button
           onClick={(e) => handleLinkClick("/", e)}
-          className="relative focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-full flex items-center justify-center mt-6"
+          className="relative focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-full flex items-center justify-center mt-6 group"
           title="Association des élèves et étudiants du département de Kouto"
           style={{ minWidth: 48, minHeight: 48 }}
           type="button"
@@ -99,22 +98,19 @@ export default function Navbar() {
             alt="logo AEEDK"
             className="w-12 h-12 rounded-full object-cover border-2 border-blue-600"
           />
-          {/* Tooltip */}
           <span
             className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap
               opacity-0 pointer-events-none
-              bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded
+              bg-gray-900 bg-opacity-95 text-white text-sm font-semibold px-4 py-2 rounded-lg
+              shadow-lg
               transition-opacity duration-200
-              group-hover:opacity-100
-              peer-hover:opacity-100
-              "
+              group-hover:opacity-100"
           >
             Association des élèves et étudiants du département de Kouto
           </span>
         </button>
       </div>
 
-      {/* Menu principal */}
       <nav
         className="flex flex-col items-center w-full gap-1 px-2"
         aria-label="Menu principal"
@@ -137,9 +133,7 @@ export default function Navbar() {
         ))}
       </nav>
 
-      {/* Bas de la sidebar : notifications + profil ou login */}
       <div className="mt-auto w-full px-4 flex flex-col items-start gap-3 relative">
-        {/* Cloche notifications avec tooltip */}
         <div
           className="relative cursor-pointer group p-1 rounded-md hover:bg-blue-600 hover:text-white
             focus:outline-none focus:ring-2 focus:ring-blue-600"
@@ -149,7 +143,6 @@ export default function Navbar() {
           onClick={() => {}}
         >
           <NotificationBell />
-          {/* Tooltip */}
           <span
             className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap
               opacity-0 pointer-events-none
@@ -161,7 +154,6 @@ export default function Navbar() {
           </span>
         </div>
 
-        {/* Profil connecté */}
         {user ? (
           <button
             onClick={(e) => handleLinkClick("/profile", e)}
@@ -179,14 +171,13 @@ export default function Navbar() {
                 className="w-12 h-12 rounded-full object-cover border-2 border-white"
               />
             ) : (
-              <UserIcon size={22} />
+              <UserIcon size={48} />
             )}
             {isOpen && (
               <span className="font-semibold truncate">{displayName}</span>
             )}
           </button>
         ) : (
-          // Boutons inscription / connexion
           <div className="flex flex-col gap-2 w-full">
             <button
               onClick={(e) => handleLinkClick("/register", e)}
