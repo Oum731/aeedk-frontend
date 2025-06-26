@@ -5,9 +5,11 @@ import { Edit2, LayoutDashboard, LogOut, ArrowLeft, Home } from "lucide-react";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
 import axios from "axios";
 import API_URL from "../config";
+import { useNavigate } from "react-router-dom";
 
-export default function Profile({ onNavigate, viewedUserId, onBack }) {
+export default function Profile({ viewedUserId, onBack }) {
   const { user: authUser, token, logout } = useAuth();
+  const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [viewedUser, setViewedUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,6 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
     return () => {
       canceled = true;
     };
-    // eslint-disable-next-line
   }, [viewedUserId, authUser, token, isOwnProfile]);
 
   useEffect(() => {
@@ -124,7 +125,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
             {authUser?.role === "admin" && (
               <button
                 className="btn btn-neutral flex items-center gap-2"
-                onClick={() => onNavigate && onNavigate("/admin")}
+                onClick={() => navigate("/admin")}
                 aria-label="Tableau de bord admin"
               >
                 <LayoutDashboard size={18} /> Tableau de bord admin
@@ -134,7 +135,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
               className="btn btn-outline flex items-center gap-2 text-red-600 border-red-400 hover:bg-red-50"
               onClick={() => {
                 logout();
-                onNavigate && onNavigate("/home");
+                navigate("/home");
               }}
               aria-label="Déconnexion"
             >
@@ -145,7 +146,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
         {!isOwnProfile && (
           <button
             className="btn btn-neutral"
-            onClick={onBack ? onBack : () => onNavigate && onNavigate("/home")}
+            onClick={onBack ? onBack : () => navigate("/home")}
             aria-label="Retour"
           >
             <ArrowLeft className="mr-1" size={18} /> Retour

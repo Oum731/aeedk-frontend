@@ -66,10 +66,10 @@ export default function Navbar() {
 
   return (
     <aside
-      className={`hidden md:flex fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4 transition-width duration-300 ${
-        isOpen ? "w-48" : "w-20"
+      className={`hidden md:flex fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex-col items-center py-4 gap-4 transition-width duration-300 ${
+        isOpen ? "w-48" : "w-16"
       }`}
-      style={{ minWidth: isOpen ? 192 : 80 }} // 48 * 4 = 192px, 20*4=80px
+      style={{ minWidth: isOpen ? 192 : 80 }}
     >
       <div className="relative flex items-center w-full justify-center mb-5 px-6">
         <button
@@ -89,7 +89,6 @@ export default function Navbar() {
           )}
         </button>
 
-        {/* bouton toggle à droite, hors du logo */}
         <button
           onClick={() => setIsOpen((o) => !o)}
           className="absolute right-4 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
