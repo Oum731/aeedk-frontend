@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Home, Info, Newspaper, Mail, User } from "lucide-react";
 import logo from "../assets/logo.jpeg";
@@ -7,15 +7,25 @@ import { useAuth } from "../contexts/AuthContext";
 import clsx from "clsx";
 
 const sections = [
-  { id: "accueil", icon: <Home size={20} />, label: "Accueil", path: "/" },
-  { id: "actu", icon: <Newspaper size={20} />, label: "Actus", path: "/#actu" },
+  { id: "accueil", icon: <Home size={20} />, label: "Accueil", path: "/home" },
+  {
+    id: "actu",
+    icon: <Newspaper size={20} />,
+    label: "Actus",
+    path: "/home#actu",
+  },
   {
     id: "contact",
     icon: <Mail size={20} />,
     label: "Contact",
-    path: "/#contact",
+    path: "/home#contact",
   },
-  { id: "about", icon: <Info size={20} />, label: "À Propos", path: "/#about" },
+  {
+    id: "about",
+    icon: <Info size={20} />,
+    label: "À Propos",
+    path: "/home#about",
+  },
 ];
 
 export default function MobileNavBar() {
@@ -24,26 +34,21 @@ export default function MobileNavBar() {
   const location = useLocation();
   const lastNavRef = useRef("");
 
-  // Affiche le nom ou "Moi" si trop long
   const displayName =
     user?.first_name || user?.username || user?.email || "Moi";
 
-  // Gestion du scroll (section home/actu/contact/about)
   const handleNav = (s) => {
-    if (s.path.startsWith("/#")) {
-      // On veut aller à une section sur Home
-      const sectionId = s.path.replace("/#", "");
-      if (location.pathname !== "/") {
-        navigate("/");
-        // après le rendu, on scroll à la section
-        setTimeout(() => {
-          const el = document.getElementById(sectionId);
-          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 350);
+    if (s.path.includes("#")) {
+      const [base, hash] = s.path.split("#");
+      if (location.pathname !== base) {
+        navigate(s.path); // Ex: /home#contact
       } else {
-        const el = document.getElementById(sectionId);
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-        else window.scrollTo({ top: 0, behavior: "smooth" });
+        const el = document.getElementById(hash);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
       }
     } else {
       if (location.pathname !== s.path) {
@@ -56,19 +61,15 @@ export default function MobileNavBar() {
     lastNavRef.current = s.id;
   };
 
-  // Pour colorer l'onglet actif
   const activeSection = (() => {
     const hash = location.hash?.replace("#", "");
     if (
-      location.pathname === "/" &&
+      location.pathname === "/home" &&
       hash &&
       sections.find((s) => s.id === hash)
     )
       return hash;
-    if (location.pathname === "/" || location.pathname === "") return "accueil";
-    if (location.pathname === "/about") return "about";
-    if (location.pathname === "/contact") return "contact";
-    if (location.pathname === "/actu") return "actu";
+    if (location.pathname === "/home") return "accueil";
     return "";
   })();
 
@@ -76,7 +77,7 @@ export default function MobileNavBar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm h-14 flex items-center justify-between px-4 md:hidden pt-[env(safe-area-inset-top)]">
         <Link
-          to="/"
+          to="/home"
           className="flex items-center gap-2 focus:outline-none"
           tabIndex={0}
         >
@@ -92,15 +93,13 @@ export default function MobileNavBar() {
             <>
               <Link
                 to="/register"
-                className="text-xs font-medium text-gray-700 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                tabIndex={0}
+                className="text-xs font-medium text-gray-700 hover:text-blue-600"
               >
                 Inscription
               </Link>
               <Link
                 to="/login"
-                className="text-xs font-medium text-gray-700 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-                tabIndex={0}
+                className="text-xs font-medium text-gray-700 hover:text-blue-600"
               >
                 Connexion
               </Link>
@@ -108,7 +107,7 @@ export default function MobileNavBar() {
           ) : (
             <Link
               to="/profile"
-              className="flex items-center gap-1 text-xs text-gray-700 hover:text-blue-600 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+              className="flex items-center gap-1 text-xs text-gray-700 hover:text-blue-600 font-medium"
               tabIndex={0}
             >
               <img
@@ -128,7 +127,7 @@ export default function MobileNavBar() {
             key={s.id}
             onClick={() => handleNav(s)}
             className={clsx(
-              "flex flex-col items-center justify-center text-[11px] sm:text-xs w-full py-1 transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 rounded",
+              "flex flex-col items-center justify-center text-[11px] sm:text-xs w-full py-1 transition-all",
               activeSection === s.id
                 ? "text-blue-600 font-semibold border-t-2 border-blue-600 bg-blue-50 shadow-inner"
                 : "text-gray-600 hover:text-blue-600"

@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Routes,
-  Route,
-  Navigate,
-  useLocation,
-  useNavigate,
-} from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import RegisterForm from "./auth/RegisterForm";
@@ -18,8 +12,8 @@ import { useAuth } from "./contexts/AuthContext";
 import VerifyEmail from "./auth/VerifyEmail";
 import ResetPasswordForm from "./auth/ResetPassword";
 import { Toaster } from "react-hot-toast";
+import ScrollToHashElement from "./components/ScrollToHashElement"; // 👈 à créer
 
-// Optional: Guards
 function RequireAuth({ children }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -47,6 +41,7 @@ export default function App() {
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Navbar user={user} />
       <main className="pt-16 pb-16 md:pt-16 md:pb-0 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
+        <ScrollToHashElement /> {/* 👈 Pour gérer le scroll vers les ancres */}
         <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
