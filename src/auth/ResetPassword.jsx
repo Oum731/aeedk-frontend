@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import API_URL from "../config";
 
@@ -17,6 +17,10 @@ export default function ResetPasswordForm() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [redirecting, setRedirecting] = useState(false);
+
+  // États pour afficher/masquer les mots de passe
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -71,25 +75,53 @@ export default function ResetPasswordForm() {
       {error && !token ? (
         <div className="text-error text-sm">{error}</div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <input
-            type="password"
-            required
-            className="input input-bordered w-full"
-            placeholder="Nouveau mot de passe"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading || redirecting}
-          />
-          <input
-            type="password"
-            required
-            className="input input-bordered w-full"
-            placeholder="Confirmer mot de passe"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            disabled={loading || redirecting}
-          />
+        <form onSubmit={handleSubmit} className="space-y-3 relative">
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              className="input input-bordered w-full pr-10"
+              placeholder="Nouveau mot de passe"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading || redirecting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              tabIndex={-1}
+              aria-label={
+                showPassword ? "Masquer mot de passe" : "Afficher mot de passe"
+              }
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
+          <div className="relative">
+            <input
+              type={showConfirm ? "text" : "password"}
+              required
+              className="input input-bordered w-full pr-10"
+              placeholder="Confirmer mot de passe"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+              disabled={loading || redirecting}
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirm((s) => !s)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              tabIndex={-1}
+              aria-label={
+                showConfirm ? "Masquer confirmation" : "Afficher confirmation"
+              }
+            >
+              {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
+          </div>
+
           <button
             className="btn btn-primary w-full"
             type="submit"
@@ -100,6 +132,7 @@ export default function ResetPasswordForm() {
             )}
             {redirecting ? "Redirection..." : "Valider"}
           </button>
+
           {message && <div className="text-success text-sm">{message}</div>}
           {error && <div className="text-error text-sm">{error}</div>}
         </form>

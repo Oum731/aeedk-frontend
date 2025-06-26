@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
@@ -14,6 +14,8 @@ export default function LoginForm() {
 
   const location = useLocation();
   const navigate = useNavigate();
+
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -95,20 +97,34 @@ export default function LoginForm() {
             onChange={handleChange}
           />
         </div>
-        <div>
+
+        <div className="relative">
           <label htmlFor="password" className="block text-sm font-medium">
             Mot de passe
           </label>
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             id="password"
             name="password"
             required
-            className="input input-bordered w-full mt-1"
+            className="input input-bordered w-full mt-1 pr-10"
             placeholder="Mot de passe"
             value={form.password}
             onChange={handleChange}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute top-9 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabIndex={-1}
+            aria-label={
+              showPassword
+                ? "Masquer le mot de passe"
+                : "Afficher le mot de passe"
+            }
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
         </div>
 
         <button

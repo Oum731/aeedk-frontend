@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
@@ -24,6 +24,9 @@ export default function RegisterForm({ onNavigate }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [avatarPreview, setAvatarPreview] = useState(null);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -101,24 +104,57 @@ export default function RegisterForm({ onNavigate }) {
           value={form.email}
           onChange={handleChange}
         />
-        <input
-          type="password"
-          name="password"
-          className="input input-bordered w-full"
-          placeholder="Mot de passe"
-          required
-          value={form.password}
-          onChange={handleChange}
-        />
-        <input
-          type="password"
-          name="confirm_password"
-          className="input input-bordered w-full"
-          placeholder="Confirmer le mot de passe"
-          required
-          value={form.confirm_password}
-          onChange={handleChange}
-        />
+
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            className="input input-bordered w-full pr-10"
+            placeholder="Mot de passe"
+            required
+            value={form.password}
+            onChange={handleChange}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabIndex={-1}
+            aria-label={
+              showPassword
+                ? "Masquer le mot de passe"
+                : "Afficher le mot de passe"
+            }
+          >
+            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+
+        <div className="relative">
+          <input
+            type={showConfirm ? "text" : "password"}
+            name="confirm_password"
+            className="input input-bordered w-full pr-10"
+            placeholder="Confirmer le mot de passe"
+            required
+            value={form.confirm_password}
+            onChange={handleChange}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm((v) => !v)}
+            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            tabIndex={-1}
+            aria-label={
+              showConfirm
+                ? "Masquer la confirmation"
+                : "Afficher la confirmation"
+            }
+          >
+            {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+          </button>
+        </div>
+
         <div className="flex gap-2">
           <input
             type="text"
