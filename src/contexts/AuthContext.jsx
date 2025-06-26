@@ -15,8 +15,10 @@ export function AuthProvider({ children }) {
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
         const tk = token || localStorage.getItem("token");
-        if (tk && !config.headers.Authorization)
+        if (tk) {
+          config.headers = config.headers || {};
           config.headers.Authorization = `Bearer ${tk}`;
+        }
         return config;
       },
       (error) => Promise.reject(error)
@@ -44,9 +46,7 @@ export function AuthProvider({ children }) {
         userObj = fixAvatar(userObj);
         setUser(userObj);
         try {
-          const res = await axios.get(`${API_URL}/user/${userObj.id}`, {
-            headers: { Authorization: `Bearer ${savedToken}` },
-          });
+          const res = await axios.get(`${API_URL}/user/${userObj.id}`);
           const latestUser = res.data.user || res.data;
           if (latestUser?.id) updateUserInContext(latestUser);
           else setError("Impossible de retrouver l'utilisateur.");
@@ -151,10 +151,7 @@ export function AuthProvider({ children }) {
     setLoading(true);
     setError(null);
     try {
-      const tk = token || localStorage.getItem("token");
-      const res = await axios.get(`${API_URL}/user/${user.id}`, {
-        headers: { Authorization: `Bearer ${tk}` },
-      });
+      const res = await axios.get(`${API_URL}/user/${user.id}`);
       const userObj = res.data.user || res.data;
       if (userObj?.id) {
         updateUserInContext(userObj);
