@@ -71,12 +71,10 @@ export default function Navbar() {
       }`}
       style={{ minWidth: isOpen ? 192 : 64 }}
     >
-      {/* Conteneur logo + toggle bouton */}
       <div
         className="relative flex flex-col items-center w-full px-4 mb-5"
         style={{ paddingTop: isOpen ? "0" : "12px" }}
       >
-        {/* Bouton toggle en absolute top right */}
         <button
           onClick={() => setIsOpen((o) => !o)}
           className="absolute top-0 right-0 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -86,7 +84,6 @@ export default function Navbar() {
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Logo centré, taille fixe, sans texte, avec tooltip */}
         <button
           onClick={(e) => handleLinkClick("/", e)}
           className="relative focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center justify-center mt-6"
@@ -98,7 +95,6 @@ export default function Navbar() {
             alt="logo"
             className="w-12 h-12 rounded-full object-cover border-2 border-[#1D4ED8]"
           />
-          {/* Tooltip personnalisé */}
           <span
             className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap
             opacity-0 pointer-events-none
@@ -125,16 +121,13 @@ export default function Navbar() {
         </button>
       ))}
 
-      {/* Section cloche en haut, photo profil en dessous, aligné à gauche */}
       <div className="mt-auto w-full px-4 flex flex-col items-start gap-2 relative">
         <div
           className="cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1"
           tabIndex={0}
           aria-label="Notifications"
           role="button"
-          onClick={() => {
-            // navigation ou toggle notifications si besoin
-          }}
+          onClick={() => {}}
         >
           <NotificationBell />
         </div>
@@ -151,12 +144,11 @@ export default function Navbar() {
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-12 h-12 rounded-full object-cover border border-white shadow-sm"
+                className="w-12 h-12 rounded-full object-cover border border-white"
               />
             ) : (
               <UserIcon size={22} />
             )}
-            {/* Affiche le nom uniquement si sidebar ouverte */}
             {isOpen && <span>{displayName}</span>}
           </button>
         )}
@@ -185,7 +177,6 @@ export default function Navbar() {
         )}
       </div>
 
-      {/* Style pour tooltip */}
       <style>{`
         /* Tooltip visible au hover sur le bouton logo */
         button.relative:hover span.absolute {
