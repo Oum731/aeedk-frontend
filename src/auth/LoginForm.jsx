@@ -1,12 +1,17 @@
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LoaderCircle } from "lucide-react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-export default function LoginForm({ onNavigate, reset, verified }) {
+export default function LoginForm() {
   const { login, user } = useAuth();
   const [form, setForm] = useState({ identifier: "", password: "" });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/home";
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -24,37 +29,27 @@ export default function LoginForm({ onNavigate, reset, verified }) {
     const result = await login(form.identifier.trim(), form.password);
     setLoading(false);
 
-    if (result.success && onNavigate) {
-      onNavigate("/home");
-    } else if (!result.success) {
+    if (result.success) {
+      navigate(from);
+    } else {
       setError(result.error || "Erreur lors de la connexion.");
     }
   };
 
   if (user) return null;
 
+  const successMessage = location.state?.verified
+    ? "Email confirmé. Vous pouvez vous connecter."
+    : location.state?.reset
+    ? "Mot de passe réinitialisé. Vous pouvez vous connecter."
+    : "";
+
   return (
     <div className="max-w-md mx-auto p-6 rounded-xl shadow bg-base-100 my-8">
       <h2 className="text-2xl font-bold mb-4">Connexion</h2>
-      {reset === "success" && (
-        <div className="text-success text-sm mb-2">
-          Mot de passe réinitialisé. Vous pouvez vous connecter.
-        </div>
-      )}
-      {verified === "success" && (
-        <div className="text-success text-sm mb-2">
-          Email confirmé. Vous pouvez vous connecter.
-        </div>
-      )}
-      {reset === "fail" && (
-        <div className="text-error text-sm mb-2">
-          Erreur de réinitialisation de mot de passe.
-        </div>
-      )}
-      {verified === "fail" && (
-        <div className="text-error text-sm mb-2">
-          Erreur de confirmation d'email.
-        </div>
+
+      {successMessage && (
+        <div className="text-success text-sm mb-2">{successMessage}</div>
       )}
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
@@ -104,7 +99,7 @@ export default function LoginForm({ onNavigate, reset, verified }) {
         <button
           type="button"
           className="text-blue-600 hover:underline"
-          onClick={() => onNavigate("/forgot-password")}
+          onClick={() => navigate("/forgot-password")}
         >
           Mot de passe oublié ?
         </button>

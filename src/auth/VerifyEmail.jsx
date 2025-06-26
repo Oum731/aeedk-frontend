@@ -5,16 +5,18 @@ import API_URL from "../config";
 export default function VerifyEmail() {
   const { token } = useParams();
   const navigate = useNavigate();
+  const [message, setMessage] = useState("Vérification en cours...");
   const [error, setError] = useState("");
 
   useEffect(() => {
     const verify = async () => {
       try {
         const res = await fetch(`${API_URL}/user/verify/${token}`);
+        const data = await res.json();
         if (res.ok) {
-          navigate("/login");
+          setMessage("Email confirmé. Redirection vers la connexion...");
+          setTimeout(() => navigate("/login"), 2500);
         } else {
-          const data = await res.json();
           setError(data.error || "Erreur de vérification.");
         }
       } catch {
@@ -29,7 +31,7 @@ export default function VerifyEmail() {
       {error ? (
         <div className="text-error text-lg">{error}</div>
       ) : (
-        <div className="text-primary text-lg">Vérification en cours...</div>
+        <div className="text-primary text-lg">{message}</div>
       )}
     </div>
   );

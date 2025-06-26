@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import { LoaderCircle } from "lucide-react";
+import { useNavigate, useParams } from "react-router-dom";
 import API_URL from "../config";
 
 const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
 
-export default function ResetPasswordForm({ token, onNavigate }) {
+export default function ResetPasswordForm() {
+  const { token } = useParams();
+  const navigate = useNavigate();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -41,7 +44,7 @@ export default function ResetPasswordForm({ token, onNavigate }) {
       const data = await res.json();
       if (res.ok) {
         setMessage(data.message || "Mot de passe réinitialisé");
-        setTimeout(() => onNavigate("/login"), 2000);
+        setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(data.error || "Erreur inconnue");
       }

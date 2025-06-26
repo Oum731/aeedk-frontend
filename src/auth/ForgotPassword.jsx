@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 import API_URL from "../config";
+import { useNavigate } from "react-router-dom";
 
-export default function ForgotPasswordForm({ onNavigate }) {
+export default function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -24,6 +26,7 @@ export default function ForgotPasswordForm({ onNavigate }) {
       const data = await res.json();
       if (res.ok) {
         setMessage(data.message || "Email envoyé");
+        setTimeout(() => navigate("/login"), 3000);
       } else {
         setError(data.error || "Erreur inconnue");
       }
