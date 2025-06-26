@@ -150,7 +150,7 @@ export default function Navbar() {
         ) : (
           <button
             onClick={(e) => handleLinkClick("/profile", e)}
-            className="flex items-center gap-3 w-full px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="flex items-center gap-3 w-full px-3 py-2 hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
             title={displayName}
             tabIndex={0}
           >
@@ -158,7 +158,7 @@ export default function Navbar() {
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+                className="w-10 h-10 rounded-full items-center object-cover border border-white shadow-sm"
                 style={{ minWidth: 40, minHeight: 40 }}
               />
             ) : (
