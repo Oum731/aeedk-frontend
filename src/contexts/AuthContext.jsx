@@ -14,7 +14,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
-        const tk = token || localStorage.getItem("token");
+        const tk = localStorage.getItem("token") || token;
         if (tk) {
           config.headers = config.headers || {};
           config.headers.Authorization = `Bearer ${tk}`;
@@ -23,6 +23,7 @@ export function AuthProvider({ children }) {
       },
       (error) => Promise.reject(error)
     );
+
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -30,6 +31,7 @@ export function AuthProvider({ children }) {
         return Promise.reject(error);
       }
     );
+
     return () => {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
@@ -45,8 +47,13 @@ export function AuthProvider({ children }) {
         setToken(savedToken);
         userObj = fixAvatar(userObj);
         setUser(userObj);
+
         try {
-          const res = await axios.get(`${API_URL}/user/${userObj.id}`);
+          const res = await axios.get(`${API_URL}/user/${userObj.id}`, {
+            headers: {
+              Authorization: `Bearer ${savedToken}`,
+            },
+          });
           const latestUser = res.data.user || res.data;
           if (latestUser?.id) updateUserInContext(latestUser);
           else setError("Impossible de retrouver l'utilisateur.");
