@@ -86,17 +86,17 @@ export default function Navbar() {
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Logo centré, plus grand, avec margin top */}
+        {/* Logo centré, même taille que photo de profil */}
         <button
           onClick={(e) => handleLinkClick("/", e)}
           className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2 mt-6"
           title="Accueil"
+          style={{ minWidth: 48, minHeight: 48 }}
         >
           <img
             src={logo}
             alt="logo"
             className="w-12 h-12 rounded-full object-cover border-2 border-[#1D4ED8]"
-            style={{ display: "block" }}
           />
           {isOpen && (
             <span className="font-bold text-blue-700 text-lg select-none">
@@ -120,9 +120,9 @@ export default function Navbar() {
       ))}
 
       {/* Section cloche en haut, photo profil en dessous, aligné à gauche */}
-      <div className="mt-auto w-full px-6 flex flex-col items-start gap-2">
+      <div className="mt-auto w-full px-4 flex flex-col items-start gap-2 relative">
         <div
-          className="cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-1"
           tabIndex={0}
           aria-label="Notifications"
           role="button"
@@ -139,13 +139,13 @@ export default function Navbar() {
             className="flex items-center gap-3 px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
             title={displayName}
             tabIndex={0}
+            style={{ minWidth: 48, minHeight: 48 }}
           >
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
-                style={{ minWidth: 40, minHeight: 40 }}
+                className="w-12 h-12 rounded-full object-cover border border-white shadow-sm"
               />
             ) : (
               <UserIcon size={22} />
