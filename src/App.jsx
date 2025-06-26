@@ -4,16 +4,18 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import RegisterForm from "./auth/RegisterForm";
 import LoginForm from "./auth/LoginForm";
+import ForgotPasswordForm from "./auth/ForgotPassword"; // ✅ Ajouté
+import ResetPasswordForm from "./auth/ResetPassword";
+import VerifyEmail from "./auth/VerifyEmail";
 import Profile from "./pages/Profile";
 import AdminHome from "./pages/AdminHome";
 import Footer from "./components/Footer";
 import MobileNavBar from "./components/MobileNavBar";
 import { useAuth } from "./contexts/AuthContext";
-import VerifyEmail from "./auth/VerifyEmail";
-import ResetPasswordForm from "./auth/ResetPassword";
 import { Toaster } from "react-hot-toast";
-import ScrollToHashElement from "./components/ScrollToHashElement"; // 👈 à créer
+import ScrollToHashElement from "./components/ScrollToHashElement"; // ✅ Assure-toi qu’il existe
 
+// ✅ Route protégée pour utilisateurs connectés
 function RequireAuth({ children }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -21,6 +23,7 @@ function RequireAuth({ children }) {
   return children;
 }
 
+// ✅ Route protégée pour les administrateurs
 function RequireAdmin({ children }) {
   const { user } = useAuth();
   if (!user || user.role !== "admin") {
@@ -40,13 +43,20 @@ export default function App() {
     <div className="min-h-screen flex flex-col bg-white">
       <Toaster position="top-right" toastOptions={{ duration: 4000 }} />
       <Navbar user={user} />
+
       <main className="pt-16 pb-16 md:pt-16 md:pb-0 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
-        <ScrollToHashElement /> {/* 👈 Pour gérer le scroll vers les ancres */}
+        <ScrollToHashElement />{" "}
+        {/* ✅ Pour activer le scroll vers les ancres */}
         <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+          <Route
+            path="/forgot-password"
+            element={<ForgotPasswordForm />}
+          />{" "}
+          {/* ✅ Route ajoutée */}
           <Route path="/verify/:token" element={<VerifyEmail />} />
           <Route path="/reset/:token" element={<ResetPasswordForm />} />
           <Route
@@ -79,6 +89,7 @@ export default function App() {
           />
         </Routes>
       </main>
+
       <div className="pl-0 md:pl-20 w-full hidden md:block">
         <Footer />
       </div>
