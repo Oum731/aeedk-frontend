@@ -105,7 +105,7 @@ export default function Profile({ onNavigate, viewedUserId, onBack }) {
       <div className="flex flex-wrap justify-center gap-3 mt-7 w-full max-w-3xl px-2">
         <button
           className="btn btn-ghost flex items-center gap-1"
-          onClick={() => onNavigate && onNavigate("/home")}
+          onClick={() => navigate("/home")}
           aria-label="Retour à l'accueil"
         >
           <Home size={18} /> Retour à l'accueil

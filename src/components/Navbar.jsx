@@ -66,32 +66,38 @@ export default function Navbar() {
 
   return (
     <aside
-      className={`fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4 transition-width duration-300 ${
+      className={`hidden md:flex fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex-col items-center py-4 gap-4 transition-width duration-300 ${
         isOpen ? "w-48" : "w-16"
       }`}
     >
-      <button
-        onClick={() => setIsOpen((o) => !o)}
-        className="absolute top-2 right-2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
-      >
-        {isOpen ? <X size={20} /> : <Menu size={20} />}
-      </button>
+      <div className="relative flex items-center w-full justify-center mb-5 px-3">
+        <button
+          onClick={(e) => handleLinkClick("/", e)}
+          className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2"
+          title="Accueil"
+        >
+          <img
+            src={logo}
+            alt="logo"
+            className="w-9 h-9 rounded-full object-cover border-2 border-[#1D4ED8]"
+          />
+          {isOpen && (
+            <span className="font-bold text-blue-700 text-lg select-none">
+              AEEDK
+            </span>
+          )}
+        </button>
 
-      <button
-        onClick={(e) => handleLinkClick("/", e)}
-        className="mb-5 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2 px-3"
-        title="Accueil"
-      >
-        <img
-          src={logo}
-          alt="logo"
-          className="w-9 h-9 rounded-full object-cover border-2 border-[#1D4ED8]"
-        />
-        {isOpen && (
-          <span className="font-bold text-blue-700 text-lg">AEEDK</span>
-        )}
-      </button>
+        <button
+          onClick={() => setIsOpen((o) => !o)}
+          className="absolute right-3 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
+          style={{ top: "50%", transform: "translateY(-50%)" }}
+          tabIndex={0}
+        >
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      </div>
 
       {menuItems.map((item) => (
         <button
