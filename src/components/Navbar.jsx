@@ -78,12 +78,12 @@ export default function Navbar() {
       >
         <button
           onClick={() => setIsOpen((o) => !o)}
-          className="absolute top-0 right-0 p-1 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
+          className="absolute top-0 right-0 p-0.5 rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-600"
           aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
           tabIndex={0}
           type="button"
         >
-          {isOpen ? <X size={22} /> : <Menu size={22} />}
+          {isOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
 
         <button
@@ -157,8 +157,8 @@ export default function Navbar() {
         {user ? (
           <button
             onClick={(e) => handleLinkClick("/profile", e)}
-            className="flex items-center gap-3  py-2 rounded-md hover:bg-blue-600 hover:text-white
-              focus:outline-none focus:ring-2 focus:ring-blue-600 justify-center w-full"
+            className="flex items-center gap-3 py-2 rounded-md hover:bg-blue-600 hover:text-white
+              focus:outline-none focus:ring-2 focus:ring-blue-600 justify-start w-full"
             title={displayName}
             tabIndex={0}
             style={{ minWidth: 48, minHeight: 48 }}
@@ -175,7 +175,7 @@ export default function Navbar() {
               <UserIcon size={48} />
             )}
             {isOpen && (
-              <span className="font-semibold truncate">{displayName}</span>
+              <span className="font-semibold truncate ml-3">{displayName}</span>
             )}
           </button>
         ) : (
