@@ -69,7 +69,7 @@ export default function Navbar() {
       className={`hidden md:flex fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex-col items-center py-4 gap-4 transition-width duration-300 ${
         isOpen ? "w-48" : "w-16"
       }`}
-      style={{ minWidth: isOpen ? 192 : 80 }}
+      style={{ minWidth: isOpen ? 192 : 64 }}
     >
       <div className="relative flex items-center w-full justify-center mb-5 px-6">
         <button
@@ -114,7 +114,18 @@ export default function Navbar() {
       ))}
 
       <div className="mt-auto w-full flex flex-col items-center px-6 gap-4">
-        <NotificationBell />
+        <div
+          className="w-full flex items-center justify-center rounded cursor-pointer transition hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-500"
+          tabIndex={0}
+          aria-label="Notifications"
+          role="button"
+          onClick={() => {
+            // You can add navigation or toggle notifications panel here
+          }}
+        >
+          <NotificationBell />
+        </div>
+
         {!user ? (
           <>
             <button

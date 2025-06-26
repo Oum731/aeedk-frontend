@@ -50,7 +50,6 @@ export default function MobileNavBar() {
         } else {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
-        // Met à jour l'url avec le hash sans recharger
         navigate(`${base}#${hash}`, { replace: true });
       } else {
         window.scrollTo({ top: 0, behavior: "smooth" });
@@ -83,7 +82,7 @@ export default function MobileNavBar() {
           <span className="font-bold text-blue-700 text-base">AEEDK</span>
         </Link>
         <div className="flex items-center gap-3">
-          <NotificationBell />
+          <NotificationBell className="hover:text-blue-600 cursor-pointer transition" />
           {!user ? (
             <>
               <Link
@@ -106,10 +105,14 @@ export default function MobileNavBar() {
               tabIndex={0}
             >
               <img
-                src={getUserAvatarSrc(user)}
+                src={getUserAvatarSrc(user, true)}
                 alt={displayName}
                 className="w-7 h-7 rounded-full object-cover border mr-1"
-                style={{ minWidth: 28 }}
+                style={{
+                  minWidth: 28,
+                  minHeight: 28,
+                  display: "block",
+                }}
               />
               {displayName.length > 12 ? "Moi" : displayName}
             </Link>
