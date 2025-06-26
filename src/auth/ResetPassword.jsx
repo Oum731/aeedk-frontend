@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import API_URL from "../config";
@@ -18,13 +18,16 @@ export default function ResetPasswordForm() {
   const [error, setError] = useState("");
   const [redirecting, setRedirecting] = useState(false);
 
-  // États pour afficher/masquer les mots de passe
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  const passwordInputRef = useRef(null);
 
   useEffect(() => {
     if (!token) {
       setError("Lien de réinitialisation invalide.");
+    } else {
+      passwordInputRef.current?.focus();
     }
   }, [token]);
 
@@ -41,6 +44,7 @@ export default function ResetPasswordForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setMessage("");
     const err = validate();
     if (err) {
       setError(err);
@@ -73,18 +77,29 @@ export default function ResetPasswordForm() {
     <div className="max-w-md mx-auto p-6 rounded-xl shadow bg-base-100 my-8">
       <h2 className="text-2xl font-bold mb-4">Nouveau mot de passe</h2>
       {error && !token ? (
-        <div className="text-error text-sm">{error}</div>
+        <div className="text-error text-sm" role="alert">
+          {error}
+        </div>
       ) : (
-        <form onSubmit={handleSubmit} className="space-y-3 relative">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-3 relative"
+          noValidate
+          aria-describedby="form-error form-message"
+        >
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               required
+              id="password"
+              aria-describedby="form-error"
+              aria-invalid={!!error}
               className="input input-bordered w-full pr-10"
               placeholder="Nouveau mot de passe"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading || redirecting}
+              ref={passwordInputRef}
             />
             <button
               type="button"
@@ -103,6 +118,9 @@ export default function ResetPasswordForm() {
             <input
               type={showConfirm ? "text" : "password"}
               required
+              id="confirm-password"
+              aria-describedby="form-error"
+              aria-invalid={!!error}
               className="input input-bordered w-full pr-10"
               placeholder="Confirmer mot de passe"
               value={confirm}
@@ -133,8 +151,20 @@ export default function ResetPasswordForm() {
             {redirecting ? "Redirection..." : "Valider"}
           </button>
 
-          {message && <div className="text-success text-sm">{message}</div>}
-          {error && <div className="text-error text-sm">{error}</div>}
+          {message && (
+            <div
+              id="form-message"
+              className="text-success text-sm"
+              role="alert"
+            >
+              {message}
+            </div>
+          )}
+          {error && (
+            <div id="form-error" className="text-error text-sm" role="alert">
+              {error}
+            </div>
+          )}
         </form>
       )}
     </div>
