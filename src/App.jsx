@@ -4,18 +4,16 @@ import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import RegisterForm from "./auth/RegisterForm";
 import LoginForm from "./auth/LoginForm";
-import ForgotPasswordForm from "./auth/ForgotPassword"; // ✅ Ajouté
+import ForgotPasswordForm from "./auth/ForgotPassword";
 import ResetPasswordForm from "./auth/ResetPassword";
-import VerifyEmail from "./auth/VerifyEmail";
 import Profile from "./pages/Profile";
 import AdminHome from "./pages/AdminHome";
 import Footer from "./components/Footer";
 import MobileNavBar from "./components/MobileNavBar";
 import { useAuth } from "./contexts/AuthContext";
 import { Toaster } from "react-hot-toast";
-import ScrollToHashElement from "./components/ScrollToHashElement"; // ✅ Assure-toi qu’il existe
+import ScrollToHashElement from "./components/ScrollToHashElement";
 
-// ✅ Route protégée pour utilisateurs connectés
 function RequireAuth({ children }) {
   const { user } = useAuth();
   const location = useLocation();
@@ -23,7 +21,6 @@ function RequireAuth({ children }) {
   return children;
 }
 
-// ✅ Route protégée pour les administrateurs
 function RequireAdmin({ children }) {
   const { user } = useAuth();
   if (!user || user.role !== "admin") {
@@ -46,7 +43,6 @@ export default function App() {
 
       <main className="pt-16 pb-16 md:pt-16 md:pb-0 px-4 w-full flex-1 scroll-smooth max-w-screen-2xl mx-auto pl-0 md:pl-20">
         <ScrollToHashElement />{" "}
-        {/* ✅ Pour activer le scroll vers les ancres */}
         <Routes>
           <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/home" element={<Home />} />
@@ -56,8 +52,6 @@ export default function App() {
             path="/forgot-password"
             element={<ForgotPasswordForm />}
           />{" "}
-          {/* ✅ Route ajoutée */}
-          <Route path="/verify/:token" element={<VerifyEmail />} />
           <Route path="/reset/:token" element={<ResetPasswordForm />} />
           <Route
             path="/profile"

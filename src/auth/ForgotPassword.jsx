@@ -25,8 +25,7 @@ export default function ForgotPasswordForm() {
 
       const data = await res.json();
       if (res.ok) {
-        setMessage(data.message || "Email envoyé");
-        setTimeout(() => navigate("/login"), 3000);
+        setMessage(data.message || "Un lien a été envoyé à votre email.");
       } else {
         setError(data.error || "Erreur inconnue");
       }
@@ -58,9 +57,18 @@ export default function ForgotPasswordForm() {
           {loading && <LoaderCircle className="animate-spin mr-2" size={18} />}{" "}
           Envoyer
         </button>
-        {message && <div className="text-success text-sm">{message}</div>}
-        {error && <div className="text-error text-sm">{error}</div>}
+        {message && <div className="text-success text-sm mt-3">{message}</div>}
+        {error && <div className="text-error text-sm mt-3">{error}</div>}
       </form>
+
+      {message && (
+        <button
+          onClick={() => navigate("/login")}
+          className="btn btn-outline w-full mt-4"
+        >
+          Retour à la connexion
+        </button>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LoaderCircle } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function LoginForm() {
   const { login, user } = useAuth();
@@ -9,9 +9,25 @@ export default function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const navigate = useNavigate();
+  const [resetStatus, setResetStatus] = useState(null);
+  const [verifyStatus, setVerifyStatus] = useState(null);
+
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/home";
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const reset = params.get("reset");
+    const verified = params.get("verified");
+
+    if (reset) setResetStatus(reset);
+    if (verified) setVerifyStatus(verified);
+
+    if (reset || verified) {
+      const cleanUrl = location.pathname;
+      window.history.replaceState(null, "", cleanUrl);
+    }
+  }, [location]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -30,7 +46,7 @@ export default function LoginForm() {
     setLoading(false);
 
     if (result.success) {
-      navigate(from);
+      navigate("/home");
     } else {
       setError(result.error || "Erreur lors de la connexion.");
     }
@@ -38,19 +54,31 @@ export default function LoginForm() {
 
   if (user) return null;
 
-  const successMessage = location.state?.verified
-    ? "Email confirmé. Vous pouvez vous connecter."
-    : location.state?.reset
-    ? "Mot de passe réinitialisé. Vous pouvez vous connecter."
-    : "";
-
   return (
     <div className="max-w-md mx-auto p-6 rounded-xl shadow bg-base-100 my-8">
       <h2 className="text-2xl font-bold mb-4">Connexion</h2>
 
-      {successMessage && (
-        <div className="text-success text-sm mb-2">{successMessage}</div>
+      {resetStatus === "success" && (
+        <div className="text-success text-sm mb-2">
+          Mot de passe réinitialisé. Vous pouvez vous connecter.
+        </div>
       )}
+      {verifyStatus === "success" && (
+        <div className="text-success text-sm mb-2">
+          Email confirmé. Vous pouvez vous connecter.
+        </div>
+      )}
+      {resetStatus === "fail" && (
+        <div className="text-error text-sm mb-2">
+          Le lien de réinitialisation est invalide ou expiré.
+        </div>
+      )}
+      {verifyStatus === "fail" && (
+        <div className="text-error text-sm mb-2">
+          Le lien de confirmation est invalide ou expiré.
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label htmlFor="identifier" className="block text-sm font-medium">
