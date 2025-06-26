@@ -45,7 +45,7 @@ export default function ProfileForm({
   readOnly,
   onAvatarChange,
   onNavigate,
-  autoRedirect = false,
+  autoRedirect = false, // true pour rediriger vers /profile, false vers /home
 }) {
   const { user, token, updateUserInContext } = useAuth();
   const isMe = !userData || (user && userData && user.id === userData.id);
@@ -156,8 +156,15 @@ export default function ProfileForm({
         setAvatarPreview(null);
         setAvatarFile(null);
         setEditing && setEditing(false);
-        if (onNavigate && autoRedirect)
-          setTimeout(() => onNavigate("/profile"), 1200);
+        if (onNavigate) {
+          setTimeout(() => {
+            if (autoRedirect) {
+              onNavigate("/profile");
+            } else {
+              onNavigate("/home");
+            }
+          }, 1200);
+        }
       } else {
         showToast("Mise à jour échouée (données serveur inattendues)", "error");
       }
