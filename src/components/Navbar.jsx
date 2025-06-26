@@ -71,8 +71,9 @@ export default function Navbar() {
       }`}
       style={{ minWidth: isOpen ? 192 : 64 }}
     >
+      {/* Conteneur logo + toggle bouton */}
       <div
-        className="relative flex items-center w-full justify-center mb-5 px-6"
+        className="flex items-center w-full px-4 mb-5"
         style={{ paddingTop: isOpen ? "0" : "12px" }}
       >
         <button
@@ -93,11 +94,11 @@ export default function Navbar() {
           )}
         </button>
 
+        {/* Bouton toggle aligné à droite */}
         <button
           onClick={() => setIsOpen((o) => !o)}
-          className="absolute right-4 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="ml-auto p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
-          style={{ top: "50%", transform: "translateY(-50%)" }}
           tabIndex={0}
         >
           {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -117,21 +118,45 @@ export default function Navbar() {
         </button>
       ))}
 
-      <div className="mt-auto w-full flex flex-col items-center px-6 gap-4">
-        <div
-          className="w-full flex items-center justify-center rounded cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-          tabIndex={0}
-          aria-label="Notifications"
-          role="button"
-          onClick={() => {
-            // Ajoute navigation ou toggle notifications si besoin
-          }}
-        >
-          <NotificationBell />
+      {/* Section profil + cloche alignés en bas à gauche */}
+      <div className="mt-auto w-full px-6">
+        <div className="flex items-center gap-2 justify-start">
+          <div
+            className="cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            tabIndex={0}
+            aria-label="Notifications"
+            role="button"
+            onClick={() => {
+              // navigation ou toggle notifications si besoin
+            }}
+          >
+            <NotificationBell />
+          </div>
+
+          {!user ? null : (
+            <button
+              onClick={(e) => handleLinkClick("/profile", e)}
+              className="flex items-center gap-3 px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+              title={displayName}
+              tabIndex={0}
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+                  style={{ minWidth: 40, minHeight: 40 }}
+                />
+              ) : (
+                <UserIcon size={22} />
+              )}
+              {isOpen && <span>{displayName}</span>}
+            </button>
+          )}
         </div>
 
-        {!user ? (
-          <>
+        {!user && (
+          <div className="mt-4 flex flex-col gap-2">
             <button
               onClick={(e) => handleLinkClick("/register", e)}
               className="flex items-center gap-3 w-full px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -150,26 +175,7 @@ export default function Navbar() {
               <LogIn size={22} />
               {isOpen && <span>Connexion</span>}
             </button>
-          </>
-        ) : (
-          <button
-            onClick={(e) => handleLinkClick("/profile", e)}
-            className="flex items-center gap-3 w-full px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-            title={displayName}
-            tabIndex={0}
-          >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
-                style={{ minWidth: 40, minHeight: 40 }}
-              />
-            ) : (
-              <UserIcon size={22} />
-            )}
-            {isOpen && <span>{displayName}</span>}
-          </button>
+          </div>
         )}
       </div>
     </aside>
