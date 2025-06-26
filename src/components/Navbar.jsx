@@ -86,7 +86,7 @@ export default function Navbar() {
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Logo centré, avec margin top pour éviter chevauchement */}
+        {/* Logo centré, plus grand, avec margin top */}
         <button
           onClick={(e) => handleLinkClick("/", e)}
           className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2 mt-6"
@@ -95,7 +95,7 @@ export default function Navbar() {
           <img
             src={logo}
             alt="logo"
-            className="w-9 h-9 rounded-full object-cover border-2 border-[#1D4ED8]"
+            className="w-12 h-12 rounded-full object-cover border-2 border-[#1D4ED8]"
             style={{ display: "block" }}
           />
           {isOpen && (
@@ -119,49 +119,43 @@ export default function Navbar() {
         </button>
       ))}
 
-      {/* Section profil + cloche alignés en bas à gauche */}
-      <div className="mt-auto w-full px-6">
-        {/* Conteneur relatif pour photo + cloche */}
-        <div className="relative flex items-center justify-start">
-          {/* Photo profil + nom */}
-          {!user ? null : (
-            <button
-              onClick={(e) => handleLinkClick("/profile", e)}
-              className="flex items-center gap-3 px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
-              title={displayName}
-              tabIndex={0}
-            >
-              {avatarUrl ? (
-                <img
-                  src={avatarUrl}
-                  alt={displayName}
-                  className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
-                  style={{ minWidth: 40, minHeight: 40 }}
-                />
-              ) : (
-                <UserIcon size={22} />
-              )}
-              {isOpen && <span>{displayName}</span>}
-            </button>
-          )}
-
-          {/* Cloche en absolute top left du bouton profil */}
-          <div
-            className="absolute -top-3 -left-6 cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            tabIndex={0}
-            aria-label="Notifications"
-            role="button"
-            onClick={() => {
-              // navigation ou toggle notifications si besoin
-            }}
-            style={{ zIndex: 10 }}
-          >
-            <NotificationBell />
-          </div>
+      {/* Section cloche en haut, photo profil en dessous, aligné à gauche */}
+      <div className="mt-auto w-full px-6 flex flex-col items-start gap-2">
+        <div
+          className="cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          tabIndex={0}
+          aria-label="Notifications"
+          role="button"
+          onClick={() => {
+            // navigation ou toggle notifications si besoin
+          }}
+        >
+          <NotificationBell />
         </div>
 
+        {!user ? null : (
+          <button
+            onClick={(e) => handleLinkClick("/profile", e)}
+            className="flex items-center gap-3 px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            title={displayName}
+            tabIndex={0}
+          >
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={displayName}
+                className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+                style={{ minWidth: 40, minHeight: 40 }}
+              />
+            ) : (
+              <UserIcon size={22} />
+            )}
+            {isOpen && <span>{displayName}</span>}
+          </button>
+        )}
+
         {!user && (
-          <div className="mt-4 flex flex-col gap-2">
+          <div className="mt-4 flex flex-col gap-2 w-full">
             <button
               onClick={(e) => handleLinkClick("/register", e)}
               className="flex items-center gap-3 w-full px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500"
