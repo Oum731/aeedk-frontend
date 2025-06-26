@@ -16,6 +16,7 @@ export default function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -52,6 +53,7 @@ export default function ResetPasswordForm() {
       const data = await res.json();
       if (res.ok) {
         setMessage(data.message || "Mot de passe réinitialisé.");
+        setRedirecting(true);
         setTimeout(() => navigate("/login"), 2000);
       } else {
         setError(data.error || "Erreur inconnue.");
@@ -77,6 +79,7 @@ export default function ResetPasswordForm() {
             placeholder="Nouveau mot de passe"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            disabled={loading || redirecting}
           />
           <input
             type="password"
@@ -85,16 +88,17 @@ export default function ResetPasswordForm() {
             placeholder="Confirmer mot de passe"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
+            disabled={loading || redirecting}
           />
           <button
             className="btn btn-primary w-full"
             type="submit"
-            disabled={loading || !!validate()}
+            disabled={loading || !!validate() || redirecting}
           >
             {loading && (
               <LoaderCircle className="animate-spin mr-2" size={18} />
             )}
-            Valider
+            {redirecting ? "Redirection..." : "Valider"}
           </button>
           {message && <div className="text-success text-sm">{message}</div>}
           {error && <div className="text-error text-sm">{error}</div>}
