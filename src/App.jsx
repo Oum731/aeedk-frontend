@@ -52,7 +52,7 @@ export default function App() {
             path="/forgot-password"
             element={<ForgotPasswordForm />}
           />{" "}
-          <Route path="/reset/:token" element={<ResetPasswordForm />} />
+          <Route path="/reset-password" element={<ResetPasswordForm />} />
           <Route
             path="/profile"
             element={
