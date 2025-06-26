@@ -86,11 +86,11 @@ export default function Navbar() {
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Logo centré, taille fixe, sans texte */}
+        {/* Logo centré, taille fixe, sans texte, avec tooltip */}
         <button
           onClick={(e) => handleLinkClick("/", e)}
-          className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center justify-center mt-6"
-          title="Accueil"
+          className="relative focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center justify-center mt-6"
+          title=""
           style={{ minWidth: 48, minHeight: 48 }}
         >
           <img
@@ -98,7 +98,17 @@ export default function Navbar() {
             alt="logo"
             className="w-12 h-12 rounded-full object-cover border-2 border-[#1D4ED8]"
           />
-          {/* Plus de texte à côté du logo */}
+          {/* Tooltip personnalisé */}
+          <span
+            className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap
+            opacity-0 pointer-events-none
+            bg-black bg-opacity-80 text-white text-xs font-semibold px-3 py-1 rounded
+            transition-opacity duration-200
+            group-hover:opacity-100
+          "
+          >
+            Association des élèves et étudiants du département de Kouto
+          </span>
         </button>
       </div>
 
@@ -132,8 +142,7 @@ export default function Navbar() {
         {!user ? null : (
           <button
             onClick={(e) => handleLinkClick("/profile", e)}
-            className={`flex items-center gap-3 px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500 justify-center
-              ${isOpen ? "justify-start" : "justify-center"}`}
+            className="flex items-center gap-3 px-3 py-2 hover:bg-[#1D4ED8] hover:text-white rounded transition focus:outline-none focus:ring-2 focus:ring-blue-500 justify-center"
             title={displayName}
             tabIndex={0}
             style={{ minWidth: 48, minHeight: 48 }}
@@ -147,6 +156,7 @@ export default function Navbar() {
             ) : (
               <UserIcon size={22} />
             )}
+            {/* Affiche le nom uniquement si sidebar ouverte */}
             {isOpen && <span>{displayName}</span>}
           </button>
         )}
@@ -174,6 +184,15 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      {/* Style pour tooltip */}
+      <style>{`
+        /* Tooltip visible au hover sur le bouton logo */
+        button.relative:hover span.absolute {
+          opacity: 1 !important;
+          pointer-events: auto !important;
+        }
+      `}</style>
     </aside>
   );
 }
