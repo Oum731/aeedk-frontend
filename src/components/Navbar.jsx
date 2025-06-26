@@ -73,12 +73,23 @@ export default function Navbar() {
     >
       {/* Conteneur logo + toggle bouton */}
       <div
-        className="flex items-center w-full px-4 mb-5"
+        className="relative flex flex-col items-center w-full px-4 mb-5"
         style={{ paddingTop: isOpen ? "0" : "12px" }}
       >
+        {/* Bouton toggle en absolute top right */}
+        <button
+          onClick={() => setIsOpen((o) => !o)}
+          className="absolute top-0 right-0 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
+          tabIndex={0}
+        >
+          {isOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+
+        {/* Logo centré, avec margin top pour éviter chevauchement */}
         <button
           onClick={(e) => handleLinkClick("/", e)}
-          className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2"
+          className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2 mt-6"
           title="Accueil"
         >
           <img
@@ -92,16 +103,6 @@ export default function Navbar() {
               AEEDK
             </span>
           )}
-        </button>
-
-        {/* Bouton toggle aligné à droite */}
-        <button
-          onClick={() => setIsOpen((o) => !o)}
-          className="ml-auto p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
-          tabIndex={0}
-        >
-          {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
@@ -120,19 +121,9 @@ export default function Navbar() {
 
       {/* Section profil + cloche alignés en bas à gauche */}
       <div className="mt-auto w-full px-6">
-        <div className="flex items-center gap-2 justify-start">
-          <div
-            className="cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            tabIndex={0}
-            aria-label="Notifications"
-            role="button"
-            onClick={() => {
-              // navigation ou toggle notifications si besoin
-            }}
-          >
-            <NotificationBell />
-          </div>
-
+        {/* Conteneur relatif pour photo + cloche */}
+        <div className="relative flex items-center justify-start">
+          {/* Photo profil + nom */}
           {!user ? null : (
             <button
               onClick={(e) => handleLinkClick("/profile", e)}
@@ -153,6 +144,20 @@ export default function Navbar() {
               {isOpen && <span>{displayName}</span>}
             </button>
           )}
+
+          {/* Cloche en absolute top left du bouton profil */}
+          <div
+            className="absolute -top-3 -left-6 cursor-pointer transition hover:bg-[#1D4ED8] hover:text-white rounded p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            tabIndex={0}
+            aria-label="Notifications"
+            role="button"
+            onClick={() => {
+              // navigation ou toggle notifications si besoin
+            }}
+            style={{ zIndex: 10 }}
+          >
+            <NotificationBell />
+          </div>
         </div>
 
         {!user && (
