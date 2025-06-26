@@ -86,10 +86,10 @@ export default function Navbar() {
           {isOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Logo centré, même taille que photo de profil */}
+        {/* Logo centré, taille et bordure identique à photo profil */}
         <button
           onClick={(e) => handleLinkClick("/", e)}
-          className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2 mt-6"
+          className="relative focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2 mt-6"
           title="Accueil"
           style={{ minWidth: 48, minHeight: 48 }}
         >
@@ -103,6 +103,17 @@ export default function Navbar() {
               AEEDK
             </span>
           )}
+          {/* Tooltip au survol */}
+          <span
+            className="absolute left-full top-1/2 -translate-y-1/2 ml-2 whitespace-nowrap
+            opacity-0 pointer-events-none
+            bg-black bg-opacity-80 text-white text-xs font-semibold px-3 py-1 rounded
+            transition-opacity duration-200
+            group-hover:opacity-100
+          "
+          >
+            Association des élèves et étudiants du département de Kouto
+          </span>
         </button>
       </div>
 
@@ -177,6 +188,14 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      <style>{`
+        /* Tooltip visible au hover sur le bouton logo */
+        button.relative:hover span.absolute {
+          opacity: 1 !important;
+          pointer-events: auto !important;
+        }
+      `}</style>
     </aside>
   );
 }
