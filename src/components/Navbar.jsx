@@ -158,7 +158,7 @@ export default function Navbar() {
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-10 h-10 rounded-full items-center object-cover border border-white shadow-sm"
+                className="w-10 h-10 rounded-full items-start object-cover border overflow-auto border-white shadow-sm"
                 style={{ minWidth: 40, minHeight: 40 }}
               />
             ) : (
