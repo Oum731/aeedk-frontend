@@ -129,7 +129,7 @@ export default function ProfileForm({
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "string") value = value.trim();
-      if (value === "" || value === undefined || value === null) continue; // <-- Ajoute QUE si valeur
+      if (value === "" || value === undefined || value === null) continue;
       if (key === "birth_date") {
         if (!isValidDate(value)) {
           showToast(

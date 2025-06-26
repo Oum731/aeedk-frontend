@@ -84,9 +84,18 @@ export default function PostCard({
           </span>
         )}
         <div className="flex flex-col min-w-0">
-          <span className="font-semibold text-base md:text-lg leading-tight truncate">
-            {displayName}
-          </span>
+          <div className="flex items-center gap-2">
+            <div
+              className={`w-3 h-3 rounded-full ${
+                user.is_online ? "bg-green-500" : "bg-gray-400"
+              }`}
+              title={user.is_online ? "En ligne" : "Hors ligne"}
+              aria-label={user.is_online ? "En ligne" : "Hors ligne"}
+            />
+            <span className="font-semibold text-base md:text-lg leading-tight truncate">
+              {displayName}
+            </span>
+          </div>
           <span className="text-xs md:text-sm text-gray-400 leading-tight truncate">
             {dateLabel}
           </span>

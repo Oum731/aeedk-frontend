@@ -1,10 +1,11 @@
 import React, { useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Home, Info, Newspaper, Mail, User } from "lucide-react";
+import { Home, Info, Newspaper, Mail } from "lucide-react";
 import logo from "../assets/logo.jpeg";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
 import { useAuth } from "../contexts/AuthContext";
 import clsx from "clsx";
+import NotificationBell from "../components/NotificationBell";
 
 const sections = [
   { id: "accueil", icon: <Home size={20} />, label: "Accueil", path: "/home" },
@@ -38,39 +39,32 @@ export default function MobileNavBar() {
     user?.first_name || user?.username || user?.email || "Moi";
 
   const handleNav = (s) => {
-    if (s.path.includes("#")) {
-      const [base, hash] = s.path.split("#");
-      if (location.pathname !== base) {
-        navigate(s.path); // Ex: /home#contact
-      } else {
+    const [base, hash] = s.path.split("#");
+    if (location.pathname !== base) {
+      navigate(s.path);
+    } else {
+      if (hash) {
         const el = document.getElementById(hash);
         if (el) {
           el.scrollIntoView({ behavior: "smooth", block: "start" });
         } else {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
-      }
-    } else {
-      if (location.pathname !== s.path) {
-        navigate(s.path);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        // Met à jour l'url avec le hash sans recharger
+        navigate(`${base}#${hash}`, { replace: true });
       } else {
         window.scrollTo({ top: 0, behavior: "smooth" });
+        navigate(base, { replace: true });
       }
     }
     lastNavRef.current = s.id;
   };
 
   const activeSection = (() => {
+    if (!location.pathname.startsWith("/home")) return "";
     const hash = location.hash?.replace("#", "");
-    if (
-      location.pathname === "/home" &&
-      hash &&
-      sections.find((s) => s.id === hash)
-    )
-      return hash;
-    if (location.pathname === "/home") return "accueil";
-    return "";
+    if (hash && sections.find((s) => s.id === hash)) return hash;
+    return "accueil";
   })();
 
   return (
@@ -89,6 +83,7 @@ export default function MobileNavBar() {
           <span className="font-bold text-blue-700 text-base">AEEDK</span>
         </Link>
         <div className="flex items-center gap-3">
+          <NotificationBell />
           {!user ? (
             <>
               <Link
@@ -121,6 +116,7 @@ export default function MobileNavBar() {
           )}
         </div>
       </header>
+
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow md:hidden flex justify-between items-center h-14 px-2 sm:px-4 pb-[env(safe-area-inset-bottom)]">
         {sections.map((s) => (
           <button
