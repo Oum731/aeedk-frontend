@@ -66,11 +66,12 @@ export default function Navbar() {
 
   return (
     <aside
-      className={`hidden md:flex fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex-col items-center py-4 gap-4 transition-width duration-300 ${
-        isOpen ? "w-48" : "w-16"
+      className={`hidden md:flex fixed top-0 left-0 z-[89] h-screen bg-base-100 shadow-xl flex flex-col items-center py-4 gap-4 transition-width duration-300 ${
+        isOpen ? "w-48" : "w-20"
       }`}
+      style={{ minWidth: isOpen ? 192 : 80 }} // 48 * 4 = 192px, 20*4=80px
     >
-      <div className="relative flex items-center w-full justify-center mb-5 px-3">
+      <div className="relative flex items-center w-full justify-center mb-5 px-6">
         <button
           onClick={(e) => handleLinkClick("/", e)}
           className="focus:outline-none focus:ring-2 focus:ring-blue-500 rounded flex items-center gap-2"
@@ -88,9 +89,10 @@ export default function Navbar() {
           )}
         </button>
 
+        {/* bouton toggle à droite, hors du logo */}
         <button
           onClick={() => setIsOpen((o) => !o)}
-          className="absolute right-3 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="absolute right-4 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           aria-label={isOpen ? "Réduire le menu" : "Ouvrir le menu"}
           style={{ top: "50%", transform: "translateY(-50%)" }}
           tabIndex={0}
@@ -112,7 +114,7 @@ export default function Navbar() {
         </button>
       ))}
 
-      <div className="mt-auto w-full flex flex-col items-center px-3 gap-4">
+      <div className="mt-auto w-full flex flex-col items-center px-6 gap-4">
         <NotificationBell />
         {!user ? (
           <>
@@ -146,7 +148,8 @@ export default function Navbar() {
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-8 h-8 rounded-full object-cover border"
+                className="w-10 h-10 rounded-full object-cover border border-white shadow-sm"
+                style={{ minWidth: 40, minHeight: 40 }}
               />
             ) : (
               <UserIcon size={22} />
