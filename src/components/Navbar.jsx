@@ -168,7 +168,8 @@ export default function Navbar() {
               <img
                 src={avatarUrl}
                 alt={displayName}
-                className="w-12 h-12 rounded-full object-cover border-2 border-white"
+                className="rounded-full object-cover border-2 border-white"
+                style={{ width: 48, height: 48, minWidth: 48, minHeight: 48 }}
               />
             ) : (
               <UserIcon size={48} />
