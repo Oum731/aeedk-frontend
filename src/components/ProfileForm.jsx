@@ -129,7 +129,8 @@ export default function ProfileForm({
     for (const key of allowedFields) {
       let value = form[key];
       if (typeof value === "string") value = value.trim();
-      if (key === "birth_date" && value) {
+      if (value === "" || value === undefined || value === null) continue; // <-- Ajoute QUE si valeur
+      if (key === "birth_date") {
         if (!isValidDate(value)) {
           showToast(
             "La date de naissance doit être au format YYYY-MM-DD.",
@@ -139,7 +140,7 @@ export default function ProfileForm({
           return;
         }
       }
-      formData.append(key, value || "");
+      formData.append(key, value);
     }
     if (avatarFile) {
       formData.append("avatar", avatarFile);
