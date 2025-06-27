@@ -11,12 +11,6 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [posts, setPosts] = useState([]);
-  const [comments, setComments] = useState([]);
-  const [likes, setLikes] = useState({});
-  const [users, setUsers] = useState([]);
-  const [unreadNotifCount, setUnreadNotifCount] = useState(0);
-
   useEffect(() => {
     const requestInterceptor = axios.interceptors.request.use(
       (config) => {
@@ -29,6 +23,7 @@ export function AuthProvider({ children }) {
       },
       (error) => Promise.reject(error)
     );
+
     const responseInterceptor = axios.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -36,6 +31,7 @@ export function AuthProvider({ children }) {
         return Promise.reject(error);
       }
     );
+
     return () => {
       axios.interceptors.request.eject(requestInterceptor);
       axios.interceptors.response.eject(responseInterceptor);
@@ -51,9 +47,12 @@ export function AuthProvider({ children }) {
         setToken(savedToken);
         userObj = fixAvatar(userObj);
         setUser(userObj);
+
         try {
           const res = await axios.get(`${API_URL}/user/${userObj.id}`, {
-            headers: { Authorization: `Bearer ${savedToken}` },
+            headers: {
+              Authorization: `Bearer ${savedToken}`,
+            },
           });
           const latestUser = res.data.user || res.data;
           if (latestUser?.id) updateUserInContext(latestUser);
@@ -68,37 +67,6 @@ export function AuthProvider({ children }) {
     initializeAuth();
     // eslint-disable-next-line
   }, []);
-
-  useEffect(() => {
-    if (!token) return;
-    const interval = setInterval(() => {
-      refreshAllLiveData();
-    }, 5000);
-    refreshAllLiveData();
-    return () => clearInterval(interval);
-    // eslint-disable-next-line
-  }, [token]);
-
-  const refreshAllLiveData = async () => {
-    if (!token) return;
-    try {
-      const [postsRes, commentsRes, likesRes, usersRes, notifRes] =
-        await Promise.all([
-          axios.get(`${API_URL}/posts`),
-          axios.get(`${API_URL}/comments`),
-          axios.get(`${API_URL}/likes/all`),
-          axios.get(`${API_URL}/user/all`),
-          axios.get(`${API_URL}/notifications/unread_count`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }),
-        ]);
-      setPosts(postsRes.data.posts || postsRes.data);
-      setComments(commentsRes.data.comments || commentsRes.data);
-      setLikes(likesRes.data.likes || likesRes.data);
-      setUsers(usersRes.data.users || usersRes.data);
-      setUnreadNotifCount(notifRes.data.unread_count || 0);
-    } catch (e) {}
-  };
 
   const fixAvatar = (userObj) => {
     if (
@@ -138,7 +106,6 @@ export function AuthProvider({ children }) {
       updateUserInContext(userData);
       setToken(jwtToken);
       localStorage.setItem("token", jwtToken);
-      refreshAllLiveData();
       return { success: true };
     } catch (err) {
       let errorMsg = "Erreur de connexion";
@@ -159,7 +126,6 @@ export function AuthProvider({ children }) {
     setError(null);
     try {
       await axios.post(`${API_URL}/user/register`, formData);
-      refreshAllLiveData();
       return {
         success: true,
         message: "Inscription réussie. Vérifiez votre email.",
@@ -182,11 +148,6 @@ export function AuthProvider({ children }) {
     setUser(null);
     setToken(null);
     setError(null);
-    setPosts([]);
-    setComments([]);
-    setLikes({});
-    setUsers([]);
-    setUnreadNotifCount(0);
     localStorage.removeItem("user");
     localStorage.removeItem("token");
     delete axios.defaults.headers.common["Authorization"];
@@ -228,17 +189,6 @@ export function AuthProvider({ children }) {
     loading,
     error,
     isAuthenticated: !!user && !!token,
-    posts,
-    setPosts,
-    comments,
-    setComments,
-    likes,
-    setLikes,
-    users,
-    setUsers,
-    unreadNotifCount,
-    setUnreadNotifCount,
-    refreshAllLiveData,
     register,
     login,
     logout,
