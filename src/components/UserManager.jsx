@@ -18,6 +18,59 @@ function getAge(birth_date) {
   return age;
 }
 
+function Toast({ msg, type, onClose }) {
+  if (!msg) return null;
+  const color =
+    type === "success"
+      ? "bg-green-50 border-green-400 text-green-700"
+      : type === "error"
+      ? "bg-red-50 border-red-400 text-red-700"
+      : "bg-blue-50 border-blue-400 text-blue-700";
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center z-[9999]"
+      style={{ background: "rgba(0,0,0,0.13)", animation: "fadeIn 0.17s" }}
+      onClick={onClose}
+    >
+      <div
+        className={`px-5 py-3 border rounded-xl shadow-lg flex items-center gap-3 min-w-[200px] max-w-xs ${color} text-center`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {type === "success" ? (
+          <svg
+            className="w-5 h-5 text-green-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        ) : type === "error" ? (
+          <svg
+            className="w-5 h-5 text-red-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        ) : null}
+        <div>{msg}</div>
+      </div>
+    </div>
+  );
+}
+
 export default function UserManager({ onNavigate }) {
   const { user, token, updateUserInContext, logout } = useAuth();
   const [users, setUsers] = useState([]);
@@ -33,29 +86,31 @@ export default function UserManager({ onNavigate }) {
     village: "",
     birth_date: "",
   });
-  const [error, setError] = useState("");
-  const [msg, setMsg] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [toast, setToast] = useState({ msg: "", type: "" });
 
   useEffect(() => {
     if (user?.role === "admin" && token) fetchUsers();
-    // eslint-disable-next-line
   }, [user, token]);
+
+  const showToast = (msg, type = "success", time = 2200) => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: "", type: "" }), time);
+  };
 
   const fetchUsers = async () => {
     if (!token) return;
     try {
-      setError("");
-      setMsg("");
       const { data } = await axios.get(`${API_URL}/user/admin/users`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(data.users || []);
     } catch (err) {
-      setError(
+      showToast(
         err.response?.data?.error ||
           err.response?.data?.message ||
-          "Impossible de charger les utilisateurs."
+          "Impossible de charger les utilisateurs.",
+        "error"
       );
       setUsers([]);
     }
@@ -69,13 +124,14 @@ export default function UserManager({ onNavigate }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUsers((prev) => prev.filter((u) => u.id !== confirmDeleteId));
-      setMsg("Utilisateur supprimé.");
+      showToast("Utilisateur supprimé.", "success");
       setConfirmDeleteId(null);
     } catch (err) {
-      setError(
+      showToast(
         err.response?.data?.error ||
           err.response?.data?.message ||
-          "Suppression impossible."
+          "Suppression impossible.",
+        "error"
       );
       setConfirmDeleteId(null);
     }
@@ -94,16 +150,12 @@ export default function UserManager({ onNavigate }) {
       village: u.village || "",
       birth_date: u.birth_date || "",
     });
-    setError("");
-    setMsg("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     if (!editUser) return;
-    setError("");
-    setMsg("");
     try {
       const response = await axios.put(
         `${API_URL}/user/admin/users/${editUser.id}`,
@@ -133,7 +185,7 @@ export default function UserManager({ onNavigate }) {
         village: "",
         birth_date: "",
       });
-      setMsg("Modifications enregistrées.");
+      showToast("Modifications enregistrées.", "success");
     } catch (err) {
       let msg =
         err.response?.data?.error ||
@@ -142,13 +194,11 @@ export default function UserManager({ onNavigate }) {
       if (err.response?.status === 422 && err.response?.data?.errors) {
         msg = Object.values(err.response.data.errors).flat().join(" / ");
       }
-      setError(msg);
+      showToast(msg, "error");
     }
   };
 
   const handleToggleAdmin = async (u) => {
-    setError("");
-    setMsg("");
     try {
       const response = await axios.put(
         `${API_URL}/user/admin/users/${u.id}`,
@@ -166,7 +216,7 @@ export default function UserManager({ onNavigate }) {
         if (onNavigate) onNavigate("/");
         return;
       }
-      setMsg("Changement de rôle effectué.");
+      showToast("Changement de rôle effectué.", "success");
     } catch (err) {
       let msg =
         err.response?.data?.error ||
@@ -175,7 +225,7 @@ export default function UserManager({ onNavigate }) {
       if (err.response?.status === 422 && err.response?.data?.errors) {
         msg = Object.values(err.response.data.errors).flat().join(" / ");
       }
-      setError(msg);
+      showToast(msg, "error");
     }
   };
 
@@ -184,6 +234,11 @@ export default function UserManager({ onNavigate }) {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-2">
+      <Toast
+        msg={toast.msg}
+        type={toast.type}
+        onClose={() => setToast({ msg: "", type: "" })}
+      />
       <h2 className="text-2xl font-bold mb-6">Gestion des utilisateurs</h2>
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
@@ -315,8 +370,6 @@ export default function UserManager({ onNavigate }) {
               Annuler
             </button>
           </div>
-          {msg && <div className="alert alert-success mt-4">{msg}</div>}
-          {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
       )}
       <div className="w-full bg-base-100 rounded-2xl shadow-lg overflow-x-auto">
@@ -403,6 +456,9 @@ export default function UserManager({ onNavigate }) {
           </tbody>
         </table>
       </div>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      `}</style>
     </div>
   );
 }

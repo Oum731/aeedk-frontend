@@ -15,40 +15,45 @@ function Toast({ msg, type, onClose }) {
       : "bg-blue-50 border-blue-400 text-blue-700";
   return (
     <div
-      className={`fixed bottom-5 right-5 z-[9999] px-5 py-3 border rounded-xl shadow-md flex items-center gap-3 min-w-[180px] max-w-xs ${color}`}
-      style={{ animation: "fadeIn 0.3s" }}
+      className="fixed inset-0 flex items-center justify-center z-[9999]"
+      style={{ background: "rgba(0,0,0,0.11)", animation: "fadeIn 0.15s" }}
       onClick={onClose}
     >
-      {type === "success" ? (
-        <svg
-          className="w-5 h-5 text-green-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M5 13l4 4L19 7"
-          />
-        </svg>
-      ) : type === "error" ? (
-        <svg
-          className="w-5 h-5 text-red-500"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2}
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          />
-        </svg>
-      ) : null}
-      <div>{msg}</div>
+      <div
+        className={`px-5 py-3 border rounded-xl shadow-lg flex items-center gap-3 min-w-[200px] max-w-xs ${color} text-center`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {type === "success" ? (
+          <svg
+            className="w-5 h-5 text-green-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M5 13l4 4L19 7"
+            />
+          </svg>
+        ) : type === "error" ? (
+          <svg
+            className="w-5 h-5 text-red-500"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        ) : null}
+        <div>{msg}</div>
+      </div>
     </div>
   );
 }
@@ -463,6 +468,9 @@ export default function PostManager() {
           </tbody>
         </table>
       </div>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+      `}</style>
     </div>
   );
 }
