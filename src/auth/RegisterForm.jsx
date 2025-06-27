@@ -1,6 +1,16 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { LoaderCircle, Eye, EyeOff } from "lucide-react";
+
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+  return isMobile;
+}
 
 const SPECIAL_CHARS = "@ $ ! % * ? & .";
 const PASSWORD_RULES = [
@@ -82,6 +92,7 @@ export default function RegisterForm({ onNavigate }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const birthDateRef = useRef();
+  const isMobile = useIsMobile();
   const requiredFields = FIELDS.filter((f) => f.required).map((f) => f.name);
 
   const validateField = (name, value) => {
@@ -190,7 +201,7 @@ export default function RegisterForm({ onNavigate }) {
                   required
                   style={form.birth_date ? {} : { color: "#888" }}
                 />
-                {!form.birth_date && (
+                {isMobile && !form.birth_date && (
                   <span
                     className="absolute left-4 top-2 text-gray-400 pointer-events-none"
                     onClick={() => birthDateRef.current?.focus()}
