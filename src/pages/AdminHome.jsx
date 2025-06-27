@@ -34,12 +34,12 @@ export default function AdminHome() {
     <div className="max-w-7xl mx-auto py-4 px-2 sm:px-4 lg:px-8 bg-gradient-to-b from-base-100 via-gray-50 to-base-200 min-h-[80vh] rounded-xl shadow-xl">
       <DashboardHeader />
 
-      <nav className="w-full flex flex-col sm:flex-row gap-2 sm:gap-4 justify-center items-center mb-6">
+      <nav className="w-full flex flex-row flex-wrap gap-2 justify-center items-center mb-6">
         {sections.map(({ key, label, btnClass }) => (
           <button
             key={key}
-            className={`btn ${btnClass} w-full sm:w-auto ${
-              activeSection === key ? "btn-active" : ""
+            className={`btn ${btnClass} ${
+              activeSection === key ? "btn-active ring-2 ring-blue-500" : ""
             }`}
             onClick={() => setActiveSection(key)}
           >
@@ -47,7 +47,7 @@ export default function AdminHome() {
           </button>
         ))}
         <button
-          className="btn btn-outline btn-accent w-full sm:w-auto"
+          className="btn btn-outline btn-accent"
           onClick={() => navigate("/home")}
         >
           Retour à l'accueil
