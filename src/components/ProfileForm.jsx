@@ -216,18 +216,19 @@ export default function ProfileForm({
         onClose={() => setToast({ msg: "", type: "" })}
       />
       <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
-        <div className="flex flex-col items-center gap-2 w-full md:w-auto">
-          <div className="relative">
-            <img
-              src={
-                avatarPreview ||
-                getAvatarUrl(userData?.avatar || user?.avatar, true)
-              }
-              alt="avatar"
-              className="w-24 h-24 rounded-full object-cover border shadow"
-              onError={(e) => (e.target.src = "/default-avatar.png")}
-            />
-            {editing && (
+        {editing && (
+          <div className="flex flex-col items-center gap-2 w-full md:w-auto">
+            <div className="relative">
+              <img
+                src={
+                  avatarPreview
+                    ? avatarPreview
+                    : getAvatarUrl(userData?.avatar || user?.avatar, true)
+                }
+                alt="avatar"
+                className="w-24 h-24 rounded-full object-cover border shadow"
+                onError={(e) => (e.target.src = "/default-avatar.png")}
+              />
               <label className="absolute bottom-0 right-0 cursor-pointer bg-blue-600 text-white rounded-full p-2 shadow border-2 border-white hover:bg-blue-700 transition">
                 <UploadCloud size={18} />
                 <input
@@ -238,14 +239,9 @@ export default function ProfileForm({
                   onChange={handleAvatarChange}
                 />
               </label>
-            )}
-          </div>
-          {!editing && (
-            <div className="text-gray-500 text-xs mt-2">
-              {userData?.email || user?.email}
             </div>
-          )}
-        </div>
+          </div>
+        )}
         <div className="flex-1 w-full">
           {!editing || readOnly ? (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-base">
