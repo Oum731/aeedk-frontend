@@ -19,10 +19,6 @@ export default function Profile({ viewedUserId, onBack }) {
     !viewedUserId || (authUser && String(viewedUserId) === String(authUser.id));
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [viewedUserId, isOwnProfile]);
-
-  useEffect(() => {
     let canceled = false;
     const fetchUser = async () => {
       setLoading(true);

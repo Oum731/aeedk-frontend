@@ -84,18 +84,9 @@ export default function PostManager() {
   const [toast, setToast] = useState({ msg: "", type: "" });
   const [modal, setModal] = useState({ open: false, postId: null });
   const mediaInputRef = useRef();
-  const refreshInterval = useRef();
 
   useEffect(() => {
     if (user) fetchPosts();
-    if (refreshInterval.current) clearInterval(refreshInterval.current);
-    refreshInterval.current = setInterval(() => {
-      fetchPosts();
-    }, 12000);
-    return () => {
-      if (refreshInterval.current) clearInterval(refreshInterval.current);
-    };
-    // eslint-disable-next-line
   }, [user]);
 
   const showToast = (msg, type = "success", time = 2200) => {
@@ -104,6 +95,7 @@ export default function PostManager() {
   };
 
   const fetchPosts = async () => {
+    setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/posts`);
       let postsArr = Array.isArray(data) ? data : data.posts;
@@ -132,30 +124,16 @@ export default function PostManager() {
       showToast("Tous les champs sont obligatoires.", "error");
       return;
     }
-    const optimisticId = "optimistic_" + Date.now();
-    const optimisticPost = {
-      id: optimisticId,
-      title: form.title,
-      content: form.content,
-      is_featured: form.is_featured,
-      status: form.status,
-      media: mediaPreview,
-      author_id: user.id,
-      optimistic: true,
-    };
-    setPosts((prev) => [optimisticPost, ...prev]);
-    resetForm();
-    showToast(editPost ? "Post modifié avec succès !" : "Post ajouté !");
+    const formData = new FormData();
+    formData.append("title", form.title);
+    formData.append("content", form.content);
+    formData.append("is_featured", form.is_featured ? "true" : "false");
+    formData.append("status", form.status);
+    formData.append("author_id", user.id);
+    if (form.media && form.media.length > 0) {
+      form.media.forEach((file) => formData.append("media", file));
+    }
     try {
-      const formData = new FormData();
-      formData.append("title", form.title);
-      formData.append("content", form.content);
-      formData.append("is_featured", form.is_featured ? "true" : "false");
-      formData.append("status", form.status);
-      formData.append("author_id", user.id);
-      if (form.media && form.media.length > 0) {
-        form.media.forEach((file) => formData.append("media", file));
-      }
       const method = editPost ? "put" : "post";
       const url = editPost
         ? `${API_URL}/posts/${editPost.id}`
@@ -164,7 +142,13 @@ export default function PostManager() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const post = data.post || data;
-      setPosts((prev) => prev.map((p) => (p.id === optimisticId ? post : p)));
+      setPosts((prev) =>
+        editPost
+          ? prev.map((p) => (p.id === editPost.id ? post : p))
+          : [post, ...prev]
+      );
+      showToast(editPost ? "Post modifié avec succès !" : "Post ajouté !");
+      resetForm();
     } catch (err) {
       showToast(
         err.response?.data?.error ||
@@ -172,7 +156,6 @@ export default function PostManager() {
           "Erreur lors de l’envoi.",
         "error"
       );
-      setPosts((prev) => prev.filter((p) => p.id !== optimisticId));
     }
   };
 
