@@ -50,7 +50,16 @@ export default function LoginForm() {
     if (result.success) {
       navigate("/home");
     } else {
-      setError(result.error || "Erreur lors de la connexion.");
+      if (
+        result.error &&
+        result.error.toLowerCase().includes("confirmer votre email")
+      ) {
+        setError(
+          "Votre compte n’est pas encore activé. Veuillez vérifier votre boîte mail et cliquer sur le lien de confirmation. Si vous ne trouvez pas l’email, pensez à regarder dans vos spams."
+        );
+      } else {
+        setError(result.error || "Erreur lors de la connexion.");
+      }
     }
   };
 
@@ -60,24 +69,28 @@ export default function LoginForm() {
     <div className="max-w-md mx-auto p-6 rounded-xl shadow bg-base-100 my-8">
       <h2 className="text-2xl font-bold mb-4">Connexion</h2>
 
-      {resetStatus === "success" && (
-        <div className="text-success text-sm mb-2">
-          Mot de passe réinitialisé. Vous pouvez vous connecter.
-        </div>
-      )}
-      {verifyStatus === "success" && (
-        <div className="text-success text-sm mb-2">
-          Email confirmé. Vous pouvez vous connecter.
-        </div>
-      )}
-      {resetStatus === "fail" && (
-        <div className="text-error text-sm mb-2">
-          Le lien de réinitialisation est invalide ou expiré.
-        </div>
-      )}
-      {verifyStatus === "fail" && (
-        <div className="text-error text-sm mb-2">
-          Le lien de confirmation est invalide ou expiré.
+      {(resetStatus || verifyStatus) && (
+        <div
+          className={`text-sm p-3 rounded mb-4 ${
+            resetStatus === "success" || verifyStatus === "success"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {resetStatus === "success" && (
+            <>
+              Mot de passe réinitialisé avec succès. Vous pouvez vous connecter.
+            </>
+          )}
+          {resetStatus === "fail" && (
+            <>Le lien de réinitialisation est invalide ou expiré.</>
+          )}
+          {verifyStatus === "success" && (
+            <>Email confirmé avec succès. Vous pouvez vous connecter.</>
+          )}
+          {verifyStatus === "fail" && (
+            <>Le lien de confirmation est invalide ou expiré.</>
+          )}
         </div>
       )}
 
@@ -127,6 +140,12 @@ export default function LoginForm() {
           </button>
         </div>
 
+        {error && (
+          <div className="bg-red-100 text-red-800 text-sm p-3 rounded mt-2">
+            {error}
+          </div>
+        )}
+
         <button
           className="btn btn-primary w-full"
           disabled={loading}
@@ -135,8 +154,6 @@ export default function LoginForm() {
           {loading && <LoaderCircle className="animate-spin mr-2" size={18} />}
           Se connecter
         </button>
-
-        {error && <div className="text-error text-sm mt-2">{error}</div>}
       </form>
 
       <p className="text-sm text-right mt-4">

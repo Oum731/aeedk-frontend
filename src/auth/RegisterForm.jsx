@@ -6,6 +6,14 @@ const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
 const EMAIL_REGEX = /^[\w\.-]+@[\w\.-]+\.\w+$/;
 
+const PASSWORD_REQUIREMENTS = [
+  "Au moins 8 caractères",
+  "Une majuscule",
+  "Une minuscule",
+  "Un chiffre",
+  "Un caractère spécial (@$!%*?&.)",
+];
+
 export default function RegisterForm({ onNavigate }) {
   const { register } = useAuth();
   const [form, setForm] = useState({
@@ -24,7 +32,6 @@ export default function RegisterForm({ onNavigate }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [avatarPreview, setAvatarPreview] = useState(null);
-
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -81,6 +88,16 @@ export default function RegisterForm({ onNavigate }) {
   return (
     <div className="max-w-md mx-auto p-6 rounded-xl shadow bg-base-100 my-8">
       <h2 className="text-2xl font-bold mb-4">Inscription</h2>
+
+      <div className="text-sm text-gray-500 bg-gray-100 p-3 rounded mb-4">
+        <p>Votre mot de passe doit contenir :</p>
+        <ul className="list-disc ml-6">
+          {PASSWORD_REQUIREMENTS.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+      </div>
+
       <form
         onSubmit={handleSubmit}
         className="space-y-3"
@@ -95,6 +112,7 @@ export default function RegisterForm({ onNavigate }) {
           value={form.username}
           onChange={handleChange}
         />
+
         <input
           type="email"
           name="email"
@@ -104,6 +122,11 @@ export default function RegisterForm({ onNavigate }) {
           value={form.email}
           onChange={handleChange}
         />
+        {form.email && !EMAIL_REGEX.test(form.email) && (
+          <p className="text-sm text-warning mt-1">
+            L’adresse email semble invalide. Exemple : nom@example.com
+          </p>
+        )}
 
         <div className="relative">
           <input
@@ -118,7 +141,7 @@ export default function RegisterForm({ onNavigate }) {
           <button
             type="button"
             onClick={() => setShowPassword((v) => !v)}
-            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
             tabIndex={-1}
             aria-label={
               showPassword
@@ -129,6 +152,11 @@ export default function RegisterForm({ onNavigate }) {
             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
           </button>
         </div>
+        {form.password && !PASSWORD_REGEX.test(form.password) && (
+          <p className="text-sm text-warning mt-1">
+            Le mot de passe ne respecte pas les critères ci-dessus.
+          </p>
+        )}
 
         <div className="relative">
           <input
@@ -143,7 +171,7 @@ export default function RegisterForm({ onNavigate }) {
           <button
             type="button"
             onClick={() => setShowConfirm((v) => !v)}
-            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700 focus:outline-none"
+            className="absolute top-2 right-3 text-gray-500 hover:text-gray-700"
             tabIndex={-1}
             aria-label={
               showConfirm
@@ -175,14 +203,17 @@ export default function RegisterForm({ onNavigate }) {
             onChange={handleChange}
           />
         </div>
+
         <input
           type="date"
           name="birth_date"
           className="input input-bordered w-full"
+          placeholder="Date de naissance"
           required
           value={form.birth_date}
           onChange={handleChange}
         />
+
         <input
           type="tel"
           name="phone"
@@ -192,6 +223,7 @@ export default function RegisterForm({ onNavigate }) {
           value={form.phone}
           onChange={handleChange}
         />
+
         <div className="flex gap-2">
           <input
             type="text"
