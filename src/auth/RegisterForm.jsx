@@ -55,7 +55,6 @@ const FIELDS = [
   { name: "last_name", label: "Nom", type: "text", required: true },
   {
     name: "birth_date",
-    label: "Date de naissance",
     type: "date",
     required: true,
   },
