@@ -41,7 +41,6 @@ export default function UserCard({
           </div>
         )}
 
-        {/* Badge notifications */}
         {unreadNotifications > 0 && (
           <span
             className="absolute -top-2 -right-2 flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white font-bold text-xs border-2 border-white shadow-md"
@@ -54,7 +53,6 @@ export default function UserCard({
           </span>
         )}
 
-        {/* Statut en ligne */}
         <span
           className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
             isOnline ? "bg-green-500" : "bg-gray-400"

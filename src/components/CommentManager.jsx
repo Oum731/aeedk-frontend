@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Trash2, MessageCircle, User as UserIcon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export default function CommentManager() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -70,13 +72,13 @@ export default function CommentManager() {
     return `${API_URL}/user/avatar/${filename}`;
   };
 
-  const handleUserClick = (userId) => {
-    if (!userId) return;
-    window.dispatchEvent(
-      new CustomEvent("navigateProfile", {
-        detail: user && String(userId) === String(user.id) ? null : userId,
-      })
-    );
+  const handleUserClick = (clickedUserId) => {
+    if (!clickedUserId) return;
+    if (user && String(clickedUserId) === String(user.id)) {
+      navigate("/profile");
+    } else {
+      navigate(`/profile/${clickedUserId}`);
+    }
   };
 
   if (!user?.role || user.role !== "admin")
@@ -143,7 +145,7 @@ export default function CommentManager() {
                       </span>
                     </span>
                   </td>
-                  <td className="px-5 py-4">{c.post_id}</td>
+                  <td className="px-5 py-4">{c.post?.title || "-"}</td>
                   <td className="px-5 py-4">
                     {c.created_at &&
                       new Date(c.created_at).toLocaleString("fr-FR")}

@@ -58,7 +58,6 @@ export default function PostCard({ post, onComment, commentCount = 0 }) {
       })
     : "";
 
-  // ---- GESTION DU CLIC SUR LE PROFIL ----
   const handleUserClick = () => {
     if (user.id) {
       if (authUser && user.id === authUser.id) {
