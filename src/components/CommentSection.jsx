@@ -7,12 +7,13 @@ import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export default function CommentSection({ postId, onCountChange, onUserClick }) {
+export default function CommentSection({ postId, onCountChange }) {
   const { user, token } = useAuth();
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [showInput, setShowInput] = useState(true);
 
   useEffect(() => {
     fetchComments();
@@ -33,6 +34,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
     } finally {
       setLoading(false);
     }
+    setShowInput(true);
   };
 
   const handleSubmit = async (e) => {
@@ -58,6 +60,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       );
       setContent("");
       toast.success("Commentaire ajouté !");
+      setShowInput(false);
       await fetchComments();
     } catch (err) {
       toast.error(
@@ -67,6 +70,35 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       );
     } finally {
       setSending(false);
+    }
+  };
+
+  const handleReply = async (replyContent, parentId) => {
+    if (!user) {
+      toast.error("Connectez-vous pour répondre.");
+      return false;
+    }
+    try {
+      await axios.post(
+        `${API_URL}/comments/`,
+        {
+          content: replyContent,
+          post_id: postId,
+          user_id: user.id,
+          parent_comment_id: parentId,
+        },
+        token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
+      );
+      toast.success("Réponse ajoutée !");
+      fetchComments();
+      return true;
+    } catch (err) {
+      toast.error(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Erreur lors de l'envoi de la réponse"
+      );
+      return false;
     }
   };
 
@@ -119,7 +151,6 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       toast.error("Le commentaire ne peut pas être vide.");
       return;
     }
-
     try {
       await axios.put(
         `${API_URL}/comments/${commentId}`,
@@ -140,44 +171,51 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
     }
   };
 
-  const handleUserClick = (userId) => {
-    if (!userId) return;
-    const eventName = "navigateProfile";
-    window.dispatchEvent(
-      new CustomEvent(eventName, {
-        detail: user?.id === userId ? null : userId,
-      })
-    );
-  };
-
   return (
-    <div className="bg-base-100 rounded-xl p-4 shadow">
+    <div className="bg-base-100 rounded-xl p-3 sm:p-4 shadow">
       <h4 className="text-lg font-semibold mb-4">Commentaires</h4>
-
-      {user && (
-        <form onSubmit={handleSubmit} className="mb-4">
-          <div className="flex gap-2">
-            <textarea
-              className="textarea textarea-bordered flex-1"
-              placeholder="Ajouter un commentaire..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              maxLength={500}
-              aria-label="Votre commentaire"
-              rows={2}
-              style={{ resize: "vertical" }}
-              disabled={sending}
-            />
-            <button
-              type="submit"
-              className="btn btn-accent"
-              disabled={loading || !content.trim() || sending}
-            >
-              {sending ? "Envoi..." : "Envoyer"}
-            </button>
-          </div>
-        </form>
-      )}
+      <div className="mb-3">
+        {!user ? (
+          <button
+            className="btn btn-block btn-outline btn-primary text-base"
+            onClick={() =>
+              toast.error("Vous devez vous connecter d'abord pour commenter.")
+            }
+          >
+            Se connecter pour commenter
+          </button>
+        ) : showInput ? (
+          <form onSubmit={handleSubmit} className="mb-2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <textarea
+                className="textarea textarea-bordered flex-1 min-h-[38px] sm:min-h-[44px] text-base sm:text-base px-3 py-2 resize-y"
+                placeholder="Ajouter un commentaire..."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                maxLength={500}
+                aria-label="Votre commentaire"
+                rows={2}
+                disabled={sending}
+                style={{ minWidth: 0 }}
+              />
+              <button
+                type="submit"
+                className="btn btn-accent min-w-[120px] sm:min-w-[120px] text-base"
+                disabled={loading || !content.trim() || sending}
+              >
+                {sending ? "Envoi..." : "Envoyer"}
+              </button>
+            </div>
+          </form>
+        ) : (
+          <button
+            className="btn btn-block btn-ghost text-base"
+            onClick={() => setShowInput(true)}
+          >
+            Ajouter un autre commentaire
+          </button>
+        )}
+      </div>
 
       <div className="space-y-4">
         {loading ? (
@@ -195,35 +233,8 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
               comment={comment}
               user={user}
               onDelete={handleDelete}
-              onReply={async (replyContent, parentId) => {
-                if (!user) return toast.error("Connectez-vous pour répondre.");
-                try {
-                  await axios.post(
-                    `${API_URL}/comments/`,
-                    {
-                      content: replyContent,
-                      post_id: postId,
-                      user_id: user.id,
-                      parent_comment_id: parentId,
-                    },
-                    token
-                      ? { headers: { Authorization: `Bearer ${token}` } }
-                      : undefined
-                  );
-                  toast.success("Réponse ajoutée !");
-                  fetchComments();
-                  return true;
-                } catch (err) {
-                  toast.error(
-                    err.response?.data?.message ||
-                      err.response?.data?.error ||
-                      "Erreur lors de l'envoi de la réponse"
-                  );
-                  return false;
-                }
-              }}
+              onReply={handleReply}
               onUpdate={handleUpdate}
-              onUserClick={onUserClick || handleUserClick}
             />
           ))
         )}

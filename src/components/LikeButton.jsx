@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { ThumbsUp, ThumbsDown } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -51,7 +52,9 @@ export default function LikeButton({
   const sendVote = async (isLike) => {
     setError("");
     if (!user) {
-      setError("Connectez-vous pour voter !");
+      // Tu peux commenter la ligne toast si tu ne veux que l'alerte visuelle
+      toast.error("Vous devez vous connecter pour voter !");
+      setError("Vous devez vous connecter pour voter !");
       return;
     }
     setVoting(true);
@@ -106,33 +109,35 @@ export default function LikeButton({
   };
 
   return (
-    <div className="flex flex-col items-start gap-1">
+    <div className="flex flex-col items-start gap-1 w-full max-w-[145px]">
       <div className="flex items-center gap-2">
         <button
-          className={`btn btn-ghost btn-xs ${
-            likeState === true ? "text-primary" : ""
+          className={`btn btn-ghost btn-xs sm:btn-sm rounded-full ${
+            likeState === true ? "text-primary bg-primary/10" : ""
           }`}
           title="Like"
           onClick={() => sendVote(true)}
           disabled={voting}
+          style={{ minWidth: 34 }}
         >
           <ThumbsUp
-            size={20}
+            size={18}
             strokeWidth={2}
             fill={likeState === true ? "currentColor" : "none"}
           />
           <span className="ml-1">{likes}</span>
         </button>
         <button
-          className={`btn btn-ghost btn-xs ${
-            likeState === false ? "text-error" : ""
+          className={`btn btn-ghost btn-xs sm:btn-sm rounded-full ${
+            likeState === false ? "text-error bg-error/10" : ""
           }`}
           title="Dislike"
           onClick={() => sendVote(false)}
           disabled={voting}
+          style={{ minWidth: 34 }}
         >
           <ThumbsDown
-            size={20}
+            size={18}
             strokeWidth={2}
             fill={likeState === false ? "currentColor" : "none"}
           />
@@ -140,7 +145,7 @@ export default function LikeButton({
         </button>
       </div>
       {error && (
-        <div className="alert alert-error py-1 px-2 text-xs rounded shadow mt-1">
+        <div className="alert alert-error py-1 px-2 text-xs rounded shadow mt-1 w-full">
           {error}
         </div>
       )}
