@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   MessageSquare,
   ChevronLeft,
@@ -8,13 +9,12 @@ import {
 import LikeButton from "./LikeButton";
 import { getAvatarUrl } from "../utils/avatarUrl";
 import { getMediaUrl } from "../utils/getMediaUrl";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function PostCard({
-  post,
-  onComment,
-  onUserClick,
-  commentCount = 0,
-}) {
+export default function PostCard({ post, onComment, commentCount = 0 }) {
+  const { user: authUser } = useAuth();
+  const navigate = useNavigate();
+
   const images = Array.isArray(post?.media)
     ? post.media.filter((m) => m.type === "image")
     : [];
@@ -58,12 +58,23 @@ export default function PostCard({
       })
     : "";
 
+  // ---- GESTION DU CLIC SUR LE PROFIL ----
+  const handleUserClick = () => {
+    if (user.id) {
+      if (authUser && user.id === authUser.id) {
+        navigate("/profile");
+      } else {
+        navigate(`/profile/${user.id}`);
+      }
+    }
+  };
+
   return (
     <div className="w-full bg-base-100 shadow-lg rounded-xl overflow-hidden flex flex-col">
       <button
         type="button"
         className="flex items-center gap-3 bg-base-200 px-5 py-3 border-b w-full text-left hover:bg-base-300 transition"
-        onClick={() => onUserClick && user.id && onUserClick(user.id)}
+        onClick={handleUserClick}
         tabIndex={0}
         style={{ cursor: "pointer" }}
         role="button"

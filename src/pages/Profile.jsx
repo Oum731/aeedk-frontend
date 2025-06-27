@@ -5,11 +5,12 @@ import { Edit2, LayoutDashboard, LogOut, ArrowLeft, Home } from "lucide-react";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
 import axios from "axios";
 import API_URL from "../config";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
-export default function Profile({ viewedUserId, onBack }) {
+export default function Profile({ onBack }) {
   const { user: authUser, token, logout } = useAuth();
   const navigate = useNavigate();
+  const { viewedUserId } = useParams();
   const [editing, setEditing] = useState(false);
   const [viewedUser, setViewedUser] = useState(null);
   const [loading, setLoading] = useState(true);

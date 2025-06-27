@@ -1,12 +1,6 @@
 import React, { useState } from "react";
-import {
-  User as UserIcon,
-  MessageCircle,
-  Trash2,
-  Edit2,
-  Check,
-  X,
-} from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { MessageCircle, Trash2, Edit2, Check, X } from "lucide-react";
 import LikeButton from "./LikeButton";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
 
@@ -17,12 +11,12 @@ export default function CommentCard({
   onDelete,
   onUpdate,
   user,
-  onUserClick,
 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [reply, setReply] = useState("");
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState(comment.content);
+  const navigate = useNavigate();
 
   const canDelete =
     user && (user.id === comment.user_id || user.role === "admin");
@@ -46,22 +40,25 @@ export default function CommentCard({
     setEditing(false);
   };
 
+  const handleUserClick = () => {
+    if (comment.user?.id) {
+      if (user && comment.user.id === user.id) {
+        navigate("/profile");
+      } else {
+        navigate(`/profile/${comment.user.id}`);
+      }
+    }
+  };
+
   const replyCount = comment.children?.length || 0;
 
   return (
     <article className="mb-2">
-      <section className="bg-base-100 border border-base-200 rounded-xl p-3 mb-2 shadow-sm">
-        <header className="flex items-center gap-2 mb-1">
+      <section className="bg-base-100 border border-base-200 rounded-xl p-2 sm:p-3 mb-2 shadow-sm">
+        <header className="flex flex-wrap items-center gap-2 mb-1">
           <span
             className="flex items-center gap-2 cursor-pointer group"
-            onClick={() =>
-              onUserClick && comment.user?.id && onUserClick(comment.user.id)
-            }
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && onUserClick && comment.user?.id) {
-                onUserClick(comment.user.id);
-              }
-            }}
+            onClick={handleUserClick}
             tabIndex={0}
             role="button"
             title="Voir le profil"
@@ -69,33 +66,35 @@ export default function CommentCard({
             <img
               src={getUserAvatarSrc(comment.user)}
               alt={`Avatar de ${comment.user?.username || "utilisateur"}`}
-              className="w-7 h-7 rounded-full object-cover bg-gray-200"
+              className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover bg-gray-200"
             />
-            <span className="font-semibold text-sm group-hover:underline">
+            <span className="font-semibold text-xs sm:text-sm group-hover:underline">
               {comment.user?.username || "Anonyme"}
             </span>
           </span>
           <time className="text-xs text-gray-400 ml-2">
             {new Date(comment.created_at).toLocaleString("fr-FR")}
           </time>
-          {canEdit && !editing && (
-            <button
-              className="btn btn-xs btn-ghost text-info ml-2"
-              title="Modifier le commentaire"
-              onClick={() => setEditing(true)}
-            >
-              <Edit2 size={16} />
-            </button>
-          )}
-          {canDelete && (
-            <button
-              className="btn btn-xs btn-ghost text-error ml-2"
-              title="Supprimer le commentaire"
-              onClick={() => onDelete(comment.id)}
-            >
-              <Trash2 size={16} />
-            </button>
-          )}
+          <div className="flex flex-row gap-1 ml-auto">
+            {canEdit && !editing && (
+              <button
+                className="btn btn-xs btn-ghost text-info"
+                title="Modifier le commentaire"
+                onClick={() => setEditing(true)}
+              >
+                <Edit2 size={15} />
+              </button>
+            )}
+            {canDelete && (
+              <button
+                className="btn btn-xs btn-ghost text-error"
+                title="Supprimer le commentaire"
+                onClick={() => onDelete(comment.id)}
+              >
+                <Trash2 size={15} />
+              </button>
+            )}
+          </div>
         </header>
         {editing ? (
           <form className="flex gap-2 mb-2" onSubmit={handleEditSubmit}>
@@ -128,14 +127,16 @@ export default function CommentCard({
             </button>
           </form>
         ) : (
-          <p className="mb-2 text-sm">{comment.content}</p>
+          <p className="mb-2 text-xs sm:text-sm break-words">
+            {comment.content}
+          </p>
         )}
         {replyCount > 0 && (
           <p className="text-xs text-primary ml-1 mb-2 font-medium">
             {replyCount} réponse{replyCount > 1 ? "s" : ""}
           </p>
         )}
-        <footer className="flex items-center gap-2">
+        <footer className="flex flex-wrap items-center gap-2">
           <LikeButton
             contentType="comment"
             contentId={comment.id}
@@ -148,8 +149,8 @@ export default function CommentCard({
               onClick={() => setShowReplyForm((v) => !v)}
               title="Répondre au commentaire"
             >
-              <MessageCircle size={15} />
-              Répondre
+              <MessageCircle size={14} />
+              <span className="hidden xs:inline">Répondre</span>
             </button>
           )}
         </footer>
@@ -172,7 +173,7 @@ export default function CommentCard({
         )}
       </section>
       {comment.children?.length > 0 && (
-        <ul className="ml-6 space-y-2 list-none pl-0">
+        <ul className="ml-3 sm:ml-6 space-y-2 list-none pl-0">
           {comment.children.map((child) => (
             <li key={child.id}>
               <CommentCard
@@ -182,7 +183,6 @@ export default function CommentCard({
                 onDelete={onDelete}
                 onUpdate={onUpdate}
                 user={user}
-                onUserClick={onUserClick}
               />
             </li>
           ))}
