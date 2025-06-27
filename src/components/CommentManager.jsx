@@ -11,22 +11,30 @@ export default function CommentManager() {
   const { user, token } = useAuth();
   const navigate = useNavigate();
   const [comments, setComments] = useState([]);
+  const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchComments();
+    fetchCommentsAndPosts();
   }, []);
 
-  const fetchComments = async () => {
+  const fetchCommentsAndPosts = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${API_URL}/comments`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setComments(data.comments || []);
+      const [{ data: commentsData }, { data: postsData }] = await Promise.all([
+        axios.get(`${API_URL}/comments`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get(`${API_URL}/posts`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+      setComments(commentsData.comments || []);
+      setPosts(postsData.posts || []);
     } catch {
       setComments([]);
-      toast.error("Erreur de chargement des commentaires");
+      setPosts([]);
+      toast.error("Erreur de chargement des commentaires ou des posts");
     }
     setLoading(false);
   };
@@ -46,7 +54,7 @@ export default function CommentManager() {
                     `${API_URL}/comments/${commentId}?user_id=${user.id}`,
                     { headers: { Authorization: `Bearer ${token}` } }
                   );
-                  fetchComments();
+                  fetchCommentsAndPosts();
                   toast.success("Commentaire supprimé !");
                 } catch {
                   toast.error("Erreur lors de la suppression");
@@ -79,6 +87,11 @@ export default function CommentManager() {
     } else {
       navigate(`/profile/${clickedUserId}`);
     }
+  };
+
+  const getPostTitle = (postId) => {
+    const post = posts.find((p) => String(p.id) === String(postId));
+    return post?.title || "-";
   };
 
   if (!user?.role || user.role !== "admin")
@@ -145,7 +158,7 @@ export default function CommentManager() {
                       </span>
                     </span>
                   </td>
-                  <td className="px-5 py-4">{c.post?.title || "-"}</td>
+                  <td className="px-5 py-4">{getPostTitle(c.post_id)}</td>
                   <td className="px-5 py-4">
                     {c.created_at &&
                       new Date(c.created_at).toLocaleString("fr-FR")}
