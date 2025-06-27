@@ -90,7 +90,6 @@ export default function Navbar() {
         <button
           onClick={(e) => handleLinkClick("/", e)}
           className="relative focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-full flex items-center justify-center mt-6 group"
-          title="Association des élèves et étudiants du département de Kouto"
           style={{ minWidth: 48, minHeight: 48 }}
           type="button"
         >

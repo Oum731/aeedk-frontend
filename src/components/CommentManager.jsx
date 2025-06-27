@@ -14,6 +14,10 @@ export default function CommentManager() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // State pour la modale de confirmation
+  const [showModal, setShowModal] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
   useEffect(() => {
     fetchCommentsAndPosts();
   }, []);
@@ -40,37 +44,24 @@ export default function CommentManager() {
   };
 
   const handleDelete = (commentId) => {
-    toast(
-      (t) => (
-        <span>
-          Supprimer ce commentaire ?
-          <div className="flex gap-2 mt-2">
-            <button
-              className="btn btn-xs btn-error"
-              onClick={async () => {
-                toast.dismiss(t.id);
-                try {
-                  await axios.delete(
-                    `${API_URL}/comments/${commentId}?user_id=${user.id}`,
-                    { headers: { Authorization: `Bearer ${token}` } }
-                  );
-                  fetchCommentsAndPosts();
-                  toast.success("Commentaire supprimé !");
-                } catch {
-                  toast.error("Erreur lors de la suppression");
-                }
-              }}
-            >
-              Oui
-            </button>
-            <button className="btn btn-xs" onClick={() => toast.dismiss(t.id)}>
-              Annuler
-            </button>
-          </div>
-        </span>
-      ),
-      { duration: 5000 }
-    );
+    setPendingDeleteId(commentId);
+    setShowModal(true);
+  };
+
+  const confirmDelete = async () => {
+    setShowModal(false);
+    if (!pendingDeleteId) return;
+    try {
+      await axios.delete(
+        `${API_URL}/comments/${pendingDeleteId}?user_id=${user.id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchCommentsAndPosts();
+      toast.success("Commentaire supprimé !");
+    } catch {
+      toast.error("Erreur lors de la suppression");
+    }
+    setPendingDeleteId(null);
   };
 
   const getAvatarUrl = (avatar) => {
@@ -177,6 +168,28 @@ export default function CommentManager() {
           </tbody>
         </table>
       </div>
+
+      {/* MODAL DE CONFIRMATION */}
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
+          <div className="bg-white dark:bg-base-100 p-6 rounded-xl shadow-2xl max-w-xs w-full text-center">
+            <div className="text-lg mb-4 font-bold text-red-600">
+              Supprimer ce commentaire ?
+            </div>
+            <div className="flex gap-3 justify-center mt-2">
+              <button className="btn btn-error" onClick={confirmDelete}>
+                Oui, supprimer
+              </button>
+              <button
+                className="btn btn-ghost"
+                onClick={() => setShowModal(false)}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
