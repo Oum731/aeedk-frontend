@@ -194,7 +194,9 @@ export default function RegisterForm({ onNavigate }) {
                   <span
                     className="absolute left-4 top-2 text-gray-400 pointer-events-none"
                     onClick={() => birthDateRef.current?.focus()}
-                  ></span>
+                  >
+                    Date de naissance (obligatoire)
+                  </span>
                 )}
               </div>
             ) : field.name === "password" ? (
