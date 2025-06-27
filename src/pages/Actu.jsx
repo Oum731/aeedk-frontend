@@ -4,20 +4,6 @@ import CommentSection from "../components/CommentSection";
 import { useAuth } from "../contexts/AuthContext";
 import API_URL from "../config";
 
-function SkeletonPostCard() {
-  return (
-    <div className="animate-pulse bg-gray-100 rounded-xl p-6 mb-4 w-full shadow">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="bg-gray-300 rounded-full w-10 h-10" />
-        <div className="h-4 bg-gray-300 rounded w-24" />
-      </div>
-      <div className="h-5 bg-gray-300 rounded mb-2 w-3/4" />
-      <div className="h-4 bg-gray-200 rounded mb-1 w-full" />
-      <div className="h-4 bg-gray-200 rounded w-2/3" />
-    </div>
-  );
-}
-
 export default function Actu({ onNavigate }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,16 +13,13 @@ export default function Actu({ onNavigate }) {
   const { user } = useAuth();
 
   useEffect(() => {
-    let active = true;
-    setLoading(true);
-    setError("");
-    fetch(`${API_URL}/posts`)
-      .then((res) => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch(`${API_URL}/posts`);
         if (!res.ok) throw new Error("Erreur lors du chargement des posts");
-        return res.json();
-      })
-      .then((data) => {
-        if (!active) return;
+        const data = await res.json();
         const postsArr = Array.isArray(data) ? data : data.posts || [];
         setPosts(postsArr);
         const counts = {};
@@ -44,21 +27,17 @@ export default function Actu({ onNavigate }) {
           counts[post.id] = post.comments_count || 0;
         });
         setCommentCounts(counts);
-      })
-      .catch((e) => {
-        if (!active) return;
+      } catch (e) {
         setPosts([]);
         setError(
           e.message ||
             "Erreur réseau. Impossible de charger les actualités pour le moment."
         );
-      })
-      .finally(() => {
-        if (active) setLoading(false);
-      });
-    return () => {
-      active = false;
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchPosts();
   }, []);
 
   const handleUserClick = (userId) => {
@@ -93,10 +72,8 @@ export default function Actu({ onNavigate }) {
         Consultez les dernières actualités de l’association ici.
       </p>
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
-          {Array.from({ length: 3 }).map((_, idx) => (
-            <SkeletonPostCard key={idx} />
-          ))}
+        <div className="text-center text-blue-700/50 py-8 font-semibold">
+          Chargement…
         </div>
       ) : error ? (
         <div className="alert alert-error mt-8 mb-4 max-w-xl mx-auto text-center">
@@ -115,7 +92,6 @@ export default function Actu({ onNavigate }) {
                 onUserClick={handleUserClick}
                 onComment={() => handleShowComments(post.id)}
                 commentCount={commentCounts[post.id] || 0}
-                isCurrentUser={user && String(user.id) === String(post.user_id)}
               />
               {showComments[post.id] && (
                 <div className="mt-3">
