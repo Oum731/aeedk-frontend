@@ -30,8 +30,6 @@ const carouselImages = [
   },
 ];
 
-const SECTION_TOP_SPACING = "pt-6 sm:pt-8 md:pt-10";
-
 export default function Home({ onNavigate }) {
   const [showTopBtn, setShowTopBtn] = useState(false);
   const sectionRefs = {
@@ -53,6 +51,7 @@ export default function Home({ onNavigate }) {
     };
     window.addEventListener("navigateSection", handler);
     return () => window.removeEventListener("navigateSection", handler);
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -145,27 +144,29 @@ export default function Home({ onNavigate }) {
           </Swiper>
         </div>
       </section>
+
       <section
         id="actu"
         ref={sectionRefs.actu}
-        className={`w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-20 ${SECTION_TOP_SPACING}`}
+        className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-28 sm:scroll-mt-24 md:scroll-mt-32"
       >
         <Actu />
       </section>
       <section
         id="contact"
         ref={sectionRefs.contact}
-        className={`w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-20 ${SECTION_TOP_SPACING}`}
+        className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-28 sm:scroll-mt-24 md:scroll-mt-32"
       >
         <Contact />
       </section>
       <section
         id="about"
         ref={sectionRefs.about}
-        className={`w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-20 ${SECTION_TOP_SPACING}`}
+        className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-28 sm:scroll-mt-24 md:scroll-mt-32"
       >
         <Apropos />
       </section>
+
       {showTopBtn && (
         <button
           className="fixed bottom-10 right-10 btn btn-circle z-50"
