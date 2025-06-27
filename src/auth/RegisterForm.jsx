@@ -45,6 +45,7 @@ const FIELDS = [
   { name: "last_name", label: "Nom", type: "text", required: true },
   {
     name: "birth_date",
+    label: "Date de naissance",
     type: "date",
     required: true,
   },
@@ -193,9 +194,7 @@ export default function RegisterForm({ onNavigate }) {
                   <span
                     className="absolute left-4 top-2 text-gray-400 pointer-events-none"
                     onClick={() => birthDateRef.current?.focus()}
-                  >
-                    Date de naissance (obligatoire)
-                  </span>
+                  ></span>
                 )}
               </div>
             ) : field.name === "password" ? (
