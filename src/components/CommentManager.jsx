@@ -70,6 +70,15 @@ export default function CommentManager() {
     return `${API_URL}/user/avatar/${filename}`;
   };
 
+  const handleUserClick = (userId) => {
+    if (!userId) return;
+    window.dispatchEvent(
+      new CustomEvent("navigateProfile", {
+        detail: user && String(userId) === String(user.id) ? null : userId,
+      })
+    );
+  };
+
   if (!user?.role || user.role !== "admin")
     return <div>Accès admin uniquement</div>;
 
@@ -107,17 +116,32 @@ export default function CommentManager() {
               comments.map((c) => (
                 <tr key={c.id} className="hover:bg-accent/10">
                   <td className="px-5 py-4">{c.content}</td>
-                  <td className="px-5 py-4 flex items-center gap-2">
-                    {c.user?.avatar ? (
-                      <img
-                        src={getAvatarUrl(c.user.avatar)}
-                        alt="avatar"
-                        className="w-8 h-8 rounded-full object-cover border"
-                      />
-                    ) : (
-                      <UserIcon className="w-7 h-7 text-gray-400" />
-                    )}
-                    <span>{c.user?.username || "-"}</span>
+                  <td className="px-5 py-4">
+                    <span
+                      className="flex items-center gap-2 cursor-pointer group"
+                      tabIndex={0}
+                      role="button"
+                      title="Voir le profil"
+                      onClick={() => c.user?.id && handleUserClick(c.user.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && c.user?.id) {
+                          handleUserClick(c.user.id);
+                        }
+                      }}
+                    >
+                      {c.user?.avatar ? (
+                        <img
+                          src={getAvatarUrl(c.user.avatar)}
+                          alt="avatar"
+                          className="w-8 h-8 rounded-full object-cover border"
+                        />
+                      ) : (
+                        <UserIcon className="w-7 h-7 text-gray-400" />
+                      )}
+                      <span className="group-hover:underline">
+                        {c.user?.username || "-"}
+                      </span>
+                    </span>
                   </td>
                   <td className="px-5 py-4">{c.post_id}</td>
                   <td className="px-5 py-4">

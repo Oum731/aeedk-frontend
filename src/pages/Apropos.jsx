@@ -11,12 +11,12 @@ export default function Apropos() {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
-    const timer = setTimeout(
+    const interval = setInterval(
       () => setIndex((i) => (i + 1) % images.length),
       3500
     );
-    return () => clearTimeout(timer);
-  }, [index]);
+    return () => clearInterval(interval);
+  }, []);
 
   const textOutline = {
     textShadow: `
@@ -40,19 +40,17 @@ export default function Apropos() {
         </p>
       </div>
 
-      {/* Carrousel d'images inspirantes */}
       <div className="flex justify-center my-4">
         <div className="w-full max-w-2xl aspect-video rounded-xl overflow-hidden shadow border-2 border-blue-100 bg-gray-100">
           <img
             src={images[index]}
-            alt="Inspirations Kouto"
-            className="w-full h-full object-cover transition duration-500"
+            alt={`Image AEEDK ${index + 1}`}
+            className="w-full h-full object-cover transition duration-700"
             draggable={false}
           />
         </div>
       </div>
 
-      {/* Vidéo présentation */}
       <div className="w-full flex justify-center my-8">
         <div className="rounded-xl overflow-hidden shadow-lg w-full max-w-2xl aspect-video bg-gray-200">
           <iframe
@@ -187,7 +185,7 @@ export default function Apropos() {
         <div className="w-full h-56 md:h-72 rounded-lg overflow-hidden shadow flex items-center justify-center">
           <img
             src={plage}
-            alt="Kouto Côte d'Ivoire"
+            alt="Photo de Kouto"
             className="w-full h-full object-cover opacity-90"
             draggable={false}
           />

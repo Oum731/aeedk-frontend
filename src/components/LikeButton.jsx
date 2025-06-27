@@ -22,6 +22,12 @@ export default function LikeButton({
   const isVoting = useRef(false);
 
   useEffect(() => {
+    setLikeState(initialUserLike);
+    setLikes(initialLikes);
+    setDislikes(initialDislikes);
+  }, [initialUserLike, initialLikes, initialDislikes]);
+
+  useEffect(() => {
     const fetchVotes = async () => {
       try {
         const res = await axios.get(
@@ -34,22 +40,13 @@ export default function LikeButton({
         setDislikes(res.data.dislikes);
         if (user && typeof res.data.user_like === "boolean")
           setLikeState(res.data.user_like);
-      } catch {
-        // On ne bloque pas l'affichage si erreur
-      }
+      } catch {}
     };
     const interval = setInterval(() => {
       if (!isVoting.current) fetchVotes();
     }, 5000);
     return () => clearInterval(interval);
-    // eslint-disable-next-line
   }, [contentType, contentId, user, token]);
-
-  useEffect(() => {
-    setLikeState(initialUserLike);
-    setLikes(initialLikes);
-    setDislikes(initialDislikes);
-  }, [initialUserLike, initialLikes, initialDislikes]);
 
   const sendVote = async (isLike) => {
     setError("");
@@ -58,42 +55,53 @@ export default function LikeButton({
       return;
     }
     setVoting(true);
+    isVoting.current = true;
+    const prevState = likeState;
+    const prevLikes = likes;
+    const prevDislikes = dislikes;
+
+    if (likeState === isLike) {
+      setLikeState(null);
+      if (isLike) setLikes((v) => Math.max(0, v - 1));
+      else setDislikes((v) => Math.max(0, v - 1));
+      onVote && onVote(null);
+    } else {
+      setLikeState(isLike);
+      if (isLike) {
+        setLikes((v) => v + 1);
+        if (likeState === false) setDislikes((v) => Math.max(0, v - 1));
+      } else {
+        setDislikes((v) => v + 1);
+        if (likeState === true) setLikes((v) => Math.max(0, v - 1));
+      }
+      onVote && onVote(isLike);
+    }
+
     try {
-      isVoting.current = true;
-      if (likeState === isLike) {
+      if (prevState === isLike) {
         await axios.delete(
           `${API_URL}/likes/${contentType}/${contentId}?user_id=${user.id}`,
           token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
         );
-        setLikeState(null);
-        if (isLike) setLikes((prev) => Math.max(0, prev - 1));
-        else setDislikes((prev) => Math.max(0, prev - 1));
-        onVote && onVote(null);
       } else {
         await axios.post(
           `${API_URL}/likes/${contentType}/${contentId}`,
           { is_like: isLike, user_id: user.id },
           token ? { headers: { Authorization: `Bearer ${token}` } } : undefined
         );
-        if (isLike) {
-          setLikes((prev) => prev + 1);
-          if (likeState === false) setDislikes((prev) => Math.max(0, prev - 1));
-        } else {
-          setDislikes((prev) => prev + 1);
-          if (likeState === true) setLikes((prev) => Math.max(0, prev - 1));
-        }
-        setLikeState(isLike);
-        onVote && onVote(isLike);
       }
     } catch (e) {
+      setLikeState(prevState);
+      setLikes(prevLikes);
+      setDislikes(prevDislikes);
       setError(
         e.response?.data?.message ||
           e.response?.data?.error ||
           "Erreur lors du vote"
       );
     } finally {
-      isVoting.current = false;
       setVoting(false);
+      isVoting.current = false;
     }
   };
 

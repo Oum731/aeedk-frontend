@@ -45,7 +45,7 @@ export default function ProfileForm({
   readOnly,
   onAvatarChange,
   onNavigate,
-  autoRedirect = false, // true pour rediriger vers /profile, false vers /home
+  autoRedirect = false,
 }) {
   const { user, token, updateUserInContext } = useAuth();
   const isMe = !userData || (user && userData && user.id === userData.id);
@@ -70,7 +70,9 @@ export default function ProfileForm({
         email: source.email || "",
         role: source.role || "",
       });
-      setAvatarPreview(null);
+      setAvatarPreview(
+        source?.avatar ? getAvatarUrl(source.avatar, true) : null
+      );
     }
   }, [userData, user]);
 
@@ -163,7 +165,7 @@ export default function ProfileForm({
             } else {
               onNavigate("/home");
             }
-          }, 1200);
+          }, 1000);
         }
       } else {
         showToast("Mise à jour échouée (données serveur inattendues)", "error");
@@ -213,114 +215,133 @@ export default function ProfileForm({
         type={toast.type}
         onClose={() => setToast({ msg: "", type: "" })}
       />
-      {!editing || readOnly ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-lg w-full">
-          {[
-            { label: "Prénom", key: "first_name" },
-            { label: "Nom", key: "last_name" },
-            { label: "Sous-préfecture", key: "sub_prefecture" },
-            { label: "Village", key: "village" },
-            { label: "Téléphone", key: "phone" },
-            { label: "Date de naissance", key: "birth_date" },
-            { label: "Email", key: "email" },
-            { label: "Rôle", key: "role" },
-          ].map(({ label, key }) => (
-            <div key={key}>
-              <div className="text-gray-500 text-xs">{label}</div>
-              <div className="font-medium">{form[key] || "-"}</div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { label: "Nom d'utilisateur", name: "username" },
-              { label: "Prénom", name: "first_name" },
-              { label: "Nom", name: "last_name" },
-              { label: "Sous-préfecture", name: "sub_prefecture" },
-              { label: "Village", name: "village" },
-              { label: "Téléphone", name: "phone" },
-              { label: "Date de naissance", name: "birth_date", type: "date" },
-            ].map(({ label, name, type = "text" }) => (
-              <div key={name}>
-                <label className="label">{label}</label>
+      <div className="flex flex-col md:flex-row items-start gap-6 mb-8">
+        <div className="flex flex-col items-center gap-2 w-full md:w-auto">
+          <div className="relative">
+            <img
+              src={
+                avatarPreview ||
+                getAvatarUrl(userData?.avatar || user?.avatar, true)
+              }
+              alt="avatar"
+              className="w-24 h-24 rounded-full object-cover border shadow"
+              onError={(e) => (e.target.src = "/default-avatar.png")}
+            />
+            {editing && (
+              <label className="absolute bottom-0 right-0 cursor-pointer bg-blue-600 text-white rounded-full p-2 shadow border-2 border-white hover:bg-blue-700 transition">
+                <UploadCloud size={18} />
                 <input
-                  type={type}
-                  name={name}
-                  className="input input-bordered w-full"
-                  value={form[name] || ""}
-                  onChange={handleChange}
+                  type="file"
+                  name="avatar"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarChange}
                 />
-              </div>
-            ))}
-            <div>
-              <label className="label">Email</label>
-              <input
-                type="email"
-                name="email"
-                className="input input-bordered w-full"
-                value={form.email || ""}
-                disabled
-              />
-            </div>
-            <div>
-              <label className="label">Rôle</label>
-              <input
-                type="text"
-                name="role"
-                className="input input-bordered w-full"
-                value={form.role || ""}
-                disabled
-              />
-            </div>
-          </div>
-          <div className="flex items-center gap-4 mt-4">
-            <label className="btn btn-sm btn-accent cursor-pointer text-white border-blue-400 bg-blue-700">
-              <UploadCloud size={16} className="mr-1" />
-              Changer avatar
-              <input
-                type="file"
-                name="avatar"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-            </label>
-            {avatarPreview && (
-              <img
-                src={avatarPreview}
-                alt="Aperçu avatar"
-                className="rounded-full w-16 h-16 object-cover border ml-4"
-              />
+              </label>
             )}
           </div>
-          <div className="flex gap-4 mt-4">
-            <button
-              type="submit"
-              className="btn btn-primary flex-1"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <LoaderCircle className="animate-spin mr-2" size={18} />
-                  Enregistrement...
-                </>
-              ) : (
-                "Enregistrer"
-              )}
-            </button>
-            <button
-              type="button"
-              className="btn btn-ghost flex-1 text-white border-blue-400 bg-blue-700"
-              onClick={() => setEditing(false)}
-              disabled={loading}
-            >
-              Annuler
-            </button>
-          </div>
-        </form>
-      )}
+          {!editing && (
+            <div className="text-gray-500 text-xs mt-2">
+              {userData?.email || user?.email}
+            </div>
+          )}
+        </div>
+        <div className="flex-1 w-full">
+          {!editing || readOnly ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-base">
+              {[
+                { label: "Prénom", key: "first_name" },
+                { label: "Nom", key: "last_name" },
+                { label: "Sous-préfecture", key: "sub_prefecture" },
+                { label: "Village", key: "village" },
+                { label: "Téléphone", key: "phone" },
+                { label: "Date de naissance", key: "birth_date" },
+                { label: "Email", key: "email" },
+                { label: "Rôle", key: "role" },
+              ].map(({ label, key }) => (
+                <div key={key}>
+                  <div className="text-gray-500 text-xs">{label}</div>
+                  <div className="font-medium">{form[key] || "-"}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  { label: "Nom d'utilisateur", name: "username" },
+                  { label: "Prénom", name: "first_name" },
+                  { label: "Nom", name: "last_name" },
+                  { label: "Sous-préfecture", name: "sub_prefecture" },
+                  { label: "Village", name: "village" },
+                  { label: "Téléphone", name: "phone" },
+                  {
+                    label: "Date de naissance",
+                    name: "birth_date",
+                    type: "date",
+                  },
+                ].map(({ label, name, type = "text" }) => (
+                  <div key={name}>
+                    <label className="label">{label}</label>
+                    <input
+                      type={type}
+                      name={name}
+                      className="input input-bordered w-full"
+                      value={form[name] || ""}
+                      onChange={handleChange}
+                      autoComplete="off"
+                    />
+                  </div>
+                ))}
+                <div>
+                  <label className="label">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    className="input input-bordered w-full"
+                    value={form.email || ""}
+                    disabled
+                  />
+                </div>
+                <div>
+                  <label className="label">Rôle</label>
+                  <input
+                    type="text"
+                    name="role"
+                    className="input input-bordered w-full"
+                    value={form.role || ""}
+                    disabled
+                  />
+                </div>
+              </div>
+              <div className="flex gap-4 mt-4 flex-wrap">
+                <button
+                  type="submit"
+                  className="btn btn-primary flex-1"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <LoaderCircle className="animate-spin mr-2" size={18} />
+                      Enregistrement...
+                    </>
+                  ) : (
+                    "Enregistrer"
+                  )}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost flex-1 border-blue-400 bg-blue-700 text-white hover:bg-blue-800"
+                  onClick={() => setEditing(false)}
+                  disabled={loading}
+                >
+                  Annuler
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

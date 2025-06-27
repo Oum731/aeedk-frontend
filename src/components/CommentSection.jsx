@@ -12,10 +12,10 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     fetchComments();
-    // eslint-disable-next-line
   }, [postId]);
 
   const fetchComments = async () => {
@@ -45,7 +45,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       toast.error("Le commentaire ne peut pas être vide.");
       return;
     }
-
+    setSending(true);
     try {
       await axios.post(
         `${API_URL}/comments/`,
@@ -58,13 +58,15 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
       );
       setContent("");
       toast.success("Commentaire ajouté !");
-      fetchComments();
+      await fetchComments();
     } catch (err) {
       toast.error(
         err.response?.data?.message ||
           err.response?.data?.error ||
           "Erreur lors de l'envoi du commentaire"
       );
+    } finally {
+      setSending(false);
     }
   };
 
@@ -164,13 +166,14 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
               aria-label="Votre commentaire"
               rows={2}
               style={{ resize: "vertical" }}
+              disabled={sending}
             />
             <button
               type="submit"
               className="btn btn-accent"
-              disabled={loading || !content.trim()}
+              disabled={loading || !content.trim() || sending}
             >
-              {loading ? "Envoi..." : "Envoyer"}
+              {sending ? "Envoi..." : "Envoyer"}
             </button>
           </div>
         </form>
@@ -192,7 +195,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
               comment={comment}
               user={user}
               onDelete={handleDelete}
-              onReply={async (replyContent) => {
+              onReply={async (replyContent, parentId) => {
                 if (!user) return toast.error("Connectez-vous pour répondre.");
                 try {
                   await axios.post(
@@ -201,7 +204,7 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
                       content: replyContent,
                       post_id: postId,
                       user_id: user.id,
-                      parent_comment_id: comment.id,
+                      parent_comment_id: parentId,
                     },
                     token
                       ? { headers: { Authorization: `Bearer ${token}` } }
@@ -209,12 +212,14 @@ export default function CommentSection({ postId, onCountChange, onUserClick }) {
                   );
                   toast.success("Réponse ajoutée !");
                   fetchComments();
+                  return true;
                 } catch (err) {
                   toast.error(
                     err.response?.data?.message ||
                       err.response?.data?.error ||
                       "Erreur lors de l'envoi de la réponse"
                   );
+                  return false;
                 }
               }}
               onUpdate={handleUpdate}

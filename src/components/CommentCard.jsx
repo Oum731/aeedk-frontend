@@ -29,12 +29,14 @@ export default function CommentCard({
   const canEdit =
     user && (user.id === comment.user_id || user.role === "admin");
 
-  const handleReplySubmit = (e) => {
+  const handleReplySubmit = async (e) => {
     e.preventDefault();
     if (!reply.trim()) return;
-    onReply(reply, comment.id);
-    setReply("");
-    setShowReplyForm(false);
+    const success = await onReply(reply, comment.id);
+    if (success) {
+      setReply("");
+      setShowReplyForm(false);
+    }
   };
 
   const handleEditSubmit = (e) => {
@@ -55,6 +57,11 @@ export default function CommentCard({
             onClick={() =>
               onUserClick && comment.user?.id && onUserClick(comment.user.id)
             }
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && onUserClick && comment.user?.id) {
+                onUserClick(comment.user.id);
+              }
+            }}
             tabIndex={0}
             role="button"
             title="Voir le profil"
@@ -71,7 +78,6 @@ export default function CommentCard({
           <time className="text-xs text-gray-400 ml-2">
             {new Date(comment.created_at).toLocaleString("fr-FR")}
           </time>
-
           {canEdit && !editing && (
             <button
               className="btn btn-xs btn-ghost text-info ml-2"
@@ -91,7 +97,6 @@ export default function CommentCard({
             </button>
           )}
         </header>
-
         {editing ? (
           <form className="flex gap-2 mb-2" onSubmit={handleEditSubmit}>
             <textarea
@@ -125,13 +130,11 @@ export default function CommentCard({
         ) : (
           <p className="mb-2 text-sm">{comment.content}</p>
         )}
-
         {replyCount > 0 && (
           <p className="text-xs text-primary ml-1 mb-2 font-medium">
             {replyCount} réponse{replyCount > 1 ? "s" : ""}
           </p>
         )}
-
         <footer className="flex items-center gap-2">
           <LikeButton
             contentType="comment"
@@ -150,7 +153,6 @@ export default function CommentCard({
             </button>
           )}
         </footer>
-
         {showReplyForm && user && (
           <form className="mt-2 flex gap-2" onSubmit={handleReplySubmit}>
             <textarea
@@ -169,7 +171,6 @@ export default function CommentCard({
           </form>
         )}
       </section>
-
       {comment.children?.length > 0 && (
         <ul className="ml-6 space-y-2 list-none pl-0">
           {comment.children.map((child) => (

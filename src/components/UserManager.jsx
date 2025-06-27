@@ -39,6 +39,7 @@ export default function UserManager({ onNavigate }) {
 
   useEffect(() => {
     if (user?.role === "admin" && token) fetchUsers();
+    // eslint-disable-next-line
   }, [user, token]);
 
   const fetchUsers = async () => {
@@ -47,9 +48,7 @@ export default function UserManager({ onNavigate }) {
       setError("");
       setMsg("");
       const { data } = await axios.get(`${API_URL}/user/admin/users`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       setUsers(data.users || []);
     } catch (err) {
@@ -62,20 +61,16 @@ export default function UserManager({ onNavigate }) {
     }
   };
 
-  // Nouvelle méthode de suppression sans alert native
-  const handleDelete = (userId) => {
-    setConfirmDeleteId(userId);
-  };
+  const handleDelete = (userId) => setConfirmDeleteId(userId);
+
   const confirmDelete = async () => {
     try {
       await axios.delete(`${API_URL}/user/admin/users/${confirmDeleteId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
+      setUsers((prev) => prev.filter((u) => u.id !== confirmDeleteId));
       setMsg("Utilisateur supprimé.");
       setConfirmDeleteId(null);
-      fetchUsers();
     } catch (err) {
       setError(
         err.response?.data?.error ||
@@ -113,11 +108,12 @@ export default function UserManager({ onNavigate }) {
       const response = await axios.put(
         `${API_URL}/user/admin/users/${editUser.id}`,
         form,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.id === editUser.id ? { ...u, ...response.data.user } : u
+        )
       );
       if (user.id === editUser.id && form.role !== "admin") {
         updateUserInContext(response.data.user);
@@ -138,7 +134,6 @@ export default function UserManager({ onNavigate }) {
         birth_date: "",
       });
       setMsg("Modifications enregistrées.");
-      fetchUsers();
     } catch (err) {
       let msg =
         err.response?.data?.error ||
@@ -157,15 +152,13 @@ export default function UserManager({ onNavigate }) {
     try {
       const response = await axios.put(
         `${API_URL}/user/admin/users/${u.id}`,
-        {
-          ...u,
-          role: u.role === "admin" ? "membre" : "admin",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { ...u, role: u.role === "admin" ? "membre" : "admin" },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.id === u.id ? { ...user, ...response.data.user } : user
+        )
       );
       if (user.id === u.id && u.role === "admin") {
         updateUserInContext(response.data.user);
@@ -174,7 +167,6 @@ export default function UserManager({ onNavigate }) {
         return;
       }
       setMsg("Changement de rôle effectué.");
-      fetchUsers();
     } catch (err) {
       let msg =
         err.response?.data?.error ||
@@ -193,8 +185,6 @@ export default function UserManager({ onNavigate }) {
   return (
     <div className="w-full max-w-7xl mx-auto px-2">
       <h2 className="text-2xl font-bold mb-6">Gestion des utilisateurs</h2>
-
-      {/* MODALE de confirmation suppression */}
       {confirmDeleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
           <div className="bg-white rounded-xl p-6 shadow max-w-xs w-full flex flex-col gap-4">
@@ -216,7 +206,6 @@ export default function UserManager({ onNavigate }) {
           </div>
         </div>
       )}
-
       {editUser && (
         <form
           onSubmit={handleUpdate}
@@ -330,7 +319,6 @@ export default function UserManager({ onNavigate }) {
           {error && <div className="alert alert-error mt-4">{error}</div>}
         </form>
       )}
-
       <div className="w-full bg-base-100 rounded-2xl shadow-lg overflow-x-auto">
         <table className="w-full text-sm border-separate border-spacing-0">
           <thead className="sticky top-0 z-10 bg-base-200">

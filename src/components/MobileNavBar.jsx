@@ -46,7 +46,10 @@ export default function MobileNavBar() {
       if (hash) {
         const el = document.getElementById(hash);
         if (el) {
-          el.scrollIntoView({ behavior: "smooth", block: "start" });
+          setTimeout(
+            () => el.scrollIntoView({ behavior: "smooth", block: "start" }),
+            70
+          );
         } else {
           window.scrollTo({ top: 0, behavior: "smooth" });
         }
@@ -103,18 +106,17 @@ export default function MobileNavBar() {
               to="/profile"
               className="flex items-center gap-1 text-xs text-gray-700 hover:text-blue-600 font-medium"
               tabIndex={0}
+              style={{ minWidth: 0, maxWidth: 110 }}
             >
               <img
                 src={getUserAvatarSrc(user, true)}
                 alt={displayName}
                 className="w-7 h-7 rounded-full object-cover border mr-1"
-                style={{
-                  minWidth: 28,
-                  minHeight: 28,
-                  display: "block",
-                }}
+                style={{ minWidth: 28, minHeight: 28, display: "block" }}
               />
-              {displayName.length > 12 ? "Moi" : displayName}
+              <span className="truncate" style={{ maxWidth: 60 }}>
+                {displayName.length > 14 ? "Moi" : displayName}
+              </span>
             </Link>
           )}
         </div>
@@ -135,7 +137,7 @@ export default function MobileNavBar() {
             aria-current={activeSection === s.id ? "page" : undefined}
           >
             {s.icon}
-            <span>{s.label}</span>
+            <span className="truncate">{s.label}</span>
           </button>
         ))}
       </nav>

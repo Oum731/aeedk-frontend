@@ -12,6 +12,16 @@ export default function NotificationBell() {
   const [loading, setLoading] = useState(false);
   const dropdownRef = useRef(null);
 
+  useEffect(() => {
+    let interval;
+    if (token) {
+      fetchUnreadCount();
+      interval = setInterval(fetchUnreadCount, 12000);
+    }
+    return () => interval && clearInterval(interval);
+    // eslint-disable-next-line
+  }, [token]);
+
   const fetchUnreadCount = async () => {
     if (!token) return;
     try {
@@ -36,37 +46,29 @@ export default function NotificationBell() {
   };
 
   useEffect(() => {
-    fetchUnreadCount();
-  }, [token]);
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    if (open) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
 
   const markAsRead = async (id) => {
     if (!token) return;
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
+    setUnreadCount((c) => Math.max(0, c - 1));
     try {
       await axios.post(
         `${API_URL}/notifications/${id}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-      );
-      setUnreadCount((c) => Math.max(0, c - 1));
     } catch {}
   };
-
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    if (open) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [open]);
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -75,18 +77,18 @@ export default function NotificationBell() {
         className="relative focus:outline-none"
         onClick={() => {
           if (!open) fetchNotifications();
-          setOpen(!open);
+          setOpen((v) => !v);
         }}
       >
         <Bell size={24} />
         {unreadCount > 0 && (
           <span className="absolute -top-1 -right-1 bg-red-600 text-white rounded-full text-xs w-5 h-5 flex items-center justify-center">
-            {unreadCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </span>
         )}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto bg-white border rounded shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-80 max-h-96 overflow-auto bg-white border rounded shadow-lg z-50 animate-fadeIn">
           <div className="flex justify-between items-center p-3 border-b">
             <h3 className="font-semibold text-lg">Notifications</h3>
             <button
@@ -107,16 +109,16 @@ export default function NotificationBell() {
                 key={notif.id}
                 className={`p-3 border-b last:border-none cursor-pointer flex justify-between items-center ${
                   notif.is_read ? "bg-gray-50" : "bg-blue-50 font-semibold"
-                }`}
-                onClick={() => markAsRead(notif.id)}
+                } hover:bg-blue-100 transition`}
+                onClick={() => !notif.is_read && markAsRead(notif.id)}
                 tabIndex={0}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter") markAsRead(notif.id);
+                  if (e.key === "Enter" && !notif.is_read) markAsRead(notif.id);
                 }}
               >
                 <span>{notif.message}</span>
                 {notif.is_read && (
-                  <CheckCircle size={16} className="text-green-600" />
+                  <CheckCircle size={16} className="text-green-600 ml-2" />
                 )}
               </div>
             ))}

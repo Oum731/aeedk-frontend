@@ -27,7 +27,6 @@ export default function Navbar() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-
   const [isOpen, setIsOpen] = useState(true);
 
   const displayName = user
@@ -41,7 +40,10 @@ export default function Navbar() {
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      setTimeout(
+        () => el.scrollIntoView({ behavior: "smooth", block: "start" }),
+        60
+      );
       el.focus?.();
     }
   };
@@ -85,7 +87,6 @@ export default function Navbar() {
         >
           {isOpen ? <X size={18} /> : <Menu size={18} />}
         </button>
-
         <button
           onClick={(e) => handleLinkClick("/", e)}
           className="relative focus:outline-none focus:ring-2 focus:ring-blue-600 rounded-full flex items-center justify-center mt-6 group"
@@ -140,7 +141,6 @@ export default function Navbar() {
           tabIndex={0}
           aria-label="Notifications"
           role="button"
-          onClick={() => {}}
         >
           <NotificationBell />
           <span
@@ -164,18 +164,29 @@ export default function Navbar() {
             style={{ minWidth: 48, minHeight: 48 }}
             type="button"
           >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={displayName}
-                className="rounded-full object-cover border-2 border-white"
-                style={{ width: 48, height: 48, minWidth: 48, minHeight: 48 }}
-              />
-            ) : (
-              <UserIcon size={48} />
-            )}
+            <img
+              src={avatarUrl}
+              alt={displayName}
+              className="rounded-full object-cover border-2 border-blue-400"
+              style={{
+                width: 48,
+                height: 48,
+                minWidth: 48,
+                minHeight: 48,
+                boxShadow: "0 1px 4px rgba(0,0,0,0.10)",
+                background: "#F3F4F6",
+              }}
+              onError={(e) => (e.target.src = "/default-avatar.png")}
+            />
             {isOpen && (
-              <span className="font-semibold truncate ml-3">{displayName}</span>
+              <span
+                className="font-semibold truncate ml-3"
+                style={{ maxWidth: 88 }}
+              >
+                {displayName.length > 15
+                  ? displayName.slice(0, 14) + "…"
+                  : displayName}
+              </span>
             )}
           </button>
         ) : (

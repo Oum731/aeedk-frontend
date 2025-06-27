@@ -14,6 +14,7 @@ export default function PostCard({
   onComment,
   onUserClick,
   commentCount = 0,
+  isCurrentUser = false,
 }) {
   const images = Array.isArray(post?.media)
     ? post.media.filter((m) => m.type === "image")
@@ -95,13 +96,17 @@ export default function PostCard({
             <span className="font-semibold text-base md:text-lg leading-tight truncate">
               {displayName}
             </span>
+            {isCurrentUser && (
+              <span className="badge badge-info text-xs ml-2">
+                Modifier mon profil
+              </span>
+            )}
           </div>
           <span className="text-xs md:text-sm text-gray-400 leading-tight truncate">
             {dateLabel}
           </span>
         </div>
       </button>
-
       {images.length > 0 ? (
         <div
           className={`relative w-full ${carouselHeight} overflow-hidden bg-black`}
@@ -154,7 +159,6 @@ export default function PostCard({
           Votre navigateur ne supporte pas la lecture vidéo.
         </video>
       ) : null}
-
       <div className="p-4 sm:p-6 flex flex-col flex-1">
         <h2 className="font-semibold text-lg md:text-2xl mb-2 flex items-center gap-2">
           {post?.title || ""}

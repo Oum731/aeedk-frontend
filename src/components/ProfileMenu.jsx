@@ -4,7 +4,7 @@ import { useAuth } from "../contexts/AuthContext";
 import { getUserAvatarSrc } from "../utils/avatarUrl";
 import { useNavigate } from "react-router-dom";
 
-export default function ProfileMenu({ onNavigate }) {
+export default function ProfileMenu({ onNavigate, isOnline }) {
   const { user, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
@@ -57,9 +57,21 @@ export default function ProfileMenu({ onNavigate }) {
           className="w-10 h-10 rounded-full object-cover border"
           onError={(e) => (e.target.src = "/default-avatar.png")}
         />
+        {typeof isOnline === "boolean" && (
+          <span
+            className={`ml-[-18px] mt-[28px] w-3.5 h-3.5 border-2 border-white rounded-full absolute ${
+              isOnline ? "bg-green-500" : "bg-gray-400"
+            }`}
+            title={isOnline ? "En ligne" : "Hors ligne"}
+            style={{
+              left: 32,
+              top: 24,
+            }}
+          ></span>
+        )}
       </button>
       <div
-        className={`absolute right-0 z-30 mt-2 bg-white border rounded-xl min-w-[220px] shadow-2xl p-2 flex flex-col gap-1 transition-all duration-150
+        className={`absolute right-0 z-30 mt-2 bg-white border rounded-xl min-w-[230px] shadow-2xl p-2 flex flex-col gap-1 transition-all duration-150
           ${
             open
               ? "opacity-100 scale-100 pointer-events-auto"
@@ -68,16 +80,27 @@ export default function ProfileMenu({ onNavigate }) {
         `}
         style={{ willChange: "opacity,transform" }}
       >
-        <div className="flex justify-center mb-2">
+        <div className="flex justify-center mb-2 relative">
           <img
             src={getUserAvatarSrc(user)}
             alt={displayName}
             className="w-14 h-14 rounded-full object-cover border shadow"
             onError={(e) => (e.target.src = "/default-avatar.png")}
           />
+          {typeof isOnline === "boolean" && (
+            <span
+              className={`absolute right-2 bottom-2 w-4 h-4 border-2 border-white rounded-full ${
+                isOnline ? "bg-green-500" : "bg-gray-400"
+              }`}
+              title={isOnline ? "En ligne" : "Hors ligne"}
+            ></span>
+          )}
         </div>
         <div className="text-center font-semibold text-base mb-2 truncate px-2">
           {displayName}
+          {user.role === "admin" && (
+            <span className="badge badge-info ml-2 align-middle">Admin</span>
+          )}
         </div>
         <button
           className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded transition"

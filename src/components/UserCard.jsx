@@ -23,7 +23,7 @@ export default function UserCard({
   const avatarSrc = getUserAvatarSrc(user);
 
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-6 p-4 sm:p-6 md:p-8 hover:shadow-xl transition relative">
+    <div className="w-full max-w-3xl mx-auto bg-white shadow rounded-xl flex items-center gap-5 p-4 sm:p-6 md:p-8 hover:shadow-xl transition relative">
       <div className="relative flex-shrink-0">
         {avatarSrc ? (
           <img
@@ -41,30 +41,31 @@ export default function UserCard({
           </div>
         )}
 
-        {/* Statut en ligne */}
-        <span
-          className={`absolute bottom-0 right-0 w-5 h-5 rounded-full border-2 border-white ${
-            isOnline ? "bg-green-500" : "bg-gray-400"
-          }`}
-          title={isOnline ? "En ligne" : "Hors ligne"}
-        ></span>
-
         {/* Badge notifications */}
         {unreadNotifications > 0 && (
           <span
-            className="absolute top-0 right-0 flex items-center justify-center w-5 h-5 rounded-full bg-red-600 text-white text-xs font-semibold border-2 border-white"
+            className="absolute -top-2 -right-2 flex items-center justify-center w-7 h-7 rounded-full bg-red-600 text-white font-bold text-xs border-2 border-white shadow-md"
             title={`${unreadNotifications} notification${
               unreadNotifications > 1 ? "s" : ""
             } non lue${unreadNotifications > 1 ? "s" : ""}`}
           >
+            <Bell className="w-4 h-4 mr-1" />
             {unreadNotifications > 9 ? "9+" : unreadNotifications}
           </span>
         )}
+
+        {/* Statut en ligne */}
+        <span
+          className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white flex items-center justify-center ${
+            isOnline ? "bg-green-500" : "bg-gray-400"
+          }`}
+          title={isOnline ? "En ligne" : "Hors ligne"}
+        ></span>
       </div>
 
       <div className="flex-1 min-w-0">
         <h3 className="font-semibold text-lg md:text-2xl truncate text-blue-700 flex items-center gap-2">
-          {user.username}
+          <span className="truncate">{user.username}</span>
           {user.role === "admin" && (
             <span className="badge badge-info ml-2 align-middle">Admin</span>
           )}

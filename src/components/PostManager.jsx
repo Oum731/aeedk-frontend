@@ -53,6 +53,20 @@ function Toast({ msg, type, onClose }) {
   );
 }
 
+function SkeletonRow() {
+  return (
+    <tr>
+      <td colSpan={5}>
+        <div className="animate-pulse flex gap-2 items-center">
+          <div className="h-4 w-24 bg-gray-200 rounded" />
+          <div className="h-4 w-40 bg-gray-200 rounded" />
+          <div className="h-4 w-24 bg-gray-200 rounded" />
+        </div>
+      </td>
+    </tr>
+  );
+}
+
 export default function PostManager() {
   const { user } = useAuth();
   const [posts, setPosts] = useState([]);
@@ -70,18 +84,26 @@ export default function PostManager() {
   const [toast, setToast] = useState({ msg: "", type: "" });
   const [modal, setModal] = useState({ open: false, postId: null });
   const mediaInputRef = useRef();
+  const refreshInterval = useRef();
 
   useEffect(() => {
     if (user) fetchPosts();
+    if (refreshInterval.current) clearInterval(refreshInterval.current);
+    refreshInterval.current = setInterval(() => {
+      fetchPosts();
+    }, 12000);
+    return () => {
+      if (refreshInterval.current) clearInterval(refreshInterval.current);
+    };
+    // eslint-disable-next-line
   }, [user]);
 
-  const showToast = (msg, type = "success", time = 2400) => {
+  const showToast = (msg, type = "success", time = 2200) => {
     setToast({ msg, type });
     setTimeout(() => setToast({ msg: "", type: "" }), time);
   };
 
   const fetchPosts = async () => {
-    setLoading(true);
     try {
       const { data } = await axios.get(`${API_URL}/posts`);
       let postsArr = Array.isArray(data) ? data : data.posts;
@@ -110,16 +132,30 @@ export default function PostManager() {
       showToast("Tous les champs sont obligatoires.", "error");
       return;
     }
-    const formData = new FormData();
-    formData.append("title", form.title);
-    formData.append("content", form.content);
-    formData.append("is_featured", form.is_featured ? "true" : "false");
-    formData.append("status", form.status);
-    formData.append("author_id", user.id);
-    if (form.media && form.media.length > 0) {
-      form.media.forEach((file) => formData.append("media", file));
-    }
+    const optimisticId = "optimistic_" + Date.now();
+    const optimisticPost = {
+      id: optimisticId,
+      title: form.title,
+      content: form.content,
+      is_featured: form.is_featured,
+      status: form.status,
+      media: mediaPreview,
+      author_id: user.id,
+      optimistic: true,
+    };
+    setPosts((prev) => [optimisticPost, ...prev]);
+    resetForm();
+    showToast(editPost ? "Post modifié avec succès !" : "Post ajouté !");
     try {
+      const formData = new FormData();
+      formData.append("title", form.title);
+      formData.append("content", form.content);
+      formData.append("is_featured", form.is_featured ? "true" : "false");
+      formData.append("status", form.status);
+      formData.append("author_id", user.id);
+      if (form.media && form.media.length > 0) {
+        form.media.forEach((file) => formData.append("media", file));
+      }
       const method = editPost ? "put" : "post";
       const url = editPost
         ? `${API_URL}/posts/${editPost.id}`
@@ -128,13 +164,7 @@ export default function PostManager() {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const post = data.post || data;
-      setPosts((prev) =>
-        editPost
-          ? prev.map((p) => (p.id === editPost.id ? post : p))
-          : [post, ...prev]
-      );
-      showToast(editPost ? "Post modifié avec succès !" : "Post ajouté !");
-      resetForm();
+      setPosts((prev) => prev.map((p) => (p.id === optimisticId ? post : p)));
     } catch (err) {
       showToast(
         err.response?.data?.error ||
@@ -142,6 +172,7 @@ export default function PostManager() {
           "Erreur lors de l’envoi.",
         "error"
       );
+      setPosts((prev) => prev.filter((p) => p.id !== optimisticId));
     }
   };
 
@@ -235,12 +266,6 @@ export default function PostManager() {
     );
   }
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-32">Chargement...</div>
-    );
-  }
-
   return (
     <div className="container mx-auto px-4 py-6">
       <Toast
@@ -306,7 +331,7 @@ export default function PostManager() {
               required
             />
           </div>
-          <div className="mb-4 flex gap-4 items-center">
+          <div className="mb-4 flex gap-4 items-center flex-wrap">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
@@ -343,7 +368,7 @@ export default function PostManager() {
               />
             </label>
             {mediaPreview.length > 0 && (
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 {mediaPreview.map((media, idx) => (
                   <div key={idx} className="relative">
                     {media.type === "video" ? (
@@ -406,7 +431,13 @@ export default function PostManager() {
             </tr>
           </thead>
           <tbody>
-            {posts.length === 0 ? (
+            {loading ? (
+              <>
+                <SkeletonRow />
+                <SkeletonRow />
+                <SkeletonRow />
+              </>
+            ) : posts.length === 0 ? (
               <tr>
                 <td colSpan={5} className="text-center">
                   Aucun post.

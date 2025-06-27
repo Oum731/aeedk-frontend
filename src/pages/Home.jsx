@@ -30,13 +30,15 @@ const carouselImages = [
   },
 ];
 
+const SECTION_TOP_SPACING = "pt-6 sm:pt-8 md:pt-10";
+
 export default function Home({ onNavigate }) {
   const [showTopBtn, setShowTopBtn] = useState(false);
   const sectionRefs = {
     accueil: useRef(null),
     actu: useRef(null),
     contact: useRef(null),
-    apropos: useRef(null),
+    about: useRef(null),
   };
 
   useEffect(() => {
@@ -71,7 +73,6 @@ export default function Home({ onNavigate }) {
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full bg-white">
-      {/* Hero */}
       <section
         id="accueil"
         ref={sectionRefs.accueil}
@@ -144,30 +145,27 @@ export default function Home({ onNavigate }) {
           </Swiper>
         </div>
       </section>
-
-      {/* Sections */}
       <section
         id="actu"
         ref={sectionRefs.actu}
-        className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
+        className={`w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-20 ${SECTION_TOP_SPACING}`}
       >
         <Actu />
       </section>
       <section
         id="contact"
         ref={sectionRefs.contact}
-        className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
+        className={`w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-20 ${SECTION_TOP_SPACING}`}
       >
         <Contact />
       </section>
       <section
         id="about"
         ref={sectionRefs.about}
-        className="w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white"
+        className={`w-full max-w-7xl px-4 sm:px-6 md:px-8 py-8 rounded-xl shadow-xl mt-8 bg-white scroll-mt-20 ${SECTION_TOP_SPACING}`}
       >
         <Apropos />
       </section>
-
       {showTopBtn && (
         <button
           className="fixed bottom-10 right-10 btn btn-circle z-50"
