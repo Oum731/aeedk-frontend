@@ -3,9 +3,31 @@ import axios from "axios";
 import { Trash2, MessageCircle, User as UserIcon } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+
+function AlertMessage({ msg, type = "success", onClose }) {
+  if (!msg) return null;
+  return (
+    <div
+      className={`fixed inset-0 flex items-center justify-center z-[9999]`}
+      style={{ background: "rgba(0,0,0,0.12)" }}
+      onClick={onClose}
+    >
+      <div
+        className={`px-6 py-4 rounded-lg shadow-lg border text-center max-w-xs w-full text-base
+          ${
+            type === "success"
+              ? "bg-green-50 border-green-400 text-green-700"
+              : "bg-red-50 border-red-400 text-red-700"
+          }`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {msg}
+      </div>
+    </div>
+  );
+}
 
 export default function CommentManager() {
   const { user, token } = useAuth();
@@ -14,9 +36,11 @@ export default function CommentManager() {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // State pour la modale de confirmation
   const [showModal, setShowModal] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
+
+  // Nouvel état pour gérer l'alerte centrée
+  const [alert, setAlert] = useState({ msg: "", type: "success" });
 
   useEffect(() => {
     fetchCommentsAndPosts();
@@ -38,7 +62,10 @@ export default function CommentManager() {
     } catch {
       setComments([]);
       setPosts([]);
-      toast.error("Erreur de chargement des commentaires ou des posts");
+      setAlert({
+        msg: "Erreur de chargement des commentaires ou des posts",
+        type: "error",
+      });
     }
     setLoading(false);
   };
@@ -57,11 +84,12 @@ export default function CommentManager() {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchCommentsAndPosts();
-      toast.success("Commentaire supprimé !");
+      setAlert({ msg: "Commentaire supprimé !", type: "success" });
     } catch {
-      toast.error("Erreur lors de la suppression");
+      setAlert({ msg: "Erreur lors de la suppression", type: "error" });
     }
     setPendingDeleteId(null);
+    setTimeout(() => setAlert({ msg: "", type: "success" }), 2700);
   };
 
   const getAvatarUrl = (avatar) => {
@@ -90,6 +118,11 @@ export default function CommentManager() {
 
   return (
     <div className="w-full max-w-6xl mx-auto px-2">
+      <AlertMessage
+        msg={alert.msg}
+        type={alert.type}
+        onClose={() => setAlert({ msg: "", type: "success" })}
+      />
       <h2 className="text-2xl font-bold mb-6">Gestion des commentaires</h2>
       <div className="w-full bg-base-100 rounded-2xl shadow-lg overflow-x-auto">
         <table className="w-full text-sm border-separate border-spacing-0">
@@ -169,7 +202,6 @@ export default function CommentManager() {
         </table>
       </div>
 
-      {/* MODAL DE CONFIRMATION */}
       {showModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
           <div className="bg-white dark:bg-base-100 p-6 rounded-xl shadow-2xl max-w-xs w-full text-center">
