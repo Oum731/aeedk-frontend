@@ -1,6 +1,6 @@
 # Echoes of the Grid — CrazyGames submission sheet
 
-**Upload:** `echoes-of-the-grid-crazygames.zip` (HTML5 game, `index.html` at the zip root, ~30 KB, no external assets except the CrazyGames SDK).
+**Upload:** `echoes-of-the-grid-crazygames.zip` (HTML5 game, `index.html` at the zip root, ~14 KB, no external assets except the CrazyGames SDK).
 
 ## Covers (CrazyGames developer portal)
 - `cover-landscape-1920x1080.png` — 16:9
