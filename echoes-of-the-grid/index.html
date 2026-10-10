@@ -11,6 +11,7 @@
 </style>
 </head>
 <body>
+<script src="https://sdk.crazygames.com/crazygames-sdk-v3.js"></script>
 <canvas id="c" width="800" height="640"></canvas>
 <script>
 "use strict";
@@ -99,13 +100,46 @@ const LEVELS = [
   },
 ];
 
+// ---------- CrazyGames SDK (sans effet hors CrazyGames : le jeu reste jouable en local) ----------
+const CG = {
+  ready: false, playing: false,
+  get sdk() { return window.CrazyGames && window.CrazyGames.SDK; },
+  async init() {
+    try { if (this.sdk) { await this.sdk.init(); this.ready = true; } } catch (e) { console.warn("CrazyGames SDK indisponible", e); }
+  },
+  call(fn) { if (this.ready) { try { return fn(this.sdk); } catch (e) { console.warn(e); } } },
+  loading(on) { this.call(s => on ? s.game.loadingStart() : s.game.loadingStop()); },
+  gameplay(on) {
+    if (on === this.playing) return;
+    this.playing = on;
+    this.call(s => on ? s.game.gameplayStart() : s.game.gameplayStop());
+  },
+  happy() { this.call(s => s.game.happytime()); },
+  save(k, v) { try { this.call(s => s.data.setItem(k, String(v))); localStorage.setItem(k, String(v)); } catch (e) {} },
+  load(k) {
+    try { const v = this.call(s => s.data.getItem(k)); if (v !== null && v !== undefined) return v; return localStorage.getItem(k); } catch (e) { return null; }
+  },
+  midgame(done) {
+    if (!this.ready) return done();
+    let finished = false;
+    const end = () => { if (!finished) { finished = true; done(); } };
+    try { this.sdk.ad.requestAd("midgame", { adStarted() {}, adFinished: end, adError: end }); } catch (e) { end(); }
+  },
+};
+
 // ---------- État ----------
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
 let L = null, lvlIdx = 0;
 let walls, plates, doors, startPos, exitPos;
 let G = {
-  status: "title",       // title | play | dying | complete | end
+  _status: "title",      // title | play | dying | complete | end | ad
+  get status() { return this._status; },
+  set status(v) {
+    this._status = v;
+    if (v === "play") CG.gameplay(true);
+    else if (v !== "dying") CG.gameplay(false);
+  },
   tick: 0, loops: 1, ghosts: [], rec: [],
   player: null, chasers: [], patrols: [], active: {},
   dyingTimer: 0, shake: 0,
@@ -236,6 +270,8 @@ function step() {
   // sortie
   if (G.player.alive && Math.hypot(G.player.x - exitPos.x, G.player.y - exitPos.y) < 16) {
     G.status = "complete";
+    CG.happy();
+    CG.save("ecg_level", Math.min(lvlIdx + 1, LEVELS.length - 1));
     burst(exitPos.x, exitPos.y + OY, "#3dff8c", 40);
     return;
   }
@@ -404,7 +440,9 @@ function render() {
   frame++;
   drawWorld();
   drawHUD();
-  if (G.status === "title") {
+  if (G.status === "ad") {
+    overlay("PUBLICITÉ", ["Le jeu reprend dans un instant…"], "#8a8fff");
+  } else if (G.status === "title") {
     const first = lvlIdx === 0;
     overlay(first ? "ECHOES OF THE GRID" : `NIVEAU ${lvlIdx + 1} · ${L.name}`, [
       L.hint,
@@ -442,12 +480,14 @@ addEventListener("keydown", e => {
   if (k === " ") {
     e.preventDefault();
     if (G.status === "play" && !e.repeat) endLoop();
-  } else if (k === "r" && G.status !== "title" && G.status !== "end") {
+  } else if (k === "r" && G.status !== "title" && G.status !== "end" && G.status !== "ad") {
     loadLevel(lvlIdx); G.status = "play";
   } else if (k === "enter") {
     if (G.status === "title") G.status = "play";
     else if (G.status === "complete") {
-      if (lvlIdx + 1 < LEVELS.length) loadLevel(lvlIdx + 1); else G.status = "end";
+      const next = lvlIdx + 1;
+      G.status = "ad";
+      CG.midgame(() => { if (next < LEVELS.length) loadLevel(next); else G.status = "end"; });
     } else if (G.status === "end") loadLevel(0);
   }
 });
@@ -464,6 +504,13 @@ window.__ecg = {
 
 loadLevel(0);
 requestAnimationFrame(frameLoop);
+
+CG.init().then(() => {
+  CG.loading(true);
+  const saved = parseInt(CG.load("ecg_level"), 10);
+  if (saved > 0 && saved < LEVELS.length) loadLevel(saved);
+  CG.loading(false);
+});
 </script>
 </body>
 </html>
