@@ -3,7 +3,6 @@
 
 // ---------- Constantes ----------
 const W = 800, H = 640, OY = 40, T = 40, COLS = 20, ROWS = 15;
-const LOOP_TICKS = 900;              // 15 s à 60 ticks/s
 const SPEED = 3, HALF = 11, MAX_GHOSTS = 6;
 const UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8;
 const COLORS = { a: "#ffd23f", b: "#3dff8c", c: "#ff8a3d", d: "#b57bff" };
@@ -18,7 +17,7 @@ const I18N = {
     menu: "MENU", paused: "PAUSED", complete: "SYSTEM INFILTRATED", loopsUsed: "Loops used", best: "Best",
     next: "NEXT LEVEL", dead: "SIGNAL LOST", ad: "ADVERTISEMENT", adWait: "The game resumes shortly…",
     endTitle: "MISSION ACCOMPLISHED", endText: "You infiltrated the whole grid. Thanks for playing!",
-    locked: "LOCKED", loopBtn: "LOOP",
+    locked: "LOCKED", loopBtn: "LOOP", loopTime: "Loop",
     keys: "WASD / ZQSD / ARROWS: move   ·   SPACE: end loop   ·   R: restart   ·   P: pause",
     touch: "Left pad: move   ·   LOOP button: end the loop and send your clone",
     how: "Your clone replays your last run. Plates hold doors open. Don't let clones die!",
@@ -31,7 +30,7 @@ const I18N = {
     menu: "MENU", paused: "PAUSE", complete: "SYSTÈME INFILTRÉ", loopsUsed: "Boucles utilisées", best: "Record",
     next: "NIVEAU SUIVANT", dead: "SIGNAL PERDU", ad: "PUBLICITÉ", adWait: "Le jeu reprend dans un instant…",
     endTitle: "MISSION ACCOMPLIE", endText: "Tu as infiltré toute la grille. Merci d'avoir joué !",
-    locked: "VERROUILLÉ", loopBtn: "BOUCLE",
+    locked: "VERROUILLÉ", loopBtn: "BOUCLE", loopTime: "Boucle",
     keys: "ZQSD / WASD / FLÈCHES : bouger   ·   ESPACE : finir la boucle   ·   R : recommencer   ·   P : pause",
     touch: "Croix à gauche : bouger   ·   Bouton BOUCLE : finir la boucle et envoyer ton clone",
     how: "Ton clone rejoue ta dernière boucle. Les plaques gardent les portes ouvertes. Ne laisse pas mourir tes clones !",
@@ -89,7 +88,7 @@ const loc = o => o[save.lang];
 // ---------- État ----------
 const cv = document.getElementById("c");
 const ctx = cv.getContext("2d");
-let L = null, lvlIdx = 0;
+let L = null, lvlIdx = 0, loopTicks = 900;   // durée d'une boucle (propre à chaque niveau)
 let walls, plates, doors, startPos, exitPos, plateTotals;
 const G = {
   _status: "menu",   // menu | levels | intro | play | dying | paused | complete | ad | end
@@ -108,7 +107,7 @@ let buttons = [], nextButtons = [];
 const mouse = { x: -1, y: -1 };
 
 function loadLevel(i) {
-  lvlIdx = i; L = LEVELS[i];
+  lvlIdx = i; L = LEVELS[i]; loopTicks = L.secs * 60;
   walls = []; plates = []; doors = []; plateTotals = {};
   for (let y = 0; y < ROWS; y++) {
     walls[y] = [];
@@ -239,7 +238,7 @@ function step() {
 
   G.tick++;
   if (!G.player.alive) { G.status = "dying"; G.dyingTimer = 45; return; }
-  if (G.tick >= LOOP_TICKS) endLoop();
+  if (G.tick >= loopTicks) endLoop();
 }
 
 function endLoop() {
@@ -316,6 +315,15 @@ function button(label, x, y, w, h, fn, opt = {}) {
   ctx.strokeStyle = opt.disabled ? "#3a4366" : c; ctx.lineWidth = 2; ctx.stroke(); noGlow();
   if (opt.render) opt.render(x, y, w, h);
   else text(label, x + w / 2, y + h / 2, opt.size || 20, opt.disabled ? "#56608a" : "#e6f2ff");
+}
+
+function diffMeter(cx, cy, n, locked) {
+  for (let i = 0; i < 5; i++) {
+    const x = cx + (i - 2) * 13, on = i < n;
+    ctx.beginPath(); ctx.moveTo(x, cy - 5); ctx.lineTo(x + 5, cy); ctx.lineTo(x, cy + 5); ctx.lineTo(x - 5, cy); ctx.closePath();
+    if (on) { glow(locked ? "#56608a" : "#ffd23f", 6); ctx.fillStyle = locked ? "#56608a" : "#ffd23f"; ctx.fill(); noGlow(); }
+    else { ctx.strokeStyle = "#3a4366"; ctx.lineWidth = 1; ctx.stroke(); }
+  }
 }
 
 // ---------- Rendu : monde ----------
@@ -426,10 +434,10 @@ function pauseGame() { if (G.status === "play") { G.status = "paused"; } }
 function drawHUD(interactive) {
   ctx.fillStyle = "#0a0d1f"; ctx.fillRect(0, 0, W, OY);
   text(`${t("level")} ${lvlIdx + 1} · ${loc(L.name)}`, 12, OY / 2, 12, "#00f0ff", "left", "#00f0ff");
-  const frac = 1 - G.tick / LOOP_TICKS, bx = 300, bw = 110;
+  const frac = 1 - G.tick / loopTicks, bx = 300, bw = 110;
   ctx.strokeStyle = "#2a3a6a"; ctx.lineWidth = 1; ctx.strokeRect(bx, OY / 2 - 6, bw, 12);
   ctx.fillStyle = frac > .25 ? "#00f0ff" : "#ff4d4d"; ctx.fillRect(bx + 1, OY / 2 - 5, (bw - 2) * frac, 10);
-  text((Math.max(0, LOOP_TICKS - G.tick) / 60).toFixed(1) + "s", bx + bw + 8, OY / 2, 13, "#cfe3ff", "left");
+  text((Math.max(0, loopTicks - G.tick) / 60).toFixed(1) + "s", bx + bw + 8, OY / 2, 13, "#cfe3ff", "left");
   text(`${t("loop")} ${G.loops} · ${t("clones")} ${G.ghosts.length}`, 640, OY / 2, 12, "#ff3df2", "right");
   if (!interactive) return;   // boutons actifs seulement pendant la partie
   button("", 656, 6, 56, 28, () => { Snd.play("click"); toggleSound(); }, { render: (x, y, w, h) => iconSound(x + w / 2 - 2, y + h / 2, !save.muted) });
@@ -501,21 +509,22 @@ function screenMenu() {
 function screenLevels() {
   drawMenuBackdrop();
   text(t("levels"), W / 2, 70, 36, "#00f0ff", "center", "#00f0ff");
-  const cols = 5, cw = 140, ch = 100, gap = 14, x0 = (W - (cols * cw + (cols - 1) * gap)) / 2, y0 = 120;
+  const cols = 5, cw = 140, ch = 92, gap = 12, x0 = (W - (cols * cw + (cols - 1) * gap)) / 2, y0 = 100;
   LEVELS.forEach((lv, i) => {
     const x = x0 + (i % cols) * (cw + gap), y = y0 + ((i / cols) | 0) * (ch + gap);
     const locked = i > save.unlocked;
     button("", x, y, cw, ch, () => { if (!locked) { Snd.init(); Snd.play("click"); startLevel(i); } }, {
       disabled: locked, color: locked ? "#3a4366" : "#00f0ff",
       render: (bx, by) => {
-        text(String(i + 1), bx + cw / 2, by + 26, 28, locked ? "#56608a" : "#00f0ff", "center", locked ? null : "#00f0ff");
-        wrap(loc(lv.name), bx + cw / 2, by + 56, cw - 14, 12, 10, locked ? "#56608a" : "#cfe3ff");
+        text(String(i + 1), bx + 24, by + 22, 24, locked ? "#56608a" : "#00f0ff", "center", locked ? null : "#00f0ff");
+        diffMeter(bx + cw - 46, by + 20, lv.diff, locked);
+        wrap(loc(lv.name), bx + cw / 2, by + 52, cw - 14, 12, 10, locked ? "#56608a" : "#cfe3ff");
         const best = save.best[i];
-        text(locked ? t("locked") : (best ? `${t("best")}: ${best}` : ""), bx + cw / 2, by + ch - 12, 10, locked ? "#56608a" : "#3dff8c", "center", null, false);
+        text(locked ? t("locked") : (best ? `${t("best")}: ${best}` : ""), bx + cw / 2, by + ch - 11, 10, locked ? "#56608a" : "#3dff8c", "center", null, false);
       },
     });
   });
-  button(t("back"), W / 2 - 110, 540, 220, 46, () => { Snd.play("click"); G.status = "menu"; }, { color: "#ff3df2" });
+  button(t("back"), W / 2 - 110, 556, 220, 46, () => { Snd.play("click"); G.status = "menu"; }, { color: "#ff3df2" });
 }
 
 function panelTitle(title, color, y = 170) { text(title, W / 2, y, 40, color, "center", color); }
@@ -526,7 +535,9 @@ function overlayScreens() {
     dim();
     panelTitle(`${t("level")} ${lvlIdx + 1}`, "#00f0ff", 150);
     text(loc(L.name), W / 2, 205, 24, "#ff3df2", "center", "#ff3df2");
-    let y = 262;
+    diffMeter(W / 2 - 40, 238, L.diff, false);
+    text(`${t("loopTime")}: ${L.secs}s`, W / 2 + 70, 238, 13, "#9fb4e8", "left", null, false);
+    let y = 280;
     y += wrap(loc(L.hint), W / 2, y, 560, 24, 17, "#e6f2ff") + 16;
     if (lvlIdx === 0) y += wrap(t("how"), W / 2, y, 560, 22, 14, "#9fb4e8") + 10;
     wrap(touchMode ? t("touch") : t("keys"), W / 2, y + 6, 640, 20, 12, "#6f82b8");

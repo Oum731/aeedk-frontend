@@ -9,13 +9,13 @@
 (Check the exact sizes requested on the upload form: they may change.)
 
 ## Video and screenshots
-- `gameplay-trailer.mp4` (1280x720, ~59 s, also as `.webm`): bot-played footage of levels 1, 4 and 9
+- `gameplay-trailer.mp4` (1280x720, ~91 s, also as `.webm`): bot-played footage of levels 1, 8 and 14
 - `screenshot-1.png`, `screenshot-2.png`, `screenshot-3.png`: gameplay screenshots (1280x720)
 
 ## Title / descriptions
 - **Title:** Echoes of the Grid
 - **Short description:** Team up with your own past in this neon time-loop puzzle: every loop leaves a clone that replays your moves.
-- **Description (EN):** Infiltrate the grid by cooperating with yourself! Each time your 15-second loop ends, your last run becomes a clone that replays your moves. Use your clones to hold pressure plates, open laser doors and slip past sentries — but if a clone dies, everything it was holding open closes again. 13 levels of puzzles, from a gentle tutorial to the Root Access finale.
+- **Description (EN):** Infiltrate the grid by cooperating with yourself! Each time your timed loop ends, your last run becomes a clone that replays your moves. Use your clones to hold pressure plates, open laser doors and slip past sentries — but if a clone dies, everything it was holding open closes again. 20 levels with a smooth difficulty curve (1 to 5 stars, shorter loops as you progress), from a gentle tutorial to the six-clone Singularity finale.
 - **Instructions:** WASD / ZQSD / Arrow keys: move · SPACE: end the loop · R: restart · P: pause · M: mute. On mobile: left pad to move, LOOP button to end the loop.
 - **Tags:** puzzle, time loop, neon, cyberpunk, clones, logic, 1 player, mobile
 - **Languages:** English, French (auto-detected from the browser, switchable in the menu)
