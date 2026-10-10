@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Echoes of the Grid</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #05060d; overflow: hidden; }
+  body { display: flex; align-items: center; justify-content: center; }
+  canvas { max-width: 100vw; max-height: 100vh; aspect-ratio: 800 / 640; width: min(100vw, 125vh); background: #070914; }
+</style>
+</head>
+<body>
+<canvas id="c" width="800" height="640"></canvas>
+<script>
+"use strict";
+
+// ---------- Constantes ----------
+const T = 40, COLS = 20, ROWS = 15, W = 800, H = 640, OY = 40;
+const LOOP_TICKS = 900;          // 15 s à 60 ticks/s
+const SPEED = 3, HALF = 11, MAX_GHOSTS = 6;
+const UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8;
+const COLORS = { a: "#ffd23f", b: "#3dff8c" };
+
+// ---------- Niveaux ----------
+// # mur · . sol · S départ · E sortie · minuscule = plaque · MAJUSCULE = porte laser liée à la plaque
+const LEVELS = [
+  {
+    name: "BOOT SEQUENCE",
+    hint: "Marche sur la plaque jaune puis appuie sur ESPACE : ton clone la gardera enfoncée pendant que tu passes la porte.",
+    map: [
+      "####################",
+      "#.........#........#",
+      "#.........#........#",
+      "#.........#........#",
+      "#.........#........#",
+      "#.S.......#.....E..#",
+      "#.........A........#",
+      "#....a....A........#",
+      "#.........#........#",
+      "#.........#........#",
+      "#.........#........#",
+      "#.........#........#",
+      "#.........#........#",
+      "#.........#........#",
+      "####################",
+    ],
+    enemies: [],
+  },
+  {
+    name: "FIREWALL",
+    hint: "Deux plaques, deux portes. Une sentinelle patrouille à gauche, un traqueur dort au centre : si un clone meurt, sa porte se referme.",
+    map: [
+      "####################",
+      "#........#.....#...#",
+      "#S.......#.....#...#",
+      "#........#.....#...#",
+      "#........#.....#...#",
+      "#........#.....#...#",
+      "#........A.....B.E.#",
+      "#........A.....B...#",
+      "#........#.....#...#",
+      "#........#.....#...#",
+      "#........#.....#...#",
+      "#......a.#.....#...#",
+      "#........#.b...#...#",
+      "#........#.....#...#",
+      "####################",
+    ],
+    enemies: [
+      { type: "patrol", x1: 220, y1: 60, x2: 220, y2: 540, speed: 2 },
+      { type: "chaser", x: 540, y: 220 },
+    ],
+  },
+];
+
+// ---------- État ----------
+const cv = document.getElementById("c");
+const ctx = cv.getContext("2d");
+let L = null, lvlIdx = 0;
+let walls, plates, doors, startPos, exitPos;
+let G = {
+  status: "title",       // title | play | dying | complete | end
+  tick: 0, loops: 1, ghosts: [], rec: [],
+  player: null, chasers: [], patrols: [], active: {},
+  dyingTimer: 0, shake: 0,
+};
+let keyMask = 0, testMask = null;
+let particles = [];
+let frame = 0;
+
+function loadLevel(i) {
+  lvlIdx = i; L = LEVELS[i];
+  walls = []; plates = []; doors = [];
+  for (let y = 0; y < ROWS; y++) {
+    walls[y] = [];
+    for (let x = 0; x < COLS; x++) {
+      const ch = L.map[y][x];
+      walls[y][x] = ch === "#";
+      if (ch === "S") startPos = { x: x * T + T / 2, y: y * T + T / 2 };
+      if (ch === "E") exitPos = { x: x * T + T / 2, y: y * T + T / 2 };
+      if (ch >= "a" && ch <= "z") plates.push({ id: ch, tx: x, ty: y });
+      if (ch === "A" || ch === "B") doors.push({ id: ch.toLowerCase(), tx: x, ty: y });
+    }
+  }
+  G.ghosts = []; G.loops = 1;
+  startLoop();
+  G.status = "title";
+}
+
+function startLoop() {
+  G.tick = 0; G.rec = [];
+  G.player = { x: startPos.x, y: startPos.y, alive: true };
+  G.ghosts.forEach(g => { g.x = startPos.x; g.y = startPos.y; g.alive = true; });
+  G.patrols = L.enemies.filter(e => e.type === "patrol");
+  G.chasers = L.enemies.filter(e => e.type === "chaser")
+    .map(e => ({ x: e.x, y: e.y, hx: e.x, hy: e.y, target: null }));
+  G.active = {};
+  G.dyingTimer = 0;
+}
+
+// ---------- Simulation ----------
+const doorClosed = id => !G.active[id];
+
+function tileSolid(tx, ty) {
+  if (tx < 0 || ty < 0 || tx >= COLS || ty >= ROWS) return true;
+  if (walls[ty][tx]) return true;
+  for (const d of doors) if (d.tx === tx && d.ty === ty && doorClosed(d.id)) return true;
+  return false;
+}
+
+function boxHits(x, y, half, pred) {
+  const x0 = Math.floor((x - half) / T), x1 = Math.floor((x + half - 0.001) / T);
+  const y0 = Math.floor((y - half) / T), y1 = Math.floor((y + half - 0.001) / T);
+  for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) if (pred(tx, ty)) return true;
+  return false;
+}
+
+function moveEntity(e, dx, dy, half) {
+  if (dx && !boxHits(e.x + dx, e.y, half, tileSolid)) e.x += dx;
+  if (dy && !boxHits(e.x, e.y + dy, half, tileSolid)) e.y += dy;
+}
+
+function applyInput(e, mask) {
+  let dx = (mask & RIGHT ? 1 : 0) - (mask & LEFT ? 1 : 0);
+  let dy = (mask & DOWN ? 1 : 0) - (mask & UP ? 1 : 0);
+  if (dx && dy) { dx *= Math.SQRT1_2; dy *= Math.SQRT1_2; }
+  moveEntity(e, dx * SPEED, dy * SPEED, HALF);
+}
+
+function patrolPos(p, tick) {
+  const len = Math.hypot(p.x2 - p.x1, p.y2 - p.y1);
+  const m = (p.speed * tick) % (2 * len);
+  const t = (m < len ? m : 2 * len - m) / len;
+  return { x: p.x1 + (p.x2 - p.x1) * t, y: p.y1 + (p.y2 - p.y1) * t };
+}
+
+function livingEntities() {
+  const r = G.ghosts.filter(g => g.alive);
+  if (G.player.alive) r.push(G.player);
+  return r;
+}
+
+function kill(e) {
+  if (!e.alive) return;
+  e.alive = false;
+  burst(e.x, e.y + OY, e === G.player ? "#00f0ff" : "#ff3df2");
+  G.shake = 8;
+}
+
+function step() {
+  const ents = livingEntities();
+
+  // plaques
+  G.active = {};
+  for (const p of plates) {
+    for (const e of ents) {
+      if (Math.floor(e.x / T) === p.tx && Math.floor(e.y / T) === p.ty) { G.active[p.id] = true; break; }
+    }
+  }
+
+  // portes laser : écrasent ceux qui sont dedans quand elles se referment
+  for (const e of ents) {
+    if (boxHits(e.x, e.y, HALF, (tx, ty) => doors.some(d => d.tx === tx && d.ty === ty && doorClosed(d.id)))) kill(e);
+  }
+
+  // déplacements
+  const mask = testMask !== null ? testMask : keyMask;
+  if (G.player.alive) { applyInput(G.player, mask); G.rec.push(mask); }
+  for (const g of G.ghosts) if (g.alive) applyInput(g, g.inputs[G.tick] || 0);
+
+  // ennemis
+  const enemies = [];
+  for (const p of G.patrols) enemies.push(patrolPos(p, G.tick));
+  for (const c of G.chasers) {
+    const alive = livingEntities();
+    let best = null, bd = 1e9;
+    for (const e of alive) { const d = Math.hypot(e.x - c.x, e.y - c.y); if (d < bd) { bd = d; best = e; } }
+    if (c.target && (!c.target.alive || Math.hypot(c.target.x - c.x, c.target.y - c.y) > 330)) c.target = null;
+    if (!c.target && best && bd < 120) c.target = best;
+    const tx = c.target ? c.target.x : c.hx, ty = c.target ? c.target.y : c.hy;
+    const d = Math.hypot(tx - c.x, ty - c.y);
+    if (d > 1.5) moveEntity(c, (tx - c.x) / d * 1.5, (ty - c.y) / d * 1.5, 10);
+    enemies.push(c);
+  }
+  G.enemyPos = enemies;
+  for (const en of enemies) for (const e of livingEntities()) {
+    if (Math.hypot(en.x - e.x, en.y - e.y) < 20) kill(e);
+  }
+
+  // sortie
+  if (G.player.alive && Math.hypot(G.player.x - exitPos.x, G.player.y - exitPos.y) < 16) {
+    G.status = "complete";
+    burst(exitPos.x, exitPos.y + OY, "#3dff8c", 40);
+    return;
+  }
+
+  G.tick++;
+  if (!G.player.alive) { beginDying(); return; }
+  if (G.tick >= LOOP_TICKS) endLoop();
+}
+
+function beginDying() { G.status = "dying"; G.dyingTimer = 45; }
+
+function endLoop() {
+  if (G.rec.length > 2) {
+    G.ghosts.push({ inputs: G.rec.slice(), x: 0, y: 0, alive: true });
+    if (G.ghosts.length > MAX_GHOSTS) G.ghosts.shift();
+  }
+  G.loops++;
+  startLoop();
+  G.status = "play";
+}
+
+// ---------- Effets ----------
+function burst(x, y, color, n = 24) {
+  for (let i = 0; i < n; i++) {
+    const a = Math.random() * Math.PI * 2, s = 1 + Math.random() * 3;
+    particles.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, life: 30 + Math.random() * 20, color });
+  }
+}
+
+// ---------- Rendu ----------
+function glow(color, blur = 12) { ctx.shadowColor = color; ctx.shadowBlur = blur; }
+function noGlow() { ctx.shadowBlur = 0; }
+
+function drawWorld() {
+  ctx.fillStyle = "#070914"; ctx.fillRect(0, 0, W, H);
+  ctx.save();
+  if (G.shake > 0) { ctx.translate((Math.random() - .5) * G.shake, (Math.random() - .5) * G.shake); G.shake *= 0.85; if (G.shake < .5) G.shake = 0; }
+  ctx.translate(0, OY);
+
+  // grille
+  ctx.strokeStyle = "rgba(60,90,160,.12)"; ctx.lineWidth = 1;
+  for (let x = 0; x <= COLS; x++) { ctx.beginPath(); ctx.moveTo(x * T, 0); ctx.lineTo(x * T, ROWS * T); ctx.stroke(); }
+  for (let y = 0; y <= ROWS; y++) { ctx.beginPath(); ctx.moveTo(0, y * T); ctx.lineTo(W, y * T); ctx.stroke(); }
+
+  // murs
+  glow("#3b6cff", 8);
+  ctx.fillStyle = "#101a3d"; ctx.strokeStyle = "#3b6cff"; ctx.lineWidth = 1.5;
+  for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) if (walls[y][x]) {
+    ctx.fillRect(x * T, y * T, T, T); ctx.strokeRect(x * T + .75, y * T + .75, T - 1.5, T - 1.5);
+  }
+  noGlow();
+
+  // sortie
+  const pulse = 0.6 + 0.4 * Math.sin(frame / 12);
+  glow("#3dff8c", 18);
+  ctx.strokeStyle = `rgba(61,255,140,${pulse})`; ctx.lineWidth = 3;
+  ctx.strokeRect(exitPos.x - 14, exitPos.y - 14, 28, 28);
+  ctx.fillStyle = `rgba(61,255,140,${pulse * .25})`; ctx.fillRect(exitPos.x - 14, exitPos.y - 14, 28, 28);
+  noGlow();
+
+  // plaques
+  for (const p of plates) {
+    const c = COLORS[p.id], on = G.active[p.id];
+    const cx = p.tx * T + T / 2, cy = p.ty * T + T / 2;
+    glow(c, on ? 22 : 8);
+    ctx.strokeStyle = c; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(cx, cy, 14, 0, 7); ctx.stroke();
+    ctx.fillStyle = on ? c : "rgba(255,255,255,.06)";
+    ctx.beginPath(); ctx.arc(cx, cy, on ? 10 : 6, 0, 7); ctx.fill();
+    noGlow();
+  }
+
+  // portes laser
+  for (const d of doors) {
+    const c = COLORS[d.id], closed = doorClosed(d.id);
+    const cx = d.tx * T + T / 2, y0 = d.ty * T;
+    if (closed) {
+      glow(c, 16);
+      ctx.fillStyle = c + "33"; ctx.fillRect(d.tx * T, y0, T, T);
+      ctx.strokeStyle = c; ctx.lineWidth = 2 + Math.random();
+      for (const o of [-8, 0, 8]) {
+        ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+        ctx.beginPath(); ctx.moveTo(cx + o, y0); ctx.lineTo(cx + o, y0 + T); ctx.stroke();
+      }
+      ctx.globalAlpha = 1; noGlow();
+    } else {
+      ctx.fillStyle = c; ctx.globalAlpha = .5;
+      ctx.fillRect(cx - 2, y0 + 2, 4, 4); ctx.fillRect(cx - 2, y0 + T - 6, 4, 4);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  // ennemis
+  for (const en of G.enemyPos || []) {
+    glow("#ff4d4d", 14);
+    ctx.fillStyle = "#ff4d4d";
+    ctx.beginPath();
+    const r = 10;
+    ctx.moveTo(en.x, en.y - r); ctx.lineTo(en.x + r, en.y); ctx.lineTo(en.x, en.y + r); ctx.lineTo(en.x - r, en.y);
+    ctx.closePath(); ctx.fill(); noGlow();
+  }
+
+  // fantômes
+  for (const g of G.ghosts) if (g.alive) {
+    glow("#ff3df2", 14);
+    ctx.fillStyle = "rgba(255,61,242,.55)"; ctx.strokeStyle = "#ff3df2"; ctx.lineWidth = 2;
+    ctx.fillRect(g.x - HALF, g.y - HALF, HALF * 2, HALF * 2);
+    ctx.strokeRect(g.x - HALF, g.y - HALF, HALF * 2, HALF * 2);
+    noGlow();
+  }
+
+  // joueur
+  if (G.player.alive) {
+    glow("#00f0ff", 20);
+    ctx.fillStyle = "#00f0ff"; ctx.fillRect(G.player.x - HALF, G.player.y - HALF, HALF * 2, HALF * 2);
+    noGlow();
+  }
+
+  // particules
+  for (const p of particles) {
+    p.x += p.vx; p.y += p.vy; p.life--;
+    ctx.globalAlpha = Math.max(0, p.life / 50); ctx.fillStyle = p.color;
+    ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+  }
+  ctx.globalAlpha = 1;
+  particles = particles.filter(p => p.life > 0);
+  ctx.restore();
+}
+
+function drawHUD() {
+  ctx.fillStyle = "#0a0d1f"; ctx.fillRect(0, 0, W, OY);
+  ctx.font = "bold 14px 'Courier New', monospace"; ctx.textBaseline = "middle";
+  glow("#00f0ff", 8); ctx.fillStyle = "#00f0ff"; ctx.textAlign = "left";
+  ctx.fillText(`NIV ${lvlIdx + 1} · ${L.name}`, 12, OY / 2);
+  noGlow();
+  ctx.fillStyle = "#ff3df2"; ctx.textAlign = "right";
+  ctx.fillText(`BOUCLE ${G.loops}  ·  CLONES ${G.ghosts.length}`, W - 12, OY / 2);
+  // barre de temps
+  const frac = 1 - G.tick / LOOP_TICKS, bx = 300, bw = 200;
+  ctx.strokeStyle = "#2a3a6a"; ctx.lineWidth = 1; ctx.strokeRect(bx, OY / 2 - 6, bw, 12);
+  ctx.fillStyle = frac > .25 ? "#00f0ff" : "#ff4d4d"; ctx.fillRect(bx + 1, OY / 2 - 5, (bw - 2) * frac, 10);
+  ctx.fillStyle = "#cfe3ff"; ctx.textAlign = "center";
+  ctx.fillText((Math.max(0, LOOP_TICKS - G.tick) / 60).toFixed(1) + "s", bx + bw + 34, OY / 2);
+}
+
+function wrapText(text, x, y, maxW, lh) {
+  const words = text.split(" "); let line = "";
+  for (const w of words) {
+    const t = line ? line + " " + w : w;
+    if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); y += lh; line = w; } else line = t;
+  }
+  ctx.fillText(line, x, y);
+}
+
+function overlay(title, lines, color) {
+  ctx.fillStyle = "rgba(4,5,12,.82)"; ctx.fillRect(0, OY, W, H - OY);
+  ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  glow(color, 24); ctx.fillStyle = color; ctx.font = "bold 44px 'Courier New', monospace";
+  ctx.fillText(title, W / 2, 230); noGlow();
+  ctx.fillStyle = "#cfe3ff"; ctx.font = "16px 'Courier New', monospace";
+  let y = 300;
+  for (const l of lines) { wrapText(l, W / 2, y, 560, 24); y += 24 * (Math.ceil(ctx.measureText(l).width / 560) || 1) + 10; }
+}
+
+function render() {
+  frame++;
+  drawWorld();
+  drawHUD();
+  if (G.status === "title") {
+    const first = lvlIdx === 0;
+    overlay(first ? "ECHOES OF THE GRID" : `NIVEAU ${lvlIdx + 1} · ${L.name}`, [
+      L.hint,
+      first ? "ZQSD / WASD / flèches : déplacer  ·  ESPACE : terminer la boucle  ·  R : recommencer" : "",
+      "Appuie sur ENTRÉE pour commencer",
+    ].filter(Boolean), "#00f0ff");
+  } else if (G.status === "complete") {
+    overlay("SYSTÈME INFILTRÉ", [`Boucles utilisées : ${G.loops}`, lvlIdx + 1 < LEVELS.length ? "ENTRÉE : niveau suivant" : "ENTRÉE : terminer"], "#3dff8c");
+  } else if (G.status === "end") {
+    overlay("MISSION ACCOMPLIE", ["Merci d'avoir joué à la démo !", "ENTRÉE : rejouer depuis le début"], "#ff3df2");
+  } else if (G.status === "dying") {
+    ctx.fillStyle = "#ff4d4d"; ctx.textAlign = "center"; ctx.font = "bold 28px 'Courier New', monospace";
+    glow("#ff4d4d", 20); ctx.fillText("SIGNAL PERDU", W / 2, H / 2); noGlow();
+  }
+}
+
+// ---------- Boucle principale ----------
+let last = performance.now(), acc = 0;
+function frameLoop(now) {
+  acc += Math.min(100, now - last); last = now;
+  while (acc >= 1000 / 60) {
+    acc -= 1000 / 60;
+    if (G.status === "play") step();
+    else if (G.status === "dying" && --G.dyingTimer <= 0) endLoop();
+  }
+  render();
+  requestAnimationFrame(frameLoop);
+}
+
+// ---------- Entrées ----------
+const KEYMAP = { z: UP, w: UP, arrowup: UP, s: DOWN, arrowdown: DOWN, q: LEFT, a: LEFT, arrowleft: LEFT, d: RIGHT, arrowright: RIGHT };
+addEventListener("keydown", e => {
+  const k = e.key.toLowerCase();
+  if (KEYMAP[k]) { keyMask |= KEYMAP[k]; e.preventDefault(); return; }
+  if (k === " ") {
+    e.preventDefault();
+    if (G.status === "play" && !e.repeat) endLoop();
+  } else if (k === "r" && G.status !== "title" && G.status !== "end") {
+    loadLevel(lvlIdx); G.status = "play";
+  } else if (k === "enter") {
+    if (G.status === "title") G.status = "play";
+    else if (G.status === "complete") {
+      if (lvlIdx + 1 < LEVELS.length) loadLevel(lvlIdx + 1); else G.status = "end";
+    } else if (G.status === "end") loadLevel(0);
+  }
+});
+addEventListener("keyup", e => { const m = KEYMAP[e.key.toLowerCase()]; if (m) keyMask &= ~m; });
+addEventListener("blur", () => { keyMask = 0; });
+
+// Hook de test
+window.__ecg = {
+  get G() { return G; },
+  load: loadLevel, step, endLoop,
+  setMask(m) { testMask = m; },
+  start() { G.status = "play"; },
+};
+
+loadLevel(0);
+requestAnimationFrame(frameLoop);
+</script>
+</body>
+</html>
