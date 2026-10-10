@@ -20,7 +20,7 @@ const T = 40, COLS = 20, ROWS = 15, W = 800, H = 640, OY = 40;
 const LOOP_TICKS = 900;          // 15 s à 60 ticks/s
 const SPEED = 3, HALF = 11, MAX_GHOSTS = 6;
 const UP = 1, DOWN = 2, LEFT = 4, RIGHT = 8;
-const COLORS = { a: "#ffd23f", b: "#3dff8c" };
+const COLORS = { a: "#ffd23f", b: "#3dff8c", c: "#ff8a3d" };
 
 // ---------- Niveaux ----------
 // # mur · . sol · S départ · E sortie · minuscule = plaque · MAJUSCULE = porte laser liée à la plaque
@@ -72,6 +72,31 @@ const LEVELS = [
       { type: "chaser", x: 540, y: 220 },
     ],
   },
+  {
+    name: "TRIPLE LOCK",
+    hint: "Trois plaques, trois portes en série : il te faut trois clones. Chacun doit survivre jusqu'à ce que tu sois passé.",
+    map: [
+      "####################",
+      "#....#....#....#...#",
+      "#S...#....#....#...#",
+      "#....#....#....#...#",
+      "#....#....#....#...#",
+      "#....#....#....#...#",
+      "#....A....B....C.E.#",
+      "#....A....B....C...#",
+      "#....#....#....#...#",
+      "#....#....#....#...#",
+      "#....#....#....#...#",
+      "#..a.#....#....#...#",
+      "#....#.b..#..c.#...#",
+      "#....#....#....#...#",
+      "####################",
+    ],
+    enemies: [
+      { type: "patrol", x1: 340, y1: 60, x2: 340, y2: 540, speed: 2 },
+      { type: "chaser", x: 540, y: 180 },
+    ],
+  },
 ];
 
 // ---------- État ----------
@@ -100,7 +125,7 @@ function loadLevel(i) {
       if (ch === "S") startPos = { x: x * T + T / 2, y: y * T + T / 2 };
       if (ch === "E") exitPos = { x: x * T + T / 2, y: y * T + T / 2 };
       if (ch >= "a" && ch <= "z") plates.push({ id: ch, tx: x, ty: y });
-      if (ch === "A" || ch === "B") doors.push({ id: ch.toLowerCase(), tx: x, ty: y });
+      if (ch === "A" || ch === "B" || ch === "C") doors.push({ id: ch.toLowerCase(), tx: x, ty: y });
     }
   }
   G.ghosts = []; G.loops = 1;
