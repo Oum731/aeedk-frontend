@@ -1,6 +1,6 @@
 # Echoes of the Grid — CrazyGames submission sheet
 
-**Upload:** `echoes-of-the-grid-crazygames.zip` (HTML5 game, `index.html` at the zip root, ~14 KB, no external assets except the CrazyGames SDK).
+**Upload:** `echoes-of-the-grid-crazygames.zip` (HTML5 game, `index.html` at the zip root, ~20 KB, no external assets except the CrazyGames SDK).
 
 ## Covers (CrazyGames developer portal)
 - `cover-landscape-1920x1080.png` — 16:9
@@ -8,10 +8,14 @@
 - `cover-square-800x800.png` — 1:1
 (Check the exact sizes requested on the upload form: they may change.)
 
+## Video and screenshots
+- `gameplay-trailer.mp4` (1280x720, ~59 s, also as `.webm`): bot-played footage of levels 1, 4 and 9
+- `screenshot-1.png`, `screenshot-2.png`, `screenshot-3.png`: gameplay screenshots (1280x720)
+
 ## Title / descriptions
 - **Title:** Echoes of the Grid
 - **Short description:** Team up with your own past in this neon time-loop puzzle: every loop leaves a clone that replays your moves.
-- **Description (EN):** Infiltrate the grid by cooperating with yourself! Each time your 15-second loop ends, your last run becomes a clone that replays your moves. Use your clones to hold pressure plates, open laser doors and slip past sentries — but if a clone dies, everything it was holding open closes again. 8 levels of puzzles, from a gentle tutorial to the final Mainframe.
+- **Description (EN):** Infiltrate the grid by cooperating with yourself! Each time your 15-second loop ends, your last run becomes a clone that replays your moves. Use your clones to hold pressure plates, open laser doors and slip past sentries — but if a clone dies, everything it was holding open closes again. 13 levels of puzzles, from a gentle tutorial to the Root Access finale.
 - **Instructions:** WASD / ZQSD / Arrow keys: move · SPACE: end the loop · R: restart · P: pause · M: mute. On mobile: left pad to move, LOOP button to end the loop.
 - **Tags:** puzzle, time loop, neon, cyberpunk, clones, logic, 1 player, mobile
 - **Languages:** English, French (auto-detected from the browser, switchable in the menu)

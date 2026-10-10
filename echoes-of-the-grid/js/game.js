@@ -121,6 +121,8 @@ function loadLevel(i) {
       if (ch >= "A" && ch <= "D") doors.push({ id: ch.toLowerCase(), tx: x, ty: y });
     }
   }
+  const solidAt = (x, y) => y >= 0 && y < ROWS && x >= 0 && x < COLS && /[#A-D]/.test(L.map[y][x]);
+  doors.forEach(d => { d.horiz = (solidAt(d.tx - 1, d.ty) || solidAt(d.tx + 1, d.ty)) && !(solidAt(d.tx, d.ty - 1) || solidAt(d.tx, d.ty + 1)); });
   G.ghosts = []; G.loops = 1;
   startLoop();
 }
@@ -206,6 +208,7 @@ function step() {
   }
 
   // déplacements
+  if (window.__ecgBot) testMask = window.__ecgBot();   // hook réservé aux tests / capture vidéo
   const mask = testMask !== null ? testMask : (keyMask | padMask);
   if (G.player.alive) { applyInput(G.player, mask); G.rec.push(mask); }
   for (const g of G.ghosts) if (g.alive) applyInput(g, g.inputs[G.tick] || 0);
@@ -352,7 +355,16 @@ function drawWorld() {
 
   for (const d of doors) {
     const c = COLORS[d.id], closed = doorClosed(d.id), cx = d.tx * T + T / 2, y0 = d.ty * T;
-    if (closed) {
+    if (closed && d.horiz) {
+      const cy = y0 + T / 2, x0 = d.tx * T;
+      glow(c, 16); ctx.fillStyle = c + "33"; ctx.fillRect(x0, y0, T, T);
+      ctx.strokeStyle = c; ctx.lineWidth = 2 + Math.random();
+      for (const o of [-8, 0, 8]) {
+        ctx.globalAlpha = 0.6 + Math.random() * 0.4;
+        ctx.beginPath(); ctx.moveTo(x0, cy + o); ctx.lineTo(x0 + T, cy + o); ctx.stroke();
+      }
+      ctx.globalAlpha = 1; noGlow();
+    } else if (closed) {
       glow(c, 16);
       ctx.fillStyle = c + "33"; ctx.fillRect(d.tx * T, y0, T, T);
       ctx.strokeStyle = c; ctx.lineWidth = 2 + Math.random();
@@ -363,7 +375,8 @@ function drawWorld() {
       ctx.globalAlpha = 1; noGlow();
     } else {
       ctx.fillStyle = c; ctx.globalAlpha = .5;
-      ctx.fillRect(cx - 2, y0 + 2, 4, 4); ctx.fillRect(cx - 2, y0 + T - 6, 4, 4);
+      if (d.horiz) { ctx.fillRect(d.tx * T + 2, y0 + T / 2 - 2, 4, 4); ctx.fillRect(d.tx * T + T - 6, y0 + T / 2 - 2, 4, 4); }
+      else { ctx.fillRect(cx - 2, y0 + 2, 4, 4); ctx.fillRect(cx - 2, y0 + T - 6, 4, 4); }
       ctx.globalAlpha = 1;
     }
   }
@@ -488,23 +501,21 @@ function screenMenu() {
 function screenLevels() {
   drawMenuBackdrop();
   text(t("levels"), W / 2, 70, 36, "#00f0ff", "center", "#00f0ff");
-  const cw = 160, ch = 118, gap = 16, x0 = (W - (4 * cw + 3 * gap)) / 2, y0 = 130;
+  const cols = 5, cw = 140, ch = 100, gap = 14, x0 = (W - (cols * cw + (cols - 1) * gap)) / 2, y0 = 120;
   LEVELS.forEach((lv, i) => {
-    const x = x0 + (i % 4) * (cw + gap), y = y0 + ((i / 4) | 0) * (ch + gap);
+    const x = x0 + (i % cols) * (cw + gap), y = y0 + ((i / cols) | 0) * (ch + gap);
     const locked = i > save.unlocked;
     button("", x, y, cw, ch, () => { if (!locked) { Snd.init(); Snd.play("click"); startLevel(i); } }, {
       disabled: locked, color: locked ? "#3a4366" : "#00f0ff",
       render: (bx, by) => {
-        text(String(i + 1), bx + cw / 2, by + 34, 34, locked ? "#56608a" : "#00f0ff", "center", locked ? null : "#00f0ff");
-        const nm = loc(lv.name);
-        ctx.font = `bold 11px ${FONT}`;
-        wrap(nm, bx + cw / 2, by + 70, cw - 16, 13, 11, locked ? "#56608a" : "#cfe3ff");
+        text(String(i + 1), bx + cw / 2, by + 26, 28, locked ? "#56608a" : "#00f0ff", "center", locked ? null : "#00f0ff");
+        wrap(loc(lv.name), bx + cw / 2, by + 56, cw - 14, 12, 10, locked ? "#56608a" : "#cfe3ff");
         const best = save.best[i];
-        text(locked ? t("locked") : (best ? `${t("best")}: ${best}` : ""), bx + cw / 2, by + ch - 14, 11, locked ? "#56608a" : "#3dff8c", "center", null, false);
+        text(locked ? t("locked") : (best ? `${t("best")}: ${best}` : ""), bx + cw / 2, by + ch - 12, 10, locked ? "#56608a" : "#3dff8c", "center", null, false);
       },
     });
   });
-  button(t("back"), W / 2 - 110, 560, 220, 46, () => { Snd.play("click"); G.status = "menu"; }, { color: "#ff3df2" });
+  button(t("back"), W / 2 - 110, 540, 220, 46, () => { Snd.play("click"); G.status = "menu"; }, { color: "#ff3df2" });
 }
 
 function panelTitle(title, color, y = 170) { text(title, W / 2, y, 40, color, "center", color); }
@@ -634,6 +645,7 @@ window.__ecg = {
   level: () => L, start: i => { startLevel(i); G.status = "play"; },
   step, endLoop, setMask(m) { testMask = m; },
   setStatus(s) { G.status = s; },
+  intro: i => startLevel(i),
 };
 
 // ---------- Démarrage ----------
