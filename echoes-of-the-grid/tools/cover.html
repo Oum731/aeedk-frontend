@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#070914">
+<canvas id="c"></canvas>
+<script>
+const q=new URLSearchParams(location.search), W=+q.get("w"), H=+q.get("h"), c=document.getElementById("c");
+c.width=W;c.height=H;const x=c.getContext("2d");
+const u=Math.min(W,H*1.2)/800*0.9; // unité d'échelle
+x.fillStyle="#070914";x.fillRect(0,0,W,H);
+const g=x.createRadialGradient(W/2,H*0.45,10,W/2,H*0.45,Math.max(W,H)*0.7);
+g.addColorStop(0,"#16214d");g.addColorStop(1,"#05060d");x.fillStyle=g;x.fillRect(0,0,W,H);
+x.strokeStyle="rgba(70,110,200,.18)";x.lineWidth=1;const s=40*u;
+for(let i=0;i<W;i+=s){x.beginPath();x.moveTo(i,0);x.lineTo(i,H);x.stroke();}
+for(let j=0;j<H;j+=s){x.beginPath();x.moveTo(0,j);x.lineTo(W,j);x.stroke();}
+function glow(col,b){x.shadowColor=col;x.shadowBlur=b*u;}
+function txt(t,px,py,size,col,gl){x.font=`bold ${size*u}px 'Courier New',monospace`;x.textAlign="center";x.textBaseline="middle";glow(gl||col,24);x.fillStyle=col;x.fillText(t,px,py);x.shadowBlur=0;}
+// scène : joueur + clones qui suivent, laser, plaque, sortie
+const sy=H*(H>W?0.62:0.68), cx=W/2;
+const sq=26*u;
+// trajectoire du joueur
+const pts=[];for(let i=0;i<5;i++)pts.push([cx-W*0.34+i*W*0.17, sy+Math.sin(i*1.3)*H*0.04]);
+pts.forEach((p,i)=>{const player=i===4;const col=player?"#00f0ff":"#ff3df2";
+  x.globalAlpha=player?1:0.35+i*0.12;glow(col,22);x.fillStyle=col;x.fillRect(p[0]-sq/2,p[1]-sq/2,sq,sq);x.shadowBlur=0;
+  x.strokeStyle=col;x.lineWidth=2*u;x.strokeRect(p[0]-sq/2,p[1]-sq/2,sq,sq);});
+x.globalAlpha=1;
+// plaque jaune
+glow("#ffd23f",18);x.strokeStyle="#ffd23f";x.lineWidth=3*u;x.beginPath();x.arc(pts[1][0],pts[1][1]+sq*1.6,16*u,0,7);x.stroke();x.fillStyle="#ffd23f";x.beginPath();x.arc(pts[1][0],pts[1][1]+sq*1.6,9*u,0,7);x.fill();
+// laser
+glow("#ffd23f",20);x.strokeStyle="#ffd23f";for(const o of[-9,0,9]){x.beginPath();x.moveTo(cx+W*0.22+o*u,sy-H*0.16);x.lineTo(cx+W*0.22+o*u,sy+H*0.16);x.stroke();}
+// sortie
+glow("#3dff8c",24);x.strokeStyle="#3dff8c";x.lineWidth=4*u;x.strokeRect(cx+W*0.36-18*u,sy-18*u,36*u,36*u);
+x.shadowBlur=0;
+// ennemi
+glow("#ff4d4d",18);x.fillStyle="#ff4d4d";const ex=cx+W*0.1,ey=sy-H*0.14,r=14*u;x.beginPath();x.moveTo(ex,ey-r);x.lineTo(ex+r,ey);x.lineTo(ex,ey+r);x.lineTo(ex-r,ey);x.fill();x.shadowBlur=0;
+// titre
+const ty=H*(H>W?0.2:0.22);
+txt("ECHOES",cx,ty,(H>W?84:92),"#00f0ff");
+txt("OF THE GRID",cx,ty+84*u,(H>W?54:58),"#ff3df2");
+txt("COOPERATE WITH YOUR OWN PAST",cx,H*0.9,(H>W?17:20),"#9fb4e8","#3b6cff");
+</script>
